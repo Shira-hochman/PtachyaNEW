@@ -5,52 +5,53 @@ using Dal.Repositories;
 using Dal.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Ptachya.DAL.Repositories;
-using OfficeOpenXml; // ודא שאתה משתמש ב-using זה
+using OfficeOpenXml;
+using Microsoft.AspNetCore.Cors; // ודא ש-using זה קיים
+
+// הגדרת רישיון EPPlus
 ExcelPackage.License.SetNonCommercialPersonal("שם פרטי");
+
 var builder = WebApplication.CreateBuilder(args);
 
+// הגדרת שם המדיניות כמשתנה (מומלץ למניעת טעויות כתיב)
+const string MyCorsPolicy = "AllowSpecificOrigin";
+
+// 1. הוספת שירות CORS (AddCors)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "AllowSpecificOrigin", // נותנים שם למדיניות
+    options.AddPolicy(name: MyCorsPolicy, // נותנים שם למדיניות: "AllowSpecificOrigin"
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // ⬅️ המקור שצריך אישור (הכתובת של Angular)
-                  .AllowAnyHeader()                  // מאפשר כל כותרת
-                  .AllowAnyMethod();                 // מאפשר כל מתודה (GET, POST, OPTIONS וכו')
+            policy.WithOrigins("http://localhost:4200") // ⬅️ המקור של Angular
+                  .AllowAnyHeader()                     // מאפשר כל כותרת
+                  .AllowAnyMethod();                     // מאפשר כל מתודה
         });
 });
-
-// --- הגדרות Middleware (אחרי app.Build()) ---
-
-// 4. שימוש ב-CORS באמצעות המשתנה app
-// ⬅️ התיקון: הגדרה נכונה של קונטקסט הרישיון לגרסאות EPPlus 8 ומעלה
 
 // Add services to the container.
 builder.Services.AddControllers();
 
+// הגדרת DbContext
 builder.Services.AddDbContext<PtachiyaContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//// 🔑 הרשמה לרפוזיטוריז (DAL & BO)
+// הרשמה לרפוזיטוריז (DAL & BO)
 builder.Services.AddScoped<IChildRepository, ChildRepository>();
 builder.Services.AddScoped<IChildService, ChildService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
-
-//// הרשמה לממשקי גני ילדים
 builder.Services.AddScoped<IKindergartenRepository, KindergartenRepository>();
 builder.Services.AddScoped<IKindergartenService, KindergartenService>();
-
-//// הוספת הרשמה לממשקי ההורים
-//builder.Services.AddScoped<IParentRepository, ParentRepository>();
-//builder.Services.AddScoped<IParentService, ParentService>();
 builder.Services.AddScoped<Bo.Interfaces.IImportService, Bo.Services.ImportService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-app.UseCors("AllowFrontend"); // ⬅️ כאן משתמשים ב-app
+
+// 2. הפעלת Middleware של CORS (UseCors)
+// המיקום חשוב: צריך להיות אחרי app.Build() ולפני UseAuthorization
+app.UseCors(MyCorsPolicy); // ⬅️ **התיקון המרכזי: שימוש בשם המדיניות הנכון**
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
