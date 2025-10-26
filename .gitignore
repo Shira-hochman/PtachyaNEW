@@ -1,13 +1,17 @@
-# Visual Studio temporary files and directories
-.vs/
-*.vsidx
-
-# Binaries and build output
+# תיקיות ואובייקטים של .NET / C#
 [Bb]in/
 [Oo]bj/
+.vs/
 
-# NuGet packages
-*.nupkg
+# קבצי פלט בינאריים
+*.dll
+*.pdb
+*.exe
 
-# Other common VS files
+# קבצי מטמון והגדרות אוטומטיות של VS
+*.cache
 *.suo
+*.user
+*.csproj.user
+*.sourcelink.json
+*AssemblyInfo.cs
