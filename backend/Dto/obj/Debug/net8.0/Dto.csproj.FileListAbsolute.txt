@@ -20,3 +20,4 @@ C:\Users\user\Desktop\פתחיה\backend\Dto\obj\Debug\net8.0\Dto.dll
 C:\Users\user\Desktop\פתחיה\backend\Dto\obj\Debug\net8.0\refint\Dto.dll
 C:\Users\user\Desktop\פתחיה\backend\Dto\obj\Debug\net8.0\Dto.pdb
 C:\Users\user\Desktop\פתחיה\backend\Dto\obj\Debug\net8.0\ref\Dto.dll
+C:\Users\user\Desktop\פתחיה\backend\Dto\obj\Debug\net8.0\Dto.sourcelink.json

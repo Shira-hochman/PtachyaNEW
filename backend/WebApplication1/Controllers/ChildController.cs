@@ -1,12 +1,14 @@
 using Bo.Interfaces;
-using Dto;
-using Microsoft.AspNetCore.Mvc;
 using Bo.Services;
+using Dto;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Ptachya.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableCors("AllowSpecificOrigin")]
     public class ChildController : ControllerBase
     {
         private readonly IChildService _service;
