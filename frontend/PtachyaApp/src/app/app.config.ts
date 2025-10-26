@@ -1,16 +1,14 @@
 // src/app/app.config.ts
-
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http'; // 👈 הוספה זו
-
-import { routes } from './app.routes';
+import { routes } from './app.routes'; 
+import { provideHttpClient } from '@angular/common/http';
+// ⚠️ אין צורך לייבא כאן את FormsModule, הוא מיובא ברכיב ה-Login עצמו
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
-    // הוספת ספק ה-HTTP כדי לאפשר תקשורת עם ה-C#
-    provideHttpClient() // 👈 חובה: מאפשר שימוש ב-HttpClient
+    provideRouter(routes), 
+    provideHttpClient() // ⬅️ חובה לטובת תקשורת רשת
   ]
 };

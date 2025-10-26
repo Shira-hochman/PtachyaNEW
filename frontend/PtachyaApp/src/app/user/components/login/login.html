@@ -1,1 +1,8 @@
-<p>login works!</p>
+<div class="login-container">
+  <h2>התחברות</h2>
+  <input type="text" [(ngModel)]="username" placeholder="שם משתמש" />
+  <input type="password" [(ngModel)]="password" placeholder="סיסמה" />
+  <button (click)="login()">התחבר</button>
+
+  <p>{{ message }}</p>
+</div>
