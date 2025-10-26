@@ -1,11 +1,14 @@
 ﻿using Bo.Interfaces;
 using Dto;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ptachya.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableCors("AllowSpecificOrigin")] // ⬅️ הוסף את האטריביוט הזה ל-Controller
+
     public class KindergartenController : ControllerBase
     {
         private readonly IKindergartenService _service;

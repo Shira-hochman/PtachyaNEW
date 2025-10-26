@@ -1,17 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Bo.Interfaces;
+﻿using Bo.Interfaces;
 using Dto;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 // אין צורך ב-using OfficeOpenXml; שוב אם הוא כבר קיים למעלה.
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableCors("AllowSpecificOrigin")] // ⬅️ הוסף את האטריביוט הזה ל-Controller
+
 public class ImportController : ControllerBase
 {
     private readonly IImportService _importService;

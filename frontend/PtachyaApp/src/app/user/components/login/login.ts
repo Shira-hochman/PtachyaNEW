@@ -1,37 +1,41 @@
 // src/app/user/components/login/login.component.ts
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // ⬅️ חובה עבור [(ngModel)]
-import { LoginService } from '../../service/login'; // ✅ נתיב עדכני
+import { FormsModule } from '@angular/forms'; 
+import { LoginService } from '../../service/login'; 
+import { Router } from '@angular/router'; 
 
 @Component({
-  selector: 'app-login',
-  standalone: true, // ⬅️ הפוך לרכיב עצמאי
-  imports: [FormsModule], // ⬅️ ייבוא FormsModule
-  templateUrl: './login.html',
-  styleUrls: ['./login.css']
+  selector: 'app-login',
+  standalone: true, 
+  imports: [FormsModule], 
+  templateUrl: './login.html',
+  styleUrls: ['./login.css']
 })
 export class LoginComponent {
-  username = '';
-  password = '';
-  message = '';
+  username = '';
+  password = '';
+  message = '';
 
-  // השם המקובל לקובץ הוא login.service.ts
-  constructor(private loginService: LoginService) {} 
+  constructor(
+    private loginService: LoginService,
+    private router: Router
+  ) {}
 
-  login() {
-    this.loginService.login(this.username, this.password).subscribe({
-      next: (res) => {
-        // אם הצלחה - הצגת שם המשתמש
-        if (res.isSuccess) {
-           this.message = `ברוך הבא, ${this.username}! `; // ⬅️ שינוי לפי בקשתך
-        } else {
-           this.message = res.message || 'שגיאה בהתחברות';
-        }
-      },
-      error: (err) => {
-        // אם כשלון - הצגת הודעת שגיאה מותאמת
-        this.message = 'אין שם משתמש כזה. פנה למנהל המערכת.'; // ⬅️ שינוי לפי בקשתך
-      }
-    });
-  }
+  login() {
+    this.loginService.login(this.username, this.password).subscribe({
+      next: (res) => {
+        // אם הצלחה - בצע ניתוב
+        if (res.isSuccess) {
+          // 🚨 התיקון: ניתוב רק למסך הראשי (data-update)
+          this.router.navigate(['/data-update', this.username]);
+          // ❌ הוסר הניתוב המיותר שדרס את הקודם: this.router.navigate(['/children-data']);
+        } else {
+          this.message = res.message || 'שגיאה בהתחברות';
+        }
+      },
+      error: (err) => {
+        this.message = 'שם משתמש או סיסמה שגויים'; 
+      }
+    });
+  }
 }
