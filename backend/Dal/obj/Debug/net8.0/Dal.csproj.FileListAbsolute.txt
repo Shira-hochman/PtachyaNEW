@@ -32,3 +32,4 @@ C:\Users\user\Desktop\פתחיה\backend\Dal\obj\Debug\net8.0\refint\Dal.dll
 C:\Users\user\Desktop\פתחיה\backend\Dal\obj\Debug\net8.0\Dal.pdb
 C:\Users\user\Desktop\פתחיה\backend\Dal\obj\Debug\net8.0\Dal.genruntimeconfig.cache
 C:\Users\user\Desktop\פתחיה\backend\Dal\obj\Debug\net8.0\ref\Dal.dll
+C:\Users\user\Desktop\פתחיה\backend\Dal\obj\Debug\net8.0\Dal.sourcelink.json

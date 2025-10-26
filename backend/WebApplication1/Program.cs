@@ -7,11 +7,23 @@ using Microsoft.EntityFrameworkCore;
 using Ptachya.DAL.Repositories;
 using OfficeOpenXml; // ודא שאתה משתמש ב-using זה
 ExcelPackage.License.SetNonCommercialPersonal("שם פרטי");
-
-
-
-// ⬅️ התיקון: הגדרה נכונה של קונטקסט הרישיון לגרסאות EPPlus 8 ומעלה
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowSpecificOrigin", // נותנים שם למדיניות
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200") // ⬅️ המקור שצריך אישור (הכתובת של Angular)
+                  .AllowAnyHeader()                  // מאפשר כל כותרת
+                  .AllowAnyMethod();                 // מאפשר כל מתודה (GET, POST, OPTIONS וכו')
+        });
+});
+
+// --- הגדרות Middleware (אחרי app.Build()) ---
+
+// 4. שימוש ב-CORS באמצעות המשתנה app
+// ⬅️ התיקון: הגדרה נכונה של קונטקסט הרישיון לגרסאות EPPlus 8 ומעלה
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -38,6 +50,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+app.UseCors("AllowFrontend"); // ⬅️ כאן משתמשים ב-app
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
