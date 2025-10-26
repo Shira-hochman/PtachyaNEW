@@ -579,7 +579,14 @@
           }
         }
       },
-      "System.Text.Json/8.0.5": {},
+      "System.Text.Json/8.0.5": {
+        "runtime": {
+          "lib/net8.0/System.Text.Json.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.1024.46610"
+          }
+        }
+      },
       "Dal/1.0.0": {
         "dependencies": {
           "Dto": "1.0.0",
@@ -588,18 +595,12 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.0"
         },
         "runtime": {
-          "Dal.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "Dal.dll": {}
         }
       },
       "Dto/1.0.0": {
         "runtime": {
-          "Dto.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "Dto.dll": {}
         }
       }
     }

@@ -1,0 +1,13 @@
+# Visual Studio temporary files and directories
+.vs/
+*.vsidx
+
+# Binaries and build output
+[Bb]in/
+[Oo]bj/
+
+# NuGet packages
+*.nupkg
+
+# Other common VS files
+*.suo

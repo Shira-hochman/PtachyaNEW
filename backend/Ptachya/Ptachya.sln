@@ -1,15 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36408.4 d17.14
+VisualStudioVersion = 17.14.36408.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dto", "..\Dto\Dto.csproj", "{3BF6BDF5-AD0A-414A-AC72-9197AD5203C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dto", "..\Dto\Dto.csproj", "{3BF6BDF5-AD0A-414A-AC72-9197AD5203C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bo", "..\Bo\Bo.csproj", "{A31F4648-3963-4DCE-ABD5-288670F688C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bo", "..\Bo\Bo.csproj", "{A31F4648-3963-4DCE-ABD5-288670F688C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dal", "..\Dal\Dal.csproj", "{4A36F8B2-9A04-4DDE-BCE7-A200314F54E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dal", "..\Dal\Dal.csproj", "{4A36F8B2-9A04-4DDE-BCE7-A200314F54E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "..\WebApplication1\WebApplication1.csproj", "{F60A7FBB-49B0-48E1-97D3-0200C08D1E24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApplication1", "..\WebApplication1\WebApplication1.csproj", "{F60A7FBB-49B0-48E1-97D3-0200C08D1E24}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8558CC4-A06C-445E-8EE4-CE0EFFB9ACFF}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\Desktop\\פתחיה\\backend\\WebApplication1\\WebApplication1.csproj": {}
+    "C:\\ptachya\\PtachyaNEW\\backend\\WebApplication1\\WebApplication1.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Bo\\Bo.csproj": {
+    "C:\\ptachya\\PtachyaNEW\\backend\\Bo\\Bo.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Bo\\Bo.csproj",
+        "projectUniqueName": "C:\\ptachya\\PtachyaNEW\\backend\\Bo\\Bo.csproj",
         "projectName": "Bo",
-        "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Bo\\Bo.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Bo\\obj\\",
+        "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\Bo\\Bo.csproj",
+        "packagesPath": "C:\\Users\\משתמש\\.nuget\\packages\\",
+        "outputPath": "C:\\ptachya\\PtachyaNEW\\backend\\Bo\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\משתמש\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,17 +26,18 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dal\\Dal.csproj": {
-                "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dal\\Dal.csproj"
+              "C:\\ptachya\\PtachyaNEW\\backend\\Dal\\Dal.csproj": {
+                "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\Dal\\Dal.csproj"
               },
-              "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj": {
-                "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj"
+              "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj": {
+                "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj"
               }
             }
           }
@@ -50,8 +51,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -78,24 +78,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dal\\Dal.csproj": {
+    "C:\\ptachya\\PtachyaNEW\\backend\\Dal\\Dal.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dal\\Dal.csproj",
+        "projectUniqueName": "C:\\ptachya\\PtachyaNEW\\backend\\Dal\\Dal.csproj",
         "projectName": "Dal",
-        "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dal\\Dal.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dal\\obj\\",
+        "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\Dal\\Dal.csproj",
+        "packagesPath": "C:\\Users\\משתמש\\.nuget\\packages\\",
+        "outputPath": "C:\\ptachya\\PtachyaNEW\\backend\\Dal\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\משתמש\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -104,14 +104,15 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj": {
-                "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj"
+              "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj": {
+                "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj"
               }
             }
           }
@@ -125,8 +126,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -173,24 +173,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj": {
+    "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj",
+        "projectUniqueName": "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj",
         "projectName": "Dto",
-        "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\obj\\",
+        "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj",
+        "packagesPath": "C:\\Users\\משתמש\\.nuget\\packages\\",
+        "outputPath": "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\משתמש\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -199,6 +199,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -216,8 +217,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -238,24 +238,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\user\\Desktop\\פתחיה\\backend\\WebApplication1\\WebApplication1.csproj": {
+    "C:\\ptachya\\PtachyaNEW\\backend\\WebApplication1\\WebApplication1.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\WebApplication1\\WebApplication1.csproj",
+        "projectUniqueName": "C:\\ptachya\\PtachyaNEW\\backend\\WebApplication1\\WebApplication1.csproj",
         "projectName": "WebApplication1",
-        "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\WebApplication1\\WebApplication1.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\WebApplication1\\obj\\",
+        "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\WebApplication1\\WebApplication1.csproj",
+        "packagesPath": "C:\\Users\\משתמש\\.nuget\\packages\\",
+        "outputPath": "C:\\ptachya\\PtachyaNEW\\backend\\WebApplication1\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\משתמש\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -264,17 +264,18 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Bo\\Bo.csproj": {
-                "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Bo\\Bo.csproj"
+              "C:\\ptachya\\PtachyaNEW\\backend\\Bo\\Bo.csproj": {
+                "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\Bo\\Bo.csproj"
               },
-              "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj": {
-                "projectPath": "C:\\Users\\user\\Desktop\\פתחיה\\backend\\Dto\\Dto.csproj"
+              "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj": {
+                "projectPath": "C:\\ptachya\\PtachyaNEW\\backend\\Dto\\Dto.csproj"
               }
             }
           }
@@ -288,8 +289,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -323,7 +323,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
