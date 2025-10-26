@@ -32,6 +32,7 @@ C:\Users\user\Desktop\פתחיה\backend\Bo\obj\Debug\net8.0\Bo.dll
 C:\Users\user\Desktop\פתחיה\backend\Bo\obj\Debug\net8.0\refint\Bo.dll
 C:\Users\user\Desktop\פתחיה\backend\Bo\obj\Debug\net8.0\Bo.pdb
 C:\Users\user\Desktop\פתחיה\backend\Bo\obj\Debug\net8.0\ref\Bo.dll
+<<<<<<< HEAD
 C:\ptachya\PtachyaNEW\backend\Bo\bin\Debug\net8.0\Bo.deps.json
 C:\ptachya\PtachyaNEW\backend\Bo\bin\Debug\net8.0\Bo.dll
 C:\ptachya\PtachyaNEW\backend\Bo\bin\Debug\net8.0\Bo.pdb
@@ -50,3 +51,6 @@ C:\ptachya\PtachyaNEW\backend\Bo\obj\Debug\net8.0\Bo.dll
 C:\ptachya\PtachyaNEW\backend\Bo\obj\Debug\net8.0\refint\Bo.dll
 C:\ptachya\PtachyaNEW\backend\Bo\obj\Debug\net8.0\Bo.pdb
 C:\ptachya\PtachyaNEW\backend\Bo\obj\Debug\net8.0\ref\Bo.dll
+=======
+C:\Users\user\Desktop\פתחיה\backend\Bo\obj\Debug\net8.0\Bo.sourcelink.json
+>>>>>>> d5b49a6f9dc44c95fa5c84c55753a0cb8659d66d

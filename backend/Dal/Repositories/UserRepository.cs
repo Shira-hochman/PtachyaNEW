@@ -40,7 +40,14 @@ namespace Dal.Repositories
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
+        // 1. שליפת המשתמש לפי שם משתמש בלבד
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == username);
+        }
 
-        
+
+
     }
 }

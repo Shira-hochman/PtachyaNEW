@@ -11,5 +11,6 @@ namespace Dal.Repositories.Interfaces
         Task AddAsync(User entity);
         Task<User?> GetByIDAsync(string PasswordHash);
         Task UpdateAsync(User user);
+        Task<User?> GetByUsernameAsync(string username);
     }
 }

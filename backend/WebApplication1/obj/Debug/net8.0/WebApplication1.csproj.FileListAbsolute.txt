@@ -208,6 +208,7 @@ C:\Users\user\Desktop\פתחיה\backend\WebApplication1\obj\Debug\net8.0\refint
 C:\Users\user\Desktop\פתחיה\backend\WebApplication1\obj\Debug\net8.0\WebApplication1.pdb
 C:\Users\user\Desktop\פתחיה\backend\WebApplication1\obj\Debug\net8.0\WebApplication1.genruntimeconfig.cache
 C:\Users\user\Desktop\פתחיה\backend\WebApplication1\obj\Debug\net8.0\ref\WebApplication1.dll
+<<<<<<< HEAD
 C:\ptachya\PtachyaNEW\backend\WebApplication1\bin\Debug\net8.0\appsettings.Development.json
 C:\ptachya\PtachyaNEW\backend\WebApplication1\bin\Debug\net8.0\appsettings.json
 C:\ptachya\PtachyaNEW\backend\WebApplication1\bin\Debug\net8.0\WebApplication1.exe
@@ -312,3 +313,6 @@ C:\ptachya\PtachyaNEW\backend\WebApplication1\obj\Debug\net8.0\refint\WebApplica
 C:\ptachya\PtachyaNEW\backend\WebApplication1\obj\Debug\net8.0\WebApplication1.pdb
 C:\ptachya\PtachyaNEW\backend\WebApplication1\obj\Debug\net8.0\WebApplication1.genruntimeconfig.cache
 C:\ptachya\PtachyaNEW\backend\WebApplication1\obj\Debug\net8.0\ref\WebApplication1.dll
+=======
+C:\Users\user\Desktop\פתחיה\backend\WebApplication1\obj\Debug\net8.0\WebApplication1.sourcelink.json
+>>>>>>> d5b49a6f9dc44c95fa5c84c55753a0cb8659d66d
