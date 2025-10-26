@@ -1,0 +1,24 @@
+<div class="welcome-message">
+  <h1>ברוך הבא, {{ username }}!</h1>
+  <p>בחר את הפעולה שברצונך לבצע:</p>
+</div>
+
+<div class="button-group">
+    <button (click)="openFileInput('children')">עדכון ילדים (Excel)</button>
+  
+    <button (click)="openFileInput('gardens')">עדכון גנים (Excel)</button>
+
+    <button [routerLink]="['/children-data']">לצפייה בפרטי ילדים</button>
+</div>
+
+<div *ngIf="statusMessage" class="status-message">
+  {{ statusMessage }}
+</div>
+
+<input 
+  type="file" 
+  #fileInput 
+  style="display: none;" 
+  (change)="onFileSelected($event)" 
+  accept=".xlsx"
+/>

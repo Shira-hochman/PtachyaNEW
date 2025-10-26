@@ -1,0 +1,52 @@
+<div class="welcome-message">
+    <h1>פרטי ילדים במערכת</h1>
+</div>
+
+<div class="button-group">
+    <button (click)="loadChildren()">לצפיה בפרטי ילדים</button>
+</div>
+
+<div *ngIf="isLoading" class="status-message loading">
+    טוען נתונים...
+</div>
+<div *ngIf="errorMessage" class="status-message error">
+    שגיאה: {{ errorMessage }}
+</div>
+
+<div *ngIf="children && children.length > 0 && !isLoading" class="children-table-container">
+    <h2>רשימת ילדים ({{ children.length }})</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>מספר פנימי</th>
+                <th>תעודת זהות</th>
+                <th>שם מלא</th>
+                <th>תאריך לידה</th>
+                <th>שנת לימודים</th>
+                <th>קוד גן</th>
+                <th>טלפון</th>
+                <th>אימייל</th>
+                <th>Payment ID</th>
+                <th>לינק לטופס</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let child of children">
+                <td>{{ child.childId }}</td>
+                <td>{{ child.idNumber }}</td>
+                <td>{{ child.fullName }}</td>
+                <td>{{ child.birthDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ child.schoolYear }}</td>
+                <td>{{ child.kindergartenId }}</td>
+                <td>{{ child.phone }}</td>
+                <td>{{ child.email }}</td>
+                <td>{{ child.paymentId }}</td>
+                <td><a [href]="child.formLink" target="_blank">לינק</a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div *ngIf="children && children.length === 0 && !isLoading && !errorMessage" class="status-message info">
+    הרשימה נטענה בהצלחה, אך לא נמצאו ילדים.
+</div>
