@@ -15,3 +15,5 @@
 *.csproj.user
 *.sourcelink.json
 *AssemblyInfo.cs
+appsettings.Development.json  
+*.dswa.cache.json             
