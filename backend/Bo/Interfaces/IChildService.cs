@@ -9,5 +9,6 @@ namespace Bo.Interfaces
         Task<List<ChildDto>> GetChildrenAsync();
         Task AddChildAsync(ChildDto dto);
         Task RemoveChildAsync(ChildDto dto);
+        Task<string> VerifyChildIdentityAsync(string idNumber, DateTime birthDate);
     }
 }

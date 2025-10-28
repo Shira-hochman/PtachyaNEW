@@ -31,5 +31,19 @@ namespace Ptachya.API.Controllers
             await _service.AddChildAsync(dto);
             return Ok("Child added successfully");
         }
-    }
+        [HttpGet("verify")]
+        public async Task<IActionResult> VerifyIdentity([FromQuery] string idNumber, [FromQuery] DateTime birthDate)
+        {
+            if (string.IsNullOrEmpty(idNumber) || birthDate == default(DateTime))
+            {
+                return BadRequest("יש לספק מספר תעודת זהות ותאריך לידה.");
+            }
+
+            string result = await _service.VerifyChildIdentityAsync(idNumber, birthDate);
+
+            // ניתן להחזיר קוד סטטוס מתאים יותר בהתאם לתוצאה, אך כאן אנו עוקבים אחר הפלט המבוקש
+            return Ok(result);
+        }
+    
+}
 }
