@@ -1,7 +1,7 @@
 // src/app/user/components/login/login.component.ts
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms'; 
-import { LoginService } from '../../service/login'; 
+import { LoginService } from '../../services/login'; 
 import { Router } from '@angular/router'; 
 
 @Component({

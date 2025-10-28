@@ -1,0 +1,22 @@
+<div class="login-container">
+  <h2>כניסה לאזור הילד/הורה</h2>
+
+  <input
+    type="text"
+    [(ngModel)]="childId"
+    placeholder="תעודת זהות של הילד"
+    required
+    maxlength="9"
+  />
+
+  <input
+    type="date"
+    [(ngModel)]="birthDate"
+    placeholder="תאריך לידה"
+    required
+  />
+
+  <button (click)="login()">התחברות</button>
+
+  <p>{{ message }}</p>
+</div>

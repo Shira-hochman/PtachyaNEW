@@ -34,8 +34,8 @@ namespace Bo.Services
                 FormLink = dto.FormLink,
                 Phone = dto.Phone,
                 Email = dto.Email,
-                BirthDate = dto.BirthDate, // הנחה שהתאריך נשמר נכון ב-DB
-            };
+                BirthDate = dto.BirthDate,
+            };
 
             await _repo.AddAsync(entity);
         }
@@ -49,51 +49,33 @@ namespace Bo.Services
             await _repo.DeleteAsync(dto.ChildId);
         }
 
-        private DateTime CorrectReversedDate(DateTime originalDate)
-        {
-            // נסה לתקן רק אם היום והחודש שונים, כדי להימנע משגיאות
-            if (originalDate.Day != originalDate.Month)
-            {
-                try
-                {
-                    // יצירת תאריך חדש עם יום-חודש הפוכים
-                    return new DateTime(originalDate.Year, originalDate.Day, originalDate.Month);
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    // אם התאריך ההפוך אינו חוקי (כגון חודש 30), חזור למקורי
-                    return originalDate;
-                }
-            }
-
-            return originalDate;
-        }
+        // ❌ הוסר המתודה Private DateTime CorrectReversedDate
+        // ה-Model Binder אמור לטפל בפורמט ISO של JSON כראוי
 
         public async Task<string> VerifyChildIdentityAsync(string idNumber, DateTime birthDate)
         {
             var childEntity = await _repo.GetByIdNumberAsync(idNumber);
 
-            // 1. תעודת זהות שגויה (לא נמצאה רשומה)
-            if (childEntity == null)
+            // 1. תעודת זהות שגויה (לא נמצאה רשומה)
+            if (childEntity == null)
             {
                 return "שגוי";
             }
 
-            // תיקון הקלט שקיבלנו, בהנחה שהוא הפוך (MM/DD) ואילו הנתונים ב-DB נשמרו כראוי (DD/MM)
-            DateTime correctedInputBirthDate = CorrectReversedDate(birthDate);
+            // 🛑 התיקון העדכני: השוואה מפורשת של היום, החודש והשנה
+            // זה מבטיח שהזמן (Time) ואזור הזמן (Timezone) אינם משפיעים על האימות.
+            bool isBirthDateMatch = (childEntity.BirthDate.Year == birthDate.Year) &&
+                                    (childEntity.BirthDate.Month == birthDate.Month) &&
+                                    (childEntity.BirthDate.Day == birthDate.Day);
 
-            // השוואה: נשווה בין התאריך השמור ב-DB לבין הקלט המתוקן. 
-            // נשווה רק את התאריך (Day, Month, Year) ע"י שימוש ב-.Date
-            bool isBirthDateMatch = childEntity.BirthDate.Date == correctedInputBirthDate.Date;
-
-            // 2. תעודת זהות נכונה, תאריך לידה שגוי
-            if (!isBirthDateMatch)
+            // 2. תעודת זהות נכונה, תאריך לידה שגוי
+            if (!isBirthDateMatch)
             {
                 return "אחד מהנתונים שהוקש שגוי";
             }
 
-            // 3. הכל נכון
-            return childEntity.FullName;
+            // 3. הכל נכון
+            return childEntity.FullName;
         }
     }
 }

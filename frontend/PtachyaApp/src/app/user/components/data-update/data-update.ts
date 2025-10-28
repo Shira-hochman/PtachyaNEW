@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router'; // 🚨 RouterLink
 import { CommonModule } from '@angular/common'; 
 import { HttpClientModule } from '@angular/common/http'; 
 import { Observable } from 'rxjs'; 
-import { ExcelUpdateService } from '../../service/excel-update.service'; 
+import { ExcelUpdateService } from '../../services/excel-update.service'; 
 
 @Component({
   selector: 'app-data-update',

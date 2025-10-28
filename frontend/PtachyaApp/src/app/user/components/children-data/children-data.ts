@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { HttpClientModule } from '@angular/common/http'; 
-import { ChildDataService, ChildDto } from '../../service/child-data.service'; // ⬅️ ייבוא ה-Service וה-Dto
+import { ChildDataService, ChildDto } from '../../services/child-data.service'; // ⬅️ ייבוא ה-Service וה-Dto
 import { Observable } from 'rxjs';
 
 @Component({

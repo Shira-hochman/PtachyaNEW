@@ -1,4 +1,4 @@
-using Bo.Interfaces;
+ο»Ώusing Bo.Interfaces;
 using Bo.Services;
 using Dto;
 using Microsoft.AspNetCore.Cors;
@@ -31,19 +31,28 @@ namespace Ptachya.API.Controllers
             await _service.AddChildAsync(dto);
             return Ok("Child added successfully");
         }
-        [HttpGet("verify")]
-        public async Task<IActionResult> VerifyIdentity([FromQuery] string idNumber, [FromQuery] DateTime birthDate)
+        [HttpPost("verify")] // Χ©Χ™Χ Χ•Χ™ Χ-HttpPost
+                             // Χ§Χ‘ΧΧª Χ”Χ ΧªΧ•Χ Χ™Χ ΧΧ’Χ•Χ£ Χ”Χ‘Χ§Χ©Χ” (FromQuery -> FromBody)
+        public async Task<IActionResult> VerifyIdentity([FromBody] VerificationRequest request)
         {
-            if (string.IsNullOrEmpty(idNumber) || birthDate == default(DateTime))
+            // ΧΧ©ΧªΧΧ©Χ™Χ Χ‘ΧΧ•Χ‘Χ™Χ™Χ§Χ Χ›Χ“Χ™ ΧΧ§Χ¨Χ•Χ ΧΧª Χ”Χ ΧªΧ•Χ Χ™Χ
+            if (string.IsNullOrEmpty(request.IdNumber) || request.BirthDate == default(DateTime))
             {
-                return BadRequest("ιω μρτχ ξρτψ ϊςεγϊ ζδεϊ εϊΰψικ μιγδ.");
+                return BadRequest("Χ™Χ© ΧΧ΅Χ¤Χ§ ΧΧ΅Χ¤Χ¨ ΧªΧΆΧ•Χ“Χª Χ–Χ”Χ•Χª Χ•ΧªΧΧ¨Χ™Χ ΧΧ™Χ“Χ”.");
             }
 
-            string result = await _service.VerifyChildIdentityAsync(idNumber, birthDate);
+            string result = await _service.VerifyChildIdentityAsync(request.IdNumber, request.BirthDate);
 
-            // πιϊο μδηζιψ χεγ ρθθερ ξϊΰιν ιεϊψ αδϊΰν μϊεφΰδ, ΰκ λΰο ΰπε ςεχαιν ΰηψ δτμθ δξαεχω
+            // Χ Χ™ΧªΧ ΧΧ”Χ—Χ–Χ™Χ¨ Χ§Χ•Χ“ Χ΅ΧΧΧ•Χ΅ ΧΧªΧΧ™Χ Χ™Χ•ΧªΧ¨ Χ‘Χ”ΧªΧΧ ΧΧªΧ•Χ¦ΧΧ”, ΧΧ Χ›ΧΧ ΧΧ Χ• ΧΆΧ•Χ§Χ‘Χ™Χ ΧΧ—Χ¨ Χ”Χ¤ΧΧ Χ”ΧΧ‘Χ•Χ§Χ©
             return Ok(result);
         }
-    
-}
+
+        // β οΈ Χ“Χ¨Χ•Χ© Χ§ΧΧΧ΅ Χ—Χ“Χ© ΧΆΧ‘Χ•Χ¨ Χ”-request body
+        public class VerificationRequest
+        {
+            public string IdNumber { get; set; }
+            public DateTime BirthDate { get; set; }
+        }
+
+    }
 }
