@@ -7,6 +7,7 @@ import { Login as ParentLoginComponent } from './child/components/login/login';
 import { DataUpdateComponent } from './user/components/data-update/data-update'; 
 import { ChildrenData } from './user/components/children-data/children-data';
 import { Main } from './child/components/main/main';
+import { authGuard } from './auth-guard'; // ✅ ייבוא ה-Guard
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
@@ -14,7 +15,11 @@ export const routes: Routes = [
   
   { path: 'admin/login', component: AdminLoginComponent },
 
-  { path: 'data-update/:username', component: DataUpdateComponent },
+  { 
+    path: 'data-update/:username', 
+    component: DataUpdateComponent, 
+    canActivate: [authGuard] // ✅ יישום ה-Guard
+  },
   { path: 'children-data', component: ChildrenData },
   { path: 'main/:username', component: Main }, 
 ];

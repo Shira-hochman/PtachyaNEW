@@ -5,15 +5,19 @@ using Dal.Repositories.Interfaces;
 using Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace Bo.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _repo;
-        public UserService(IUserRepository repo)
+        private readonly IPasswordHasher<User> _passwordHasher; // ✅ חדש
+
+        public UserService(IUserRepository repo, IPasswordHasher<User> passwordHasher) // ✅ חדש
         {
             _repo = repo;
+            _passwordHasher = passwordHasher; // ✅ חדש
         }
 
         public async Task<List<UserDto>> GetUserAsync()
@@ -23,34 +27,52 @@ namespace Bo.Services
 
         public async Task AddUserAsync(UserDto dto)
         {
-            var entity = UserConverter.ToUserEntity(dto); // שימוש בממיר
-            await _repo.AddAsync(entity); // שולח Entity
+            var entity = UserConverter.ToUserEntity(dto);
+
+            // **מנגנון אבטחה 1: גיבוב הסיסמה**
+            // ה-PasswordHash ב-DTO הוא למעשה הסיסמה בטקסט רגיל, נגבב אותה.
+            entity.PasswordHash = _passwordHasher.HashPassword(entity, entity.PasswordHash); // ✅ חדש ומאובטח
+
+            await _repo.AddAsync(entity);
         }
+
         public async Task<object> ValidateUserWithFeedbackAsync(string username, string password)
         {
-            // 1. שלוף את המשתמש באמצעות ה-Repository
             var userEntity = await _repo.GetByUsernameAsync(username);
 
-            // 2. אם המשתמש לא נמצא, החזר הודעת "לא קיים"
             if (userEntity == null)
             {
                 return "לא קיים";
             }
 
-            // 3. בצע השוואה מאובטחת של הסיסמה
-            // ⚠️ יש להחליף את זה בקוד ה-Verification האמיתי שלך (למשל, _hasher.VerifyPassword).
-            // כרגע נשתמש בהשוואה ישירה כדוגמה, אבל *אין* לעשות זאת בקוד אמיתי!
-            bool isPasswordValid = userEntity.PasswordHash == password; // דוגמה בלבד
+            // **מנגנון אבטחה 2: אימות הסיסמה**
+            // השוואה מאובטחת של הסיסמה שהוזנה מול ה-Hash השמור
+            var verificationResult = _passwordHasher.VerifyHashedPassword(
+                userEntity,
+                userEntity.PasswordHash, // Hash השמור ב-DB
+                password                 // הסיסמה שהוזנה ע"י המשתמש
+            );
 
-            // 4. אם הסיסמה לא נכונה, החזר הודעת "סיסמה שגויה"
+            // בדיקת התוצאה: Verified = הסיסמה נכונה, RehashNeeded = נכונה אבל צריך גיבוב מחדש
+            bool isPasswordValid = verificationResult == PasswordVerificationResult.Success ||
+                                   verificationResult == PasswordVerificationResult.SuccessRehashNeeded;
+
             if (!isPasswordValid)
             {
                 return "סיסמה שגויה";
             }
 
-            // 5. הצלחה - החזר את אובייקט המשתמש
+            // ⚠️ במידה והסיסמה נכונה אבל נדרש גיבוב מחדש (למשל, שינוי באלגוריתם), כדאי לעדכן את ה-Hash
+            // (לא חובה בשלב זה, אבל מומלץ)
+            if (verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                // עדכון ה-Hash ב-DB ברקע
+                userEntity.PasswordHash = _passwordHasher.HashPassword(userEntity, password);
+                await _repo.UpdateAsync(userEntity);
+            }
+
             return userEntity;
         }
-
     }
+
 }

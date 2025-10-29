@@ -38,4 +38,17 @@ export class LoginComponent {
       }
     });
   }
+logout() {
+    localStorage.removeItem('auth_token'); // 1. הסרת האסימון 
+    localStorage.removeItem('username');
+    
+    // 2. ניתוב המשתמש לדף ההתחברות
+    this.router.navigate(['/login']); 
+  }
+  
+  // ℹ️ מתודה בדיקה לממשק המשתמש (UI)
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('auth_token');
+  }
+
 }

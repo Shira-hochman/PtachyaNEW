@@ -9,5 +9,6 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
+    // ✅ השדה הזה יחזיק מעכשיו את הסיסמה המגובבת (Hash)
     public string PasswordHash { get; set; } = null!;
 }

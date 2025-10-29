@@ -6,7 +6,12 @@ using Dal.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Ptachya.DAL.Repositories;
 using OfficeOpenXml;
-using Microsoft.AspNetCore.Cors; // ודא ש-using זה קיים
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Authentication.JwtBearer; // ✅ ודא שזה קיים!
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication; // ⬅️ יש לוודא שגם ה-using הזה קיים, למרות שהוא לא נשלח, ליתר ביטחון
 
 // הגדרת רישיון EPPlus
 ExcelPackage.License.SetNonCommercialPersonal("שם פרטי");
@@ -27,6 +32,24 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod();                     // מאפשר כל מתודה
         });
 });
+
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key not configured");
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -62,8 +85,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
