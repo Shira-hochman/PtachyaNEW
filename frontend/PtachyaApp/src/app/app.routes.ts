@@ -16,7 +16,7 @@ export const routes: Routes = [
   { path: 'admin/login', component: AdminLoginComponent },
 
   { 
-    path: 'data-update/:username', 
+    path: 'data-update', 
     component: DataUpdateComponent, 
     canActivate: [authGuard] // ✅ יישום ה-Guard
   },
