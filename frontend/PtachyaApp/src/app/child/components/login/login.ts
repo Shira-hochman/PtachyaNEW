@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms'; // 1. חובה עבור [(ngModel)]
 import { CommonModule } from '@angular/common'; // 2. חובה עבור קומפוננטות standalone
 import { Router } from '@angular/router'; 
-// 3. ודא שהנתיב ל-Service נכון בהתאם למבנה הפרויקט שלך
 import { ChildAuthService } from '../../services/child-auth.service'; 
 
 
@@ -59,7 +58,7 @@ export class Login implements OnInit {
           this.message = `התחברות מוצלחת! ברוך הבא, ${fullName}`;
           
           // ⚠️ ניתוב לעמוד הבא (data-update)
-          this.router.navigate(['/data-update', fullName]); 
+          this.router.navigate(['/main', fullName]); 
           
         } else {
           // כישלון: הצגת הודעת השגיאה
