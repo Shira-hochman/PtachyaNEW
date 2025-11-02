@@ -57,6 +57,15 @@ CREATE TABLE [User] (
     PasswordHash NVARCHAR(256) NOT NULL
 );
 
+delete users
+CREATE TABLE [Users] (
+    UserId INT IDENTITY(1,1) PRIMARY KEY,
+    Username NVARCHAR(50) NOT NULL,
+    -- שימו לב: 256 קצר מדי ל-Hash מאובטח. נשתמש ב-MAX או בערך גדול יותר.
+    PasswordHash NVARCHAR(MAX) NOT NULL 
+    -- אם משתמשים ב-Identity, האורך הוא בערך 256, אבל נשתמש ב-MAX להבטחת עתיד
+);
+
 SELECT * FROM Kindergartens;
 GO
 
