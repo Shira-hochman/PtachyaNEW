@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="DebugOutput\" />
+    <Folder Include="Templates\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,6 @@
-﻿using Dal.Models;
+﻿// FormRepository.cs
+
+using Dal.Models;
 using Dal.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
@@ -16,7 +18,7 @@ public class FormRepository : IFormRepository
 
     public async Task AddAsync(Form entity)
     {
-        string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "health_declaration_template.docx");
+        // שמירת ה-Entity לבסיס הנתונים
         _context.Forms.Add(entity);
         await _context.SaveChangesAsync();
     }

@@ -190,11 +190,11 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
       // קריאה לשירות ושמירת הקובץ
       this.formService.submitHealthDeclaration(formData).subscribe({
           next: (response: Blob) => {
-              // ⭐️⭐️⭐️ לוגיקת הורדת הקובץ ⭐️⭐️⭐️
+              // ⭐️⭐️⭐️ תיקון קריטי: שינוי הסיומת ל-PDF ⭐️⭐️⭐️
               const url = window.URL.createObjectURL(response);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `Health_Declaration_${formData.childDetails.childId}.docx`; 
+              a.download = `Health_Declaration_${formData.childDetails.childId}.pdf`; 
               
               document.body.appendChild(a);
               a.click();

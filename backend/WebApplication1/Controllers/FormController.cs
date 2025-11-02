@@ -1,12 +1,16 @@
-﻿using Dto;
+﻿// FormController.cs
+
+using Dto;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Bo.Interfaces;
+
 [ApiController]
 [Route("api/[controller]")]
-[EnableCors("AllowSpecificOrigin")] // ⬅️ הוסף את האטריביוט הזה ל-Controller
+[EnableCors("AllowSpecificOrigin")]
 public class FormController : ControllerBase
 {
     private readonly IFormService _formService;
@@ -15,20 +19,25 @@ public class FormController : ControllerBase
     {
         _formService = formService;
     }
+
     [HttpPost("submit-health-declaration")]
+    // ⭐️ מחזירים Task<IActionResult> כי אנו מחזירים FileResult
     public async Task<IActionResult> SubmitHealthDeclaration([FromBody] HealthDeclarationDto declarationDto)
     {
         try
         {
-            // 1. קריאה לשירות: השירות מחזיר כעת רק byte[] של PDF.
-            // ⚠️ שינוי חתימה: יש לוודא ש-IFormService וה-FormService הותאמו להחזיר רק Task<byte[]>
+            // 1. יצירת הקובץ ואיחזור מערך הבתים של ה-PDF
             byte[] fileBytes = await _formService.ProcessAndGenerateHealthDeclarationAsync(declarationDto);
 
-            // 2. יצירת שם קובץ PDF נקי חדש להורדה בדפדפן
+            // 2. יצירת שם קובץ PDF נקי חדש להורדה
             string newFileName = $"Health_Declaration_{declarationDto.ChildDetails.ChildId}.pdf";
 
-            // 3. החזרת הקובץ ל-Angular כ-PDF תקין
+            // 3. החזרת הקובץ ל-Angular כ-PDF
             return File(fileBytes, "application/pdf", newFileName);
+        }
+        catch (FileNotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
         catch (ArgumentException ex)
         {

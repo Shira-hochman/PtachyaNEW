@@ -1,184 +1,145 @@
-﻿using Dto;
-using NPOI.XWPF.UserModel;
-using System.IO;
-using System;
-using System.Collections.Generic;
+﻿// WordTemplateGenerator.cs
+using Dto;
 using Aspose.Words;
-using Aspose.Words.Saving;
-using Aspose.Words.Loading;
-using System.Text;
-using System.Linq; // נדרש עבור LINQ ב-ReplaceTextInParagraphs
+using Aspose.Words.Drawing;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using Aspose.Words.Replacing;
 
+// ⭐️ זוהי המחלקה שמבצעת את כל העיבוד באמצעות Aspose.Words
 public static class WordTemplateGenerator
 {
-    // ⭐️⭐️ הפונקציה הראשית: מחזירה PDF תקין
+    // פונקציית עזר לפורמט תאריך נקי (דרוש בגלל שימוש ב-DateTime ב-DTO)
+    private static string FormatDate(DateTime date)
+    {
+        // אם התאריך לא תקין או ריק, מחזירים מחרוזת ריקה.
+        if (date == default(DateTime) || date.Year < 1900) return string.Empty;
+        return date.ToString("dd/MM/yyyy");
+    }
+
+    // הגדרת כל המיפויים לטקסט מילוי (Mail Merge Fields)
+    private static readonly Dictionary<string, Func<HealthDeclarationDto, string>> TextMapping = new Dictionary<string, Func<HealthDeclarationDto, string>>
+    {
+        // שדות תאריך
+        {"FormDate", dto => FormatDate(dto.FormDate)},
+        {"ChildDob", dto => FormatDate(dto.ChildDetails.ChildDob)},
+        
+        // שדות טקסט/מספר
+        {"ChildFirstName", dto => dto.ChildDetails.ChildFirstName ?? string.Empty},
+        {"ChildLastName", dto => dto.ChildDetails.ChildLastName ?? string.Empty},
+        {"ChildId", dto => dto.ChildDetails.ChildId ?? string.Empty},
+        {"ChildAddress", dto => dto.ChildDetails.ChildAddress ?? string.Empty},
+
+        {"ProgramProvider", dto => dto.ProgramProvider ?? string.Empty},
+        {"ProgramFramework", dto => dto.ProgramFramework ?? string.Empty},
+
+        {"FacilityName", dto => dto.FacilityDetails.FacilityName ?? string.Empty},
+        {"FacilityOwnership", dto => dto.FacilityDetails.FacilityOwnership ?? string.Empty},
+        {"FacilityManagerName", dto => dto.FacilityDetails.FacilityManagerName ?? string.Empty},
+        {"FacilityAddress", dto => dto.FacilityDetails.FacilityAddress ?? string.Empty},
+        {"FacilityPhone", dto => dto.FacilityDetails.FacilityPhone ?? string.Empty},
+
+        {"MonthlySelfParticipation", dto => dto.MonthlySelfParticipation.ToString("N2") + " ₪"},
+
+        {"Parent1Name", dto => dto.Parent1.Name ?? string.Empty},
+        {"Parent1Phone", dto => dto.Parent1.Phone ?? string.Empty},
+        {"Parent2Name", dto => dto.Parent2.Name ?? string.Empty},
+        {"Parent2Phone", dto => dto.Parent2.Phone ?? string.Empty},
+
+        {"NoOtherProgramDeclaration", dto => dto.NoOtherProgramDeclaration ? "כן" : "לא"}
+    };
+
+    // ⭐️ פונקציה ראשית: מחזירה מערך בתים של קובץ PDF
     public static byte[] GenerateDocument(HealthDeclarationDto dto, string templatePath)
     {
-        try
-        {
-            byte[] docxBytes = FillDocxTemplate(dto, templatePath);
-
-            using (MemoryStream docxStream = new MemoryStream(docxBytes))
-            {
-                Aspose.Words.Document doc = new Aspose.Words.Document(docxStream);
-
-                // 2. המרה ל-HTML Stream וטיפול ב-Base64
-                using (MemoryStream htmlStream = new MemoryStream())
-                {
-                    // ⭐️⭐️ תיקון שגיאת התמונות: יצירת אובייקט HtmlSaveOptions
-                    HtmlSaveOptions htmlSaveOptions = new HtmlSaveOptions();
-                    // הגדרה זו חיונית כדי למנוע מ-Aspose לכתוב קובצי תמונה לדיסק זמני.
-                    // במקום זאת, הוא משתמש ב-Base64 בתוך ה-HTML.
-                    htmlSaveOptions.ExportImagesAsBase64 = true;
-
-                    // שומר את ה-DOCX הפנימי כ-HTML
-                    doc.Save(htmlStream, htmlSaveOptions); // ⭐️ משתמשים ב-Options החדש
-
-                    htmlStream.Position = 0;
-                    string htmlContent = new StreamReader(htmlStream, Encoding.UTF8).ReadToEnd();
-
-                    // ⭐️ שלב החלפת החתימה בתוך קוד ה-HTML (הופך טקסט לתגית <img>)
-                    htmlContent = ReplaceSignaturesInHtml(htmlContent, dto);
-
-                    // 3. יצירת PDF מ-HTML הנקי
-                    using (MemoryStream finalHtmlStream = new MemoryStream(Encoding.UTF8.GetBytes(htmlContent)))
-                    {
-                        LoadOptions loadOptions = new LoadOptions
-                        {
-                            LoadFormat = LoadFormat.Html
-                        };
-                        Aspose.Words.Document finalDoc = new Aspose.Words.Document(finalHtmlStream, loadOptions);
-
-                        PdfSaveOptions saveOptions = new PdfSaveOptions();
-                        saveOptions.Compliance = PdfCompliance.Pdf17;
-
-                        using (MemoryStream pdfStream = new MemoryStream())
-                        {
-                            // ⭐️ השמירה ל-PDF אמורה כעת לעבוד ללא גישה לדיסק
-                            finalDoc.Save(pdfStream, saveOptions);
-                            return pdfStream.ToArray();
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ FATAL ERROR in Generator: {ex.Message}");
-            throw new InvalidOperationException($"Failed to generate PDF: {ex.Message}", ex);
-        }
-    }
-
-    // -----------------------------------------------------------------------
-
-    private static string ReplaceSignaturesInHtml(string htmlContent, HealthDeclarationDto dto)
-    {
-        // ⭐️ החלפת מחרוזת Base64 לתגית <img> שנתמכת ב-Aspose
-        string parent1SignatureHtml = string.IsNullOrWhiteSpace(dto.Parent1.Signature)
-            ? "<span style='font-style: italic;'>(לא נחתם)</span>"
-            : $"<img src=\"{dto.Parent1.Signature}\" style=\"width:180px; height:60px; border: 1px solid #ccc;\"/>";
-
-        htmlContent = htmlContent.Replace("<<Parent1Signature>>", parent1SignatureHtml);
-
-        string parent2SignatureHtml = string.IsNullOrWhiteSpace(dto.Parent2.Signature)
-            ? "<span style='font-style: italic;'>(לא נחתם)</span>"
-            : $"<img src=\"{dto.Parent2.Signature}\" style=\"width:180px; height:60px; border: 1px solid #ccc;\"/>";
-
-        htmlContent = htmlContent.Replace("<<Parent2Signature>>", parent2SignatureHtml);
-
-        return htmlContent;
-    }
-
-    // -----------------------------------------------------------------------
-
-    private static byte[] FillDocxTemplate(HealthDeclarationDto dto, string templatePath)
-    {
-        // ⭐️ NPOI ממלא את הטקסט בלבד
         if (!File.Exists(templatePath))
             throw new FileNotFoundException($"Template file not found at: {templatePath}");
 
-        using (FileStream fs = new FileStream(templatePath, FileMode.Open, FileAccess.Read))
-        {
-            XWPFDocument document = new XWPFDocument(fs);
-            ReplacePlaceholderText(document, dto);
+        var doc = new Document(templatePath);
 
-            using (MemoryStream ms = new MemoryStream())
-            {
-                document.Write(ms);
-                return ms.ToArray();
-            }
+        // 1. מילוי נתונים טקסטואליים
+        doc.MailMerge.Execute(
+            TextMapping.Keys.ToArray(),
+            TextMapping.Values.Select(f => (object)f(dto)).ToArray()
+        );
+
+        // 2. טיפול והחלפת חתימות (תמונות Base64)
+        InsertSignature(doc, "Parent1Signature", dto.Parent1.Signature ?? string.Empty, true);
+        InsertSignature(doc, "Parent2Signature", dto.Parent2.Signature ?? string.Empty, false);
+
+        // 3. שמירה כ-PDF לזרם בזיכרון
+        using (var pdfStream = new MemoryStream())
+        {
+            doc.Save(pdfStream, SaveFormat.Pdf);
+            return pdfStream.ToArray();
         }
     }
 
-    // -----------------------------------------------------------------------
-
-    private static void ReplacePlaceholderText(XWPFDocument document, HealthDeclarationDto dto)
+    // ⭐️ פונקציית עזר להחלפת Placeholder של טקסט בתמונת Base64
+    private static void InsertSignature(Document doc, string placeholderName, string base64Data, bool isRequired)
     {
-        // ⭐️ החתימות מועברות כטקסט רגיל (Base64)
-        var replacements = new Dictionary<string, string>
-        {
-            { "<<FormDate>>", dto.FormDate.ToShortDateString() },
-            { "<<FacilityName>>", dto.FacilityDetails.FacilityName ?? "" },
-            { "<<FirstName>>", dto.ChildDetails.ChildFirstName ?? "" },
-            { "<<LastName>>", dto.ChildDetails.ChildLastName ?? "" },
-            { "<<IDNumber>>", dto.ChildDetails.ChildId ?? "" },
-            { "<<DateOfBirth>>", dto.ChildDetails.ChildDob.ToShortDateString() },
-            { "<<Address>>", dto.ChildDetails.ChildAddress ?? "" },
-            { "<<ProgramProvider>>", dto.ProgramProvider ?? "" },
-            { "<<ManagerName>>", dto.FacilityDetails.FacilityManagerName ?? "" },
-            { "<<FacilityAddress>>", dto.FacilityDetails.FacilityAddress ?? "" },
-            { "<<FacilityPhone>>", dto.FacilityDetails.FacilityPhone ?? "" },
-            { "<<SelfParticipation>>", dto.MonthlySelfParticipation.ToString("N2") + " ₪" },
-            { "<<Parent1Name>>", dto.Parent1.Name ?? "" },
-            { "<<Parent1Phone>>", dto.Parent1.Phone ?? "" },
-            { "<<Parent2Name>>", dto.Parent2.Name ?? "" },
-            { "<<Parent2Phone>>", dto.Parent2.Phone ?? "" },
-            
-            // ⭐️⭐️ החתימות מועברות כטקסט Base64 לתוך ה-DOCX
-            { "<<Parent1Signature>>", dto.Parent1.Signature ?? "" },
-            { "<<Parent2Signature>>", dto.Parent2.Signature ?? "" },
-        };
+        string placeholder = $"<<{placeholderName}>>";
 
-        ReplaceTextInParagraphs(document.Paragraphs, replacements);
-
-        foreach (var table in document.Tables)
+        if (string.IsNullOrEmpty(base64Data))
         {
-            foreach (var row in table.Rows)
-            {
-                foreach (var cell in row.GetTableCells())
-                    ReplaceTextInParagraphs(cell.Paragraphs, replacements);
-            }
+            string replacementText = isRequired ? "(חתימה חסרה - חובה)" : "(לא נחתם)";
+            doc.Range.Replace(placeholder, replacementText, new FindReplaceOptions());
+            return;
+        }
+
+        try
+        {
+            // 1. הסרת קידומת DataURL ושמירת הבתים
+            var base64WithoutPrefix = base64Data.Contains(',') ? base64Data.Substring(base64Data.IndexOf(',') + 1) : base64Data;
+            byte[] imageBytes = Convert.FromBase64String(base64WithoutPrefix);
+
+            // 2. יצירת מופע של ה-Callback והחלפה
+            ImageReplacingCallback callback = new ImageReplacingCallback(doc, imageBytes);
+
+            FindReplaceOptions options = new FindReplaceOptions();
+            options.ReplacingCallback = callback;
+
+            // ⭐️ הפונקציה doc.Range.Replace עכשיו מקבלת את ה-Callback התקין
+            doc.Range.Replace(placeholder, string.Empty, options);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error inserting signature {placeholderName}: {ex.Message}");
+            doc.Range.Replace(placeholder, "(שגיאת חתימה)", new FindReplaceOptions());
         }
     }
 
-    // -----------------------------------------------------------------------
-
-    private static void ReplaceTextInParagraphs(IEnumerable<XWPFParagraph> paragraphs, Dictionary<string, string> replacements)
+    // ⭐️ מחלקה פנימית המממשת IReplacingCallback כדי לפתור את שגיאת ה-Delegate/Lambda
+    private class ImageReplacingCallback : IReplacingCallback
     {
-        // ⭐️ לוגיקת החלפת הטקסט הכללית של NPOI
-        foreach (var paragraph in paragraphs)
+        private readonly Document _document;
+        private readonly byte[] _imageBytes;
+        private const double SignatureWidth = 180;
+        private const double SignatureHeight = 60;
+
+        public ImageReplacingCallback(Document document, byte[] imageBytes)
         {
-            string text = paragraph.Text;
-            if (string.IsNullOrWhiteSpace(text)) continue;
+            _document = document;
+            _imageBytes = imageBytes;
+        }
 
-            bool changed = false;
-            foreach (var pair in replacements)
+        ReplaceAction IReplacingCallback.Replacing(ReplacingArgs args)
+        {
+            DocumentBuilder builder = new DocumentBuilder(_document);
+            builder.MoveTo(args.MatchNode);
+
+            using (var imageStream = new MemoryStream(_imageBytes))
             {
-                if (text.Contains(pair.Key))
-                {
-                    text = text.Replace(pair.Key, pair.Value ?? "");
-                    changed = true;
-                }
+                Shape signatureShape = builder.InsertImage(imageStream);
+                signatureShape.Width = SignatureWidth;
+                signatureShape.Height = SignatureHeight;
             }
 
-            if (changed)
-            {
-                for (int i = paragraph.Runs.Count - 1; i >= 0; i--)
-                    paragraph.RemoveRun(i);
-
-                var run = paragraph.CreateRun();
-                run.SetText(text);
-            }
+            // הסרת הצומת המקורית של ה-Placeholder
+            args.MatchNode.Remove();
+            return ReplaceAction.Skip;
         }
     }
 }
