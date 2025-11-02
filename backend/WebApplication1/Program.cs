@@ -66,7 +66,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IKindergartenRepository, KindergartenRepository>();
 builder.Services.AddScoped<IKindergartenService, KindergartenService>();
 builder.Services.AddScoped<Bo.Interfaces.IImportService, Bo.Services.ImportService>();
+builder.Services.AddScoped<IFormRepository, FormRepository>();
 
+builder.Services.AddScoped<IFormService, FormService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

@@ -1,6 +1,7 @@
 ﻿using Bo.Interfaces;
 using Bo.Services;
 using Dto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,7 @@ namespace Ptachya.API.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var children = await _service.GetChildrenAsync();
@@ -31,20 +33,25 @@ namespace Ptachya.API.Controllers
             await _service.AddChildAsync(dto);
             return Ok("Child added successfully");
         }
-        [HttpPost("verify")] // שינוי ל-HttpPost
-                             // קבלת הנתונים מגוף הבקשה (FromQuery -> FromBody)
-        public async Task<IActionResult> VerifyIdentity([FromBody] VerificationRequest request)
+        [HttpPost("details")]
+        public async Task<IActionResult> GetChildDetails([FromBody] VerificationRequest request)
         {
-            // משתמשים באובייקט כדי לקרוא את הנתונים
             if (string.IsNullOrEmpty(request.IdNumber) || request.BirthDate == default(DateTime))
             {
                 return BadRequest("יש לספק מספר תעודת זהות ותאריך לידה.");
             }
 
-            string result = await _service.VerifyChildIdentityAsync(request.IdNumber, request.BirthDate);
+            // ⭐️ שינוי: קוראים לפונקציה בשירות שמחזירה את כל אובייקט הילד (ChildDto)
+            ChildDto? childDetails = await _service.GetChildDetailsByIdAndBirthDateAsync(request.IdNumber, request.BirthDate);
 
-            // ניתן להחזיר קוד סטטוס מתאים יותר בהתאם לתוצאה, אך כאן אנו עוקבים אחר הפלט המבוקש
-            return Ok(result);
+            if (childDetails == null)
+            {
+                // אם האימות נכשל (לא נמצא ילד), מחזירים 401 או 400
+                return Unauthorized("מספר תעודת זהות או תאריך לידה שגויים.");
+            }
+
+            // ⭐️ מחזירים את אובייקט הילד המלא ב-JSON
+            return Ok(childDetails);
         }
 
         // ⚠️ דרוש קלאס חדש עבור ה-request body

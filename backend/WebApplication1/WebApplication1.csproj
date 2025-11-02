@@ -18,4 +18,14 @@
     <ProjectReference Include="..\Dto\Dto.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DebugOutput\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Templates\health_declaration_template.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

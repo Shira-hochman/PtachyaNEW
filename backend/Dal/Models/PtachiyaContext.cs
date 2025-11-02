@@ -16,17 +16,11 @@ public partial class PtachiyaContext : DbContext
     }
 
     public virtual DbSet<Child> Children { get; set; }
-
     public virtual DbSet<Customer> Customers { get; set; }
-
     public virtual DbSet<Form> Forms { get; set; }
-
     public virtual DbSet<Kindergarten> Kindergartens { get; set; }
-
     public virtual DbSet<Order> Orders { get; set; }
-
     public virtual DbSet<Payment> Payments { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
@@ -40,7 +34,7 @@ public partial class PtachiyaContext : DbContext
             entity.HasIndex(e => e.IdNumber, "UQ__Children__62DF80332B6EC341").IsUnique();
 
             entity.Property(e => e.Email).HasMaxLength(100);
-            entity.Property(e => e.FormLink).HasMaxLength(255);
+            // 🛑 הוסר: entity.Property(e => e.FormLink).HasMaxLength(255);
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.IdNumber).HasMaxLength(20);
             entity.Property(e => e.Phone).HasMaxLength(20);
@@ -81,7 +75,15 @@ public partial class PtachiyaContext : DbContext
         {
             entity.HasKey(e => e.FormId).HasName("PK__Forms__FB05B7DD3B2B1448");
 
-            entity.Property(e => e.FormLink).HasMaxLength(255);
+            // 🛑 הוסר: entity.Property(e => e.FormLink).HasMaxLength(255);
+
+            // ⭐️ מיפוי לשדות החדשים:
+            entity.Property(e => e.FileContent)
+                .HasColumnType("varbinary(max)"); // מאפשר אחסון קבצים גדולים
+            entity.Property(e => e.ContentType)
+                .HasMaxLength(255)
+                .IsRequired(true);
+
             entity.Property(e => e.SubmittedDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.Child).WithMany(p => p.Forms)

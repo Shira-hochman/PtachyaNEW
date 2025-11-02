@@ -7,6 +7,7 @@ import { Login as ParentLoginComponent } from './child/components/login/login';
 import { DataUpdateComponent } from './user/components/data-update/data-update'; 
 import { ChildrenData } from './user/components/children-data/children-data';
 import { Main } from './child/components/main/main';
+import { HealthDeclarationComponent } from './child/components/health-declaration/health-declaration';
 import { authGuard } from './auth-guard'; // ✅ ייבוא ה-Guard
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -22,4 +23,4 @@ export const routes: Routes = [
   },
   { path: 'children-data', component: ChildrenData },
   { path: 'main/:username', component: Main }, 
-];
+{ path: 'health-declaration', component: HealthDeclarationComponent },];
