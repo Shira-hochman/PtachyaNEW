@@ -1,7 +1,9 @@
-﻿using Bo.Interfaces;
+﻿// Bo.Services/ChildService.cs
+
+using Bo.Interfaces;
 using Dal.Models;
 using Dal.Repositories.Interfaces;
-using Dal_Repository.ModelsConverters;
+using Dal_Repository.ModelsConverters; // הנחה: מחלקה זו ממירה מ-Child ל-ChildDto
 using Dto;
 using System;
 using System.Collections.Generic;
@@ -9,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace Bo.Services
 {
+    // ⚠️ דורש הוספת המתודה ל-IChildService!
+    // public interface IChildService { ... Task<ChildDto?> GetChildDetailsByIdAndBirthDateAsync(string idNumber, DateTime birthDate); }
+
     public class ChildService : IChildService
     {
         private readonly IChildRepository _repo;
@@ -17,6 +22,8 @@ namespace Bo.Services
         {
             _repo = repo;
         }
+
+        // ... מתודות GetChildrenAsync, AddChildAsync, RemoveChildAsync נשארות ללא שינוי ...
 
         public async Task<List<ChildDto>> GetChildrenAsync()
         {
@@ -49,33 +56,45 @@ namespace Bo.Services
             await _repo.DeleteAsync(dto.ChildId);
         }
 
-        // ❌ הוסר המתודה Private DateTime CorrectReversedDate
-        // ה-Model Binder אמור לטפל בפורמט ISO של JSON כראוי
-
+        // 🛑 מתודת האימות הישנה (מחזירה string)
+        // אם היא עדיין נחוצה עבור קריאות ישנות, השאר אותה
         public async Task<string> VerifyChildIdentityAsync(string idNumber, DateTime birthDate)
         {
             var childEntity = await _repo.GetByIdNumberAsync(idNumber);
 
-            // 1. תעודת זהות שגויה (לא נמצאה רשומה)
+            if (childEntity == null) return "שגוי";
+
+            bool isBirthDateMatch = (childEntity.BirthDate.Date == birthDate.Date);
+
+            if (!isBirthDateMatch) return "אחד מהנתונים שהוקש שגוי";
+
+            return childEntity.FullName;
+        }
+
+        // ⭐️⭐️⭐️ מתודה חדשה: מאמתת ומחזירה את אובייקט ה-DTO המלא ⭐️⭐️⭐️
+        public async Task<ChildDto?> GetChildDetailsByIdAndBirthDateAsync(string idNumber, DateTime birthDate)
+        {
+            // 1. שלוף את ישות הילד מה-DAL
+            var childEntity = await _repo.GetByIdNumberAsync(idNumber);
+
+            // אם הילד לא קיים, החזר null
             if (childEntity == null)
             {
-                return "שגוי";
+                return null;
             }
 
-            // 🛑 התיקון העדכני: השוואה מפורשת של היום, החודש והשנה
-            // זה מבטיח שהזמן (Time) ואזור הזמן (Timezone) אינם משפיעים על האימות.
-            bool isBirthDateMatch = (childEntity.BirthDate.Year == birthDate.Year) &&
-                                    (childEntity.BirthDate.Month == birthDate.Month) &&
-                                    (childEntity.BirthDate.Day == birthDate.Day);
+            // 2. ודא שתאריך הלידה תואם (מבלי להתחשב בשעה/אזור זמן)
+            bool isBirthDateMatch = (childEntity.BirthDate.Date == birthDate.Date);
 
-            // 2. תעודת זהות נכונה, תאריך לידה שגוי
+            // אם התאריך לא תואם, החזר null (כדי שהקונטרולר יחזיר Unauthorized)
             if (!isBirthDateMatch)
             {
-                return "אחד מהנתונים שהוקש שגוי";
+                return null;
             }
 
-            // 3. הכל נכון
-            return childEntity.FullName;
+            // 3. אם האימות הצליח, המר את ישות ה-DAL ל-DTO והחזר אותה
+            // הנחה: קיים ממיר (Converter) כלשהו (כמו ModelsConverters.ToDto)
+            return ChildConverter.ToChildDto(childEntity);
         }
     }
 }

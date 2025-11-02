@@ -1,5 +1,6 @@
 ﻿using Bo.Interfaces;
 using Dto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] 
 [EnableCors("AllowSpecificOrigin")] // ⬅️ הוסף את האטריביוט הזה ל-Controller
 
 public class ImportController : ControllerBase
