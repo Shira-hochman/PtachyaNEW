@@ -14,7 +14,9 @@ public partial class Child
     public DateTime BirthDate { get; set; }
 
     public string lastName { get; set; } = null!;
+
     public string FirstName { get; set; } = null!;
+
     public string SchoolYear { get; set; } = null!;
 
     public string? FormLink { get; set; }
