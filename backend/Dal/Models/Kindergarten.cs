@@ -10,6 +10,9 @@ public partial class Kindergarten
     public string Code { get; set; } = null!;
 
     public string Name { get; set; } = null!;
+    public string Address { get; set; } = null!;
+
+
 
     public virtual ICollection<Child> Children { get; set; } = new List<Child>();
 }

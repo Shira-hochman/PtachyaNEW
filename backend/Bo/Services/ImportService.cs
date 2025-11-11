@@ -59,7 +59,7 @@ namespace Bo.Services
             if (existingChild != null)
             {
                 // עדכון ילד קיים
-                existingChild.FullName = row.FullName;
+                //existingChild.FullName = row.FullName;
                 existingChild.BirthDate = row.BirthDate.Value;
                 existingChild.SchoolYear = row.SchoolYear;
                 existingChild.KindergartenId = kindergartenId;

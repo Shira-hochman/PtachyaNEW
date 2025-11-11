@@ -17,7 +17,7 @@ namespace Dal_Repository.ModelsConverters
                 KindergartenId = child.KindergartenId,
                 IdNumber = child.IdNumber,
                 BirthDate = child.BirthDate,
-                LastName = child.FullName,
+                //LastName = child.FullName,
                 SchoolYear = child.SchoolYear,
                 FormLink = child.FormLink,
                 Phone = child.Phone,
@@ -48,7 +48,7 @@ namespace Dal_Repository.ModelsConverters
             return new Child
             {
                 IdNumber = importDto.IdNumber,
-                FullName = importDto.FullName,
+                //FullName = importDto.FullName,
                 BirthDate = importDto.BirthDate!.Value,
                 SchoolYear = importDto.SchoolYear,
                 FormLink = importDto.FormLink,
