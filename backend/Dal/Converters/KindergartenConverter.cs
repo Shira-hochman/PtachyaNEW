@@ -24,7 +24,8 @@ namespace Dal.Converters
             {
                 KindergartenId = dto.KindergartenId,
                 Code = dto.Code,
-                Name = dto.Name
+                Name = dto.Name,
+                Address=dto.Address
             };
         }
 
