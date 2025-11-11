@@ -11,6 +11,9 @@ namespace Dto
     {
         public int KindergartenId { get; set; } // אופציונלי
         public string Name { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty; // מפתח ייחודי
+
         public string Code { get; set; } = string.Empty; // מפתח ייחודי
+
     }
 }

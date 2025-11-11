@@ -36,7 +36,7 @@ namespace Bo.Services
                 if (kindergarten == null)
                 {
                     throw new KeyNotFoundException(
-                        $"גן עם קוד {row.KindergartenId} לא נמצא עבור הילד {row.FullName}.");
+                        $"גן עם קוד {row.KindergartenId} לא נמצא עבור הילד {row.FirstName}.");
                 }
 
                 int kindergartenId = kindergarten.KindergartenId;
@@ -54,12 +54,13 @@ namespace Bo.Services
             var existingChild = await _childRepo.GetByIdNumberAsync(row.IdNumber);
 
             if (row.BirthDate == null)
-                throw new InvalidDataException($"תאריך לידה חסר עבור הילד {row.FullName}.");
+                throw new InvalidDataException($"תאריך לידה חסר עבור הילד {row.FirstName}.");
 
             if (existingChild != null)
             {
                 // עדכון ילד קיים
-                //existingChild.FullName = row.FullName;
+                existingChild.lastName = row.LastName;
+                existingChild.FirstName = row.FirstName;
                 existingChild.BirthDate = row.BirthDate.Value;
                 existingChild.SchoolYear = row.SchoolYear;
                 existingChild.KindergartenId = kindergartenId;
@@ -98,6 +99,8 @@ namespace Bo.Services
                     // עדכון גן קיים
                     existing.Code = dto.Code;
                     existing.Name = dto.Name;
+                    existing.Address = dto.Address;
+
 
                     await _kindergartenRepo.UpdateAsync(existing);
                 }

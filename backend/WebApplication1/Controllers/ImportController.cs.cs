@@ -177,7 +177,7 @@ public class ImportController : ControllerBase
                         Phone = worksheet.Cells[row, 2].Text?.Trim(),
                         Email = worksheet.Cells[row, 3].Text?.Trim(),
                         IdNumber = worksheet.Cells[row, 4].Text?.Trim(),
-                        FullName = worksheet.Cells[row, 5].Text?.Trim(),
+                        FirstName = worksheet.Cells[row, 5].Text?.Trim(),
                         BirthDate = childBirthDate,
                         SchoolYear = worksheet.Cells[row, 7].Text?.Trim(),
                         FormLink = worksheet.Cells[row, 8].Text?.Trim(),

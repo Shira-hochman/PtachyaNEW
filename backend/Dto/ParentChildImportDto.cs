@@ -6,7 +6,8 @@
         
 
         // נתוני הילד
-        public string FullName { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
         public string IdNumber { get; set; } = string.Empty; // מפתח ל-Upsert ילד
         public DateTime ?BirthDate { get; set; } // שינוי ל-DateTime כי Excel נותן DateTime
         public string SchoolYear { get; set; } = string.Empty;
