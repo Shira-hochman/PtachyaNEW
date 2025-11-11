@@ -11,9 +11,7 @@ namespace Dal.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // 🛑 מחק את כל מה שנוצר אוטומטית עד לשורה שמטפלת ב-Forms.
-
-            // ⭐️ זהו הקוד היחיד שצריך להישאר (שינוי טבלת Forms): ⭐️
+            // ⭐ שינויים לטבלת Forms (כפי שהיו בקוד המקורי שלך) ⭐
             migrationBuilder.AddColumn<string>(
                 name: "ContentType",
                 table: "Forms",
@@ -32,13 +30,68 @@ namespace Dal.Migrations
                 name: "FormLink",
                 table: "Forms");
 
-            // ⭐️ וודא שאין קוד נוסף מתחת לזה (למעט סגירת הבלוקים). ⭐️
-        }
+            // ⭐ שינויים לטבלת Children (הוספת שם פרטי ושם משפחה) ⭐
+            migrationBuilder.AddColumn<string>(
+                name: "FirstName",
+                table: "Children",
+                type: "nvarchar(50)",
+                maxLength: 50,
+                nullable: false,
+                defaultValue: ""); // יש צורך ב-defaultValue כי השדה הוא IsRequired
 
+            migrationBuilder.AddColumn<string>(
+                name: "LastName",
+                table: "Children",
+                type: "nvarchar(50)",
+                maxLength: 50,
+                nullable: false,
+                defaultValue: ""); // יש צורך ב-defaultValue כי השדה הוא IsRequired
+
+            // ⭐ שינויים לטבלת Kindergartens (הוספת כתובת הגן) ⭐
+            migrationBuilder.AddColumn<string>(
+                name: "Address",
+                table: "Kindergartens",
+                type: "nvarchar(200)",
+                maxLength: 200,
+                nullable: false,
+                defaultValue: ""); // יש צורך ב-defaultValue כי השדה הוא IsRequired
+        }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            // 🛑 שינויים לטבלת Forms (פעולות הפוכות) 🛑
+            migrationBuilder.DropColumn(
+                name: "ContentType",
+                table: "Forms");
+
+            migrationBuilder.DropColumn(
+                name: "FileContent",
+                table: "Forms");
+
+            migrationBuilder.AddColumn<string>(
+                name: "FormLink",
+                table: "Forms",
+                type: "nvarchar(max)",
+                nullable: true);
+
+            // 🛑 שינויים לטבלת Children (מחיקת שם פרטי ושם משפחה) 🛑
+            migrationBuilder.DropColumn(
+                name: "FirstName",
+                table: "Children");
+
+            migrationBuilder.DropColumn(
+                name: "LastName",
+                table: "Children");
+
+            // 🛑 שינויים לטבלת Kindergartens (מחיקת כתובת הגן) 🛑
+            migrationBuilder.DropColumn(
+                name: "Address",
+                table: "Kindergartens");
+
+            // הערה: נשמרו פעולות מחיקת הטבלאות המקוריות שלך מכיוון שאיני יודע אם הן נדרשות אוטומטית.
+            // אם הטבלאות הללו כבר קיימות בבסיס הנתונים, יש למחוק את הפקודות הבאות:
+
             migrationBuilder.DropTable(
                 name: "customers");
 
