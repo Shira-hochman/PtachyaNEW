@@ -36,7 +36,7 @@ namespace Bo.Services
             {
                 KindergartenId = dto.KindergartenId,
                 IdNumber = dto.IdNumber,
-                FullName = dto.FullName,
+                //FullName = dto.FullName,
                 SchoolYear = dto.SchoolYear,
                 FormLink = dto.FormLink,
                 Phone = dto.Phone,

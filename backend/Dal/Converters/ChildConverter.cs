@@ -17,7 +17,7 @@ namespace Dal_Repository.ModelsConverters
                 KindergartenId = child.KindergartenId,
                 IdNumber = child.IdNumber,
                 BirthDate = child.BirthDate,
-                FullName = child.FullName,
+                LastName = child.FullName,
                 SchoolYear = child.SchoolYear,
                 FormLink = child.FormLink,
                 Phone = child.Phone,
@@ -33,7 +33,7 @@ namespace Dal_Repository.ModelsConverters
                 KindergartenId = childDto.KindergartenId,
                 IdNumber = childDto.IdNumber,
                 BirthDate = childDto.BirthDate,
-                FullName = childDto.FullName,
+                //FullName = childDto.FullName,
                 SchoolYear = childDto.SchoolYear,
                 FormLink = childDto.FormLink,
                 Phone = childDto.Phone,
@@ -66,7 +66,7 @@ namespace Dal_Repository.ModelsConverters
             existingChild.KindergartenId = childDto.KindergartenId;
             existingChild.IdNumber = childDto.IdNumber;
             existingChild.BirthDate = childDto.BirthDate;
-            existingChild.FullName = childDto.FullName;
+            //existingChild.FullName = childDto.FullName;
             existingChild.SchoolYear = childDto.SchoolYear;
             existingChild.FormLink = childDto.FormLink;
             existingChild.Phone = childDto.Phone;
