@@ -68,7 +68,7 @@ namespace Bo.Services
 
             if (!isBirthDateMatch) return "אחד מהנתונים שהוקש שגוי";
 
-            return childEntity.FullName;
+            return childEntity.FirstName;
         }
 
         // ⭐️⭐️⭐️ מתודה חדשה: מאמתת ומחזירה את אובייקט ה-DTO המלא ⭐️⭐️⭐️
