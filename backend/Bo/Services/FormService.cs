@@ -1,6 +1,4 @@
-﻿// FormService.cs - קוד סופי ומוכן לענן ולבדיקת PDF
-
-using Bo.Interfaces;
+﻿using Bo.Interfaces;
 using Dto;
 using Dal.Repositories.Interfaces;
 using System.IO;
@@ -17,8 +15,8 @@ public class FormService : IFormService
     private readonly IFormRepository _formRepository;
     private readonly IConfiguration _configuration;
 
-    // ⭐️ התיקון הקריטי: תיקון השם ל-"generate" ⭐️
     private const string ScriptsFolder = "Scripts";
+    private const string PermanentFormsFolder = "PermanentForms"; // תיקייה קבועה לשמירת PDF
     private const string PythonScriptName = "generate_pdf_from_docx.py";
     private const string TemplateFileName = "health_declaration_template.docx";
 
@@ -31,70 +29,67 @@ public class FormService : IFormService
 
     public async Task<byte[]> ProcessAndGenerateHealthDeclarationAsync(HealthDeclarationDto declarationDto)
     {
-        // 1. קביעת נתיבים גמישים וחוצי-פלטפורמות
         var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
+        // הגדרת נתיבים
         string pythonScriptPath = Path.Combine(baseDirectory, ScriptsFolder, PythonScriptName);
         string templatePath = Path.Combine(baseDirectory, "Templates", TemplateFileName);
 
-        // קריאת הנתיבים הגמישים מתוך appsettings.json
         string pythonExecutable = _configuration["AppSettings:PythonExecutablePath"] ?? "python";
         string libreOfficeExecutable = _configuration["AppSettings:LibreOfficeExecutablePath"] ?? "soffice";
 
-        // יצירת נתיב זמני ל-PDF
-        var tempDirectory = Path.Combine(Path.GetTempPath(), "PtachyaForms");
-        Directory.CreateDirectory(tempDirectory);
-        var pdfFileName = $"declaration_{declarationDto.ChildDetails.ChildId}_{DateTime.Now.Ticks}.pdf";
-        var tempPdfPath = Path.Combine(tempDirectory, pdfFileName);
+        // יצירת נתיב קבוע לשמירת הקובץ
+        var permanentDirectory = Path.Combine(baseDirectory, PermanentFormsFolder);
+        Directory.CreateDirectory(permanentDirectory);
+
+        // שם הקובץ הסופי
+        var pdfFileName = $"declaration_{declarationDto.ChildDetails.ChildId}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf";
+        var permanentPdfPath = Path.Combine(permanentDirectory, pdfFileName);
+
+        // ** שינוי קריטי: יצירת URL מלא לגישה ציבורית **
+        // נניח שיש לך קונטרולר בשם 'Files' ופעולה בשם 'DownloadForm'.
+        // ה-Controller הזה צריך לדעת לקבל את ה-pdfFileName ולשלוף את הקובץ מהדיסק.
+        string baseUrl = _configuration["AppSettings:BaseUrl"] ?? "http://localhost:5000/"; // לדוגמה
+        string formLink = $"{baseUrl}api/Files/DownloadForm/{pdfFileName}";
+
 
         if (!File.Exists(templatePath))
         {
             throw new FileNotFoundException($"Template file not found: {templatePath}. Make sure it is copied to the output folder.");
         }
 
-        // 2. הכנת הנתונים ל-JSON
+        // 2. הכנת הנתונים ל-JSON (אין שינוי)
         var dataForPython = new
         {
             form_data = declarationDto,
-            output_pdf_path = tempPdfPath,
+            output_pdf_path = permanentPdfPath, // שומרים ישר לנתיב הקבוע
             template_path = templatePath,
-            libre_office_path = libreOfficeExecutable // נתיב SOFFICE.EXE עובר לפייתון
+            libre_office_path = libreOfficeExecutable
         };
         var jsonInput = JsonSerializer.Serialize(dataForPython, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
 
-        // 3. הפעלת סקריפט הפייתון
+        // 3. הפעלת סקריפט הפייתון (אין שינוי)
         await RunPythonScript(pythonExecutable, pythonScriptPath, jsonInput);
 
-        // 4. קריאת קובץ ה-PDF שנוצר
-        if (!File.Exists(tempPdfPath))
+        // 4. קריאת קובץ ה-PDF שנוצר (אין שינוי)
+        if (!File.Exists(permanentPdfPath))
         {
             throw new FileNotFoundException("PDF file was not created by the Python script. Check Python/soffice logs in the console.");
         }
 
-        byte[] pdfBytes = await File.ReadAllBytesAsync(tempPdfPath);
+        byte[] pdfBytes = await File.ReadAllBytesAsync(permanentPdfPath);
 
-        // ⭐️⭐️⭐️ ביטול זמני של שמירת ה-SQL ⭐️⭐️⭐️
-        /* // יש להסיר את הבלוק הזה כאשר תרצי לחזור לשמירה ב-SQL 
-        if (int.TryParse(declarationDto.ChildDetails.ChildId, out int childIdInt))
-        {
-             var formEntity = new Form
-             {
-                 ChildId = childIdInt, 
-                 FileContent = pdfBytes,
-                 ContentType = "application/pdf",
-                 SubmittedDate = DateTime.Now
-             };
-             await _formRepository.AddAsync(formEntity);
-        }
-        */
+        // 5. שמירת הקישור לטופס בטבלת Child
+        Console.WriteLine($"Saving link for child ID: {declarationDto.ChildDetails.ChildId} → {formLink}");
+        await _formRepository.UpdateChildFormLinkAsync(declarationDto.ChildDetails.ChildId, formLink);
 
-        // 5. ניקוי והחזרת הבתים
-        File.Delete(tempPdfPath);
+
+        // 6. מחזירים את הבתים להורדה ללקוח
         return pdfBytes;
     }
 
-    // פונקציה מבודדת להרצת הפייתון
+    // פונקציה מבודדת להרצת הפייתון (ללא שינוי)
     private async Task RunPythonScript(string pythonExecutable, string pythonScriptPath, string jsonInput)
     {
         ProcessStartInfo start = new ProcessStartInfo

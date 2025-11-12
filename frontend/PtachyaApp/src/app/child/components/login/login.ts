@@ -45,8 +45,8 @@ export class Login implements OnInit {
     
     this.authService.getChildDetails(this.childId, this.birthDate).subscribe({
       next: (child: Child) => {
-        this.message = `התחברות מוצלחת! ברוך הבא, ${child.fullName}`;
-        this.router.navigate(['/health-declaration']); 
+        this.message = `התחברות מוצלחת! ברוך הבא, ${child.firstName} ${child.lastName}`;
+        this.router.navigate(['/main']); 
       },
       error: (err) => {
         // טיפול בשגיאת רשת או שגיאת סטטוס HTTP

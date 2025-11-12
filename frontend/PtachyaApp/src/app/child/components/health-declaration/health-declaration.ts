@@ -160,21 +160,18 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
     });
   }
 
-  populateForm(child: Child): void {
-    const nameParts = child.fullName.split(' ');
-    const firstName = nameParts.length > 0 ? nameParts[0] : '';
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-    
+ populateForm(child: Child): void {
+    // ⭐️ במקום לפצל את השם המלא, אנו משתמשים בשדות החדשים: firstName ו-lastName
     this.healthDeclarationForm.patchValue({
-        childDetails: {
-            childFirstName: firstName,
-            childLastName: lastName,
-            childId: child.idNumber,
-            childDob: child.birthDate.substring(0, 10),
-        },
-        parent1: {
-            phone: child.phone, 
-        },
+      childDetails: {
+        childFirstName: child.firstName, // שימוש ישיר בשם פרטי
+        childLastName: child.lastName,   // שימוש ישיר בשם משפחה
+        childId: child.idNumber,
+        childDob: child.birthDate.substring(0, 10),
+      },
+      parent1: {
+        phone: child.phone, 
+      },
     });
   }
 

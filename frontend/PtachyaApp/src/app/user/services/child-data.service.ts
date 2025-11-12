@@ -8,7 +8,8 @@ export interface ChildDto {
   kindergartenId: string;
   idNumber: string;
   birthDate: Date; // או string, תלוי איך ה-C# שולח
-  fullName: string;
+  firstName: string;
+  lastName: string;
   schoolYear: string;
   formLink: string;
   phone: string;

@@ -4,7 +4,8 @@ export interface Child {
     kindergartenId: number; 
     idNumber: string;
     birthDate: string; 
-    fullName: string;
+    firstName: string;
+    lastName: string;
     schoolYear: string;
     phone: string;
     email: string;

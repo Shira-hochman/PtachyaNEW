@@ -20,7 +20,7 @@ namespace Dto
     {
         public string ChildFirstName { get; set; } = null!;
         public string ChildLastName { get; set; } = null!;
-        public string ChildId { get; set; } = null!; // ת"ז
+        public int ChildId { get; set; }  // ת"ז
         public DateTime ChildDob { get; set; } // תאריך לידה
         public string ChildAddress { get; set; } = null!;
     }

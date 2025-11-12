@@ -126,6 +126,7 @@ public class ImportController : ControllerBase
                 {
                     string code = worksheet.Cells[row, 1].Text?.Trim();
                     string name = worksheet.Cells[row, 2].Text?.Trim();
+                    string address = worksheet.Cells[row, 3].Text?.Trim();  
 
                     if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
                         continue;
@@ -133,7 +134,8 @@ public class ImportController : ControllerBase
                     list.Add(new KindergartenDto
                     {
                         Code = code,
-                        Name = name
+                        Name = name,
+                        Address = address
                     });
                 }
             }
@@ -181,6 +183,7 @@ public class ImportController : ControllerBase
                         BirthDate = childBirthDate,
                         SchoolYear = worksheet.Cells[row, 7].Text?.Trim(),
                         FormLink = worksheet.Cells[row, 8].Text?.Trim(),
+                        LastName = worksheet.Cells[row, 9].Text?.Trim(),
                     });
                 }
             }

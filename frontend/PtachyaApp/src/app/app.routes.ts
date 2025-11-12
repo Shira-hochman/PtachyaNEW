@@ -8,7 +8,9 @@ import { DataUpdateComponent } from './user/components/data-update/data-update';
 import { ChildrenData } from './user/components/children-data/children-data';
 import { Main } from './child/components/main/main';
 import { HealthDeclarationComponent } from './child/components/health-declaration/health-declaration';
+import { PaymentForm } from './child/components/payment-form/payment-form'; // ⭐️ השורה שנוספה
 import { authGuard } from './auth-guard'; // ✅ ייבוא ה-Guard
+
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
@@ -22,5 +24,7 @@ export const routes: Routes = [
     canActivate: [authGuard] // ✅ יישום ה-Guard
   },
   { path: 'children-data', component: ChildrenData },
-  { path: 'main/:username', component: Main }, 
-{ path: 'health-declaration', component: HealthDeclarationComponent },];
+  { path: 'main', component: Main }, 
+  { path: 'health-declaration', component: HealthDeclarationComponent },
+  { path: 'payment-form', component: PaymentForm }, // ⭐️ הנתיב שנוסף
+];

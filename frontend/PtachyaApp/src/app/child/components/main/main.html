@@ -1,1 +1,16 @@
-<p>main works!</p>
+<div class="main-container">
+    <h1>מסך ראשי</h1>
+    <p>ברוך הבא למערכת. בחר את הפעולה אותה תרצה לבצע:</p>
+
+    <div class="button-group">
+        <!-- כפתור 1: טופס הצהרת בריאות -->
+        <button class="main-button" (click)="onButton1Click()">
+            מילוי הצהרת בריאות
+        </button>
+
+        <!-- כפתור 2: טופס תשלום -->
+        <button class="main-button secondary" (click)="onButton2Click()">
+            טופס תשלום ותקנון
+        </button>
+    </div>
+</div>
