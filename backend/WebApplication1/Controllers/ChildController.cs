@@ -13,10 +13,14 @@ namespace Ptachya.API.Controllers
     public class ChildController : ControllerBase
     {
         private readonly IChildService _service;
+        // ⭐️ 1. משתנה חדש לשירות התוקנים
+        private readonly ITokenService _tokenService;
 
-        public ChildController(IChildService service)
+        // ⭐️ 2. הזרקת שירות התוקנים לבנאי (Constructor)
+        public ChildController(IChildService service, ITokenService tokenService)
         {
             _service = service;
+            _tokenService = tokenService;
         }
 
         [HttpGet]
@@ -28,30 +32,37 @@ namespace Ptachya.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add(ChildDto dto)
         {
             await _service.AddChildAsync(dto);
             return Ok("Child added successfully");
         }
-        [HttpPost("details")]
-        public async Task<IActionResult> GetChildDetails([FromBody] VerificationRequest request)
+        // ⭐️ 4. שינוי: נקודת הקצה (Endpoint) שמחזירה תוקן לאחר אימות
+        [HttpPost("login")] // שיניתי את השם ל-login כי זו כניסה
+        public async Task<IActionResult> Login([FromBody] VerificationRequest request)
         {
             if (string.IsNullOrEmpty(request.IdNumber) || request.BirthDate == default(DateTime))
             {
                 return BadRequest("יש לספק מספר תעודת זהות ותאריך לידה.");
             }
 
-            // ⭐️ שינוי: קוראים לפונקציה בשירות שמחזירה את כל אובייקט הילד (ChildDto)
             ChildDto? childDetails = await _service.GetChildDetailsByIdAndBirthDateAsync(request.IdNumber, request.BirthDate);
 
             if (childDetails == null)
             {
-                // אם האימות נכשל (לא נמצא ילד), מחזירים 401 או 400
                 return Unauthorized("מספר תעודת זהות או תאריך לידה שגויים.");
             }
 
-            // ⭐️ מחזירים את אובייקט הילד המלא ב-JSON
-            return Ok(childDetails);
+            // ⭐️ 5. יצירת התוקן
+            var token = _tokenService.GenerateToken(childDetails);
+
+            // ⭐️ 6. החזרת התוקן יחד עם פרטי הילד
+            return Ok(new
+            {
+                Token = token,
+                Child = childDetails // נתוני הילד המלאים
+            });
         }
 
         // ⚠️ דרוש קלאס חדש עבור ה-request body

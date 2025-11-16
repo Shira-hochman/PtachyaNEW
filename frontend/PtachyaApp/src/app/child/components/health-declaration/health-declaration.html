@@ -1,21 +1,37 @@
+<!-- health-declaration.html: טופס הצהרת בריאות מעוצב ורספונסיבי -->
+
 <div class="declaration-container">
-  <h2 class="title">📄 הצהרה על קבלת "טיפול בריאותי מקדם" (טב"ם)</h2>
-  
-  <form [formGroup]="healthDeclarationForm" (ngSubmit)="onSubmit()" dir="rtl">
-    
-    <div class="form-group full-width" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+  <header class="form-header">
+    <h1 class="title">
+      <i class="fas fa-file-alt"></i> הצהרה על קבלת "טיפול בריאותי מקדם" (טב"ם)
+    </h1>
+    <p class="subtitle">השלמת הטופס נדרשת לשם שילוב הילד/ה בתכנית.</p>
+  </header>
+
+  <form [formGroup]="healthDeclarationForm" (ngSubmit)="onSubmit()" dir="rtl" class="form-layout">
+
+    <!-- קבוצת תאריך מילוי הטופס -->
+    <div class="form-section date-section">
+      <div class="form-group full-width">
         <label for="formDate">תאריך מילוי הטופס (היום) *</label>
-        <input id="formDate" type="date" formControlName="formDate" readonly class="read-only-input">
+        <input id="formDate" type="date" formControlName="formDate" readonly class="read-only-input control-large">
+      </div>
     </div>
 
-    <fieldset formGroupName="childDetails">
-      <legend><h3>פרטי הילד/ה</h3></legend>
-      <p>אני פונה בבקשה לשלב את בני/בתי בתכנית "טיפול בריאותי מקדם".</p>
+    <!-- קבוצת פרטי הילד/ה -->
+    <fieldset formGroupName="childDetails" class="form-fieldset">
+      <legend class="fieldset-legend">
+        <i class="fas fa-child"></i> פרטי הילד/ה
+      </legend>
+      
+      <p class="description-text">אני פונה בבקשה לשלב את בני/בתי בתכנית "טיפול בריאותי מקדם".</p>
 
-      <div class="form-row">
+      <div class="form-grid">
+        <!-- שם פרטי ושם משפחה -->
         <div class="form-group">
           <label for="childFirstName">שם פרטי *</label>
-          <input id="childFirstName" type="text" formControlName="childFirstName" [class.is-invalid]="f['childDetails'].get('childFirstName')?.invalid && (f['childDetails'].get('childFirstName')?.dirty || f['childDetails'].get('childFirstName')?.touched || submitted)">
+          <input id="childFirstName" type="text" formControlName="childFirstName" 
+                 [class.is-invalid]="f['childDetails'].get('childFirstName')?.invalid && (f['childDetails'].get('childFirstName')?.dirty || f['childDetails'].get('childFirstName')?.touched || submitted)" class="control-large">
           <div *ngIf="f['childDetails'].get('childFirstName')?.invalid && (f['childDetails'].get('childFirstName')?.dirty || f['childDetails'].get('childFirstName')?.touched || submitted)" class="error-message">
             שם פרטי נדרש.
           </div>
@@ -23,17 +39,18 @@
         
         <div class="form-group">
           <label for="childLastName">שם משפחה *</label>
-          <input id="childLastName" type="text" formControlName="childLastName" [class.is-invalid]="f['childDetails'].get('childLastName')?.invalid && (f['childDetails'].get('childLastName')?.dirty || f['childDetails'].get('childLastName')?.touched || submitted)">
+          <input id="childLastName" type="text" formControlName="childLastName" 
+                 [class.is-invalid]="f['childDetails'].get('childLastName')?.invalid && (f['childDetails'].get('childLastName')?.dirty || f['childDetails'].get('childLastName')?.touched || submitted)" class="control-large">
           <div *ngIf="f['childDetails'].get('childLastName')?.invalid && (f['childDetails'].get('childLastName')?.dirty || f['childDetails'].get('childLastName')?.touched || submitted)" class="error-message">
             שם משפחה נדרש.
           </div>
         </div>
-      </div>
-      
-      <div class="form-row">
+        
+        <!-- מס' ת"ז ותאריך לידה -->
         <div class="form-group">
           <label for="childId">מס' ת"ז *</label>
-          <input id="childId" type="text" formControlName="childId" [class.is-invalid]="f['childDetails'].get('childId')?.invalid && (f['childDetails'].get('childId')?.dirty || f['childDetails'].get('childId')?.touched || submitted)">
+          <input id="childId" type="text" formControlName="childId" 
+                 [class.is-invalid]="f['childDetails'].get('childId')?.invalid && (f['childDetails'].get('childId')?.dirty || f['childDetails'].get('childId')?.touched || submitted)" class="control-large" readonly>
           <div *ngIf="f['childDetails'].get('childId')?.invalid && (f['childDetails'].get('childId')?.dirty || f['childDetails'].get('childId')?.touched || submitted)" class="error-message">
             נדרש מס' ת"ז תקין (9 ספרות).
           </div>
@@ -41,28 +58,35 @@
         
         <div class="form-group">
           <label for="childDob">תאריך לידה *</label>
-          <input id="childDob" type="date" formControlName="childDob" [class.is-invalid]="f['childDetails'].get('childDob')?.invalid && (f['childDetails'].get('childDob')?.dirty || f['childDetails'].get('childDob')?.touched || submitted)">
+          <input id="childDob" type="date" formControlName="childDob" 
+                 [class.is-invalid]="f['childDetails'].get('childDob')?.invalid && (f['childDetails'].get('childDob')?.dirty || f['childDetails'].get('childDob')?.touched || submitted)" class="control-large" readonly>
           <div *ngIf="f['childDetails'].get('childDob')?.invalid && (f['childDetails'].get('childDob')?.dirty || f['childDetails'].get('childDob')?.touched || submitted)" class="error-message">
             תאריך לידה נדרש.
           </div>
         </div>
-      </div>
-
-      <div class="form-group full-width">
-        <label for="childAddress">מתגורר/ת בכתובת *</label>
-        <input id="childAddress" type="text" formControlName="childAddress" [class.is-invalid]="f['childDetails'].get('childAddress')?.invalid && (f['childDetails'].get('childAddress')?.dirty || f['childDetails'].get('childAddress')?.touched || submitted)">
-        <div *ngIf="f['childDetails'].get('childAddress')?.invalid && (f['childDetails'].get('childAddress')?.dirty || f['childDetails'].get('childAddress')?.touched || submitted)" class="error-message">
-          כתובת מגורים נדרשת.
+        
+        <!-- כתובת מגורים -->
+        <div class="form-group full-width">
+          <label for="childAddress">מתגורר/ת בכתובת *</label>
+          <input id="childAddress" type="text" formControlName="childAddress" 
+                 [class.is-invalid]="f['childDetails'].get('childAddress')?.invalid && (f['childDetails'].get('childAddress')?.dirty || f['childDetails'].get('childAddress')?.touched || submitted)" class="control-large">
+          <div *ngIf="f['childDetails'].get('childAddress')?.invalid && (f['childDetails'].get('childAddress')?.dirty || f['childDetails'].get('childAddress')?.touched || submitted)" class="error-message">
+            כתובת מגורים נדרשת.
+          </div>
         </div>
-      </div>
+      </div> <!-- /form-grid -->
     </fieldset>
 
-    <fieldset>
-      <legend><h3>פרטי תכנית ועלויות</h3></legend>
+    <!-- קבוצת פרטי תכנית ועלויות -->
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        <i class="fas fa-box"></i> פרטי תכנית ועלויות
+      </legend>
       
       <div class="form-group full-width">
         <label for="programProvider">הניתנת ע"י *</label>
-        <input id="programProvider" type="text" formControlName="programProvider" [class.is-invalid]="f['programProvider']?.invalid && (f['programProvider']?.dirty || f['programProvider']?.touched || submitted)">
+        <input id="programProvider" type="text" formControlName="programProvider" 
+               [class.is-invalid]="f['programProvider']?.invalid && (f['programProvider']?.dirty || f['programProvider']?.touched || submitted)" class="control-large">
         <div *ngIf="f['programProvider']?.invalid && (f['programProvider']?.dirty || f['programProvider']?.touched || submitted)" class="error-message">
           שם הגורם המטפל נדרש.
         </div>
@@ -70,7 +94,7 @@
 
       <div class="form-group full-width radio-group-container">
         <label>במסגרת *</label>
-        <div class="radio-group">
+        <div class="radio-group control-large">
           <label><input type="radio" formControlName="programFramework" value="גן תקשורתי"> גן תקשורתי</label>
           <label><input type="radio" formControlName="programFramework" value="מרכז טיפולי"> מרכז טיפולי</label>
         </div>
@@ -80,12 +104,16 @@
       </div>
     </fieldset>
     
-    <fieldset formGroupName="facilityDetails">
-      <legend><h3>פרטי המסגרת (גן/מרכז הטיפול)</h3></legend>
+    <!-- קבוצת פרטי המסגרת -->
+    <fieldset formGroupName="facilityDetails" class="form-fieldset">
+      <legend class="fieldset-legend">
+        <i class="fas fa-school"></i> פרטי המסגרת (גן/מרכז הטיפול)
+      </legend>
       
       <div class="form-group full-width">
         <label for="facilityName">שם המסגרת *</label>
-        <input id="facilityName" type="text" formControlName="facilityName" [class.is-invalid]="f['facilityDetails'].get('facilityName')?.invalid && submitted">
+        <input id="facilityName" type="text" formControlName="facilityName" 
+               [class.is-invalid]="f['facilityDetails'].get('facilityName')?.invalid && submitted" class="control-large">
         <div *ngIf="f['facilityDetails'].get('facilityName')?.invalid && submitted" class="error-message">
           שם המסגרת נדרש.
         </div>
@@ -93,7 +121,7 @@
 
       <div class="form-group full-width radio-group-container">
         <label>בעלות *</label>
-        <div class="radio-group">
+        <div class="radio-group control-large">
           <label><input type="radio" formControlName="facilityOwnership" value="רשות מקומית"> רשות מקומית</label>
           <label><input type="radio" formControlName="facilityOwnership" value="בעלות פרטית עמותה"> בעלות פרטית עמותה</label>
         </div>
@@ -102,47 +130,54 @@
         </div>
       </div>
 
-      <div class="form-group full-width">
-        <label for="facilityManagerName">שם מנהל המסגרת *</label>
-        <input id="facilityManagerName" type="text" formControlName="facilityManagerName" [class.is-invalid]="f['facilityDetails'].get('facilityManagerName')?.invalid && submitted">
-        <div *ngIf="f['facilityDetails'].get('facilityManagerName')?.invalid && submitted" class="error-message">
-          שם מנהל המסגרת נדרש.
-        </div>
-      </div>
-
-      <div class="form-row">
+      <div class="form-grid">
         <div class="form-group">
-          <label for="facilityAddress">כתובת המסגרת *</label>
-          <input id="facilityAddress" type="text" formControlName="facilityAddress" [class.is-invalid]="f['facilityDetails'].get('facilityAddress')?.invalid && submitted">
-          <div *ngIf="f['facilityDetails'].get('facilityAddress')?.invalid && submitted" class="error-message">
-            כתובת המסגרת נדרשת.
+          <label for="facilityManagerName">שם מנהל המסגרת *</label>
+          <input id="facilityManagerName" type="text" formControlName="facilityManagerName" 
+                 [class.is-invalid]="f['facilityDetails'].get('facilityManagerName')?.invalid && submitted" class="control-large">
+          <div *ngIf="f['facilityDetails'].get('facilityManagerName')?.invalid && submitted" class="error-message">
+            שם מנהל המסגרת נדרש.
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="facilityPhone">מס' הטלפון *</label>
-          <input id="facilityPhone" type="tel" formControlName="facilityPhone" [class.is-invalid]="f['facilityDetails'].get('facilityPhone')?.invalid && submitted">
+          <input id="facilityPhone" type="tel" formControlName="facilityPhone" 
+                 [class.is-invalid]="f['facilityDetails'].get('facilityPhone')?.invalid && submitted" class="control-large">
           <div *ngIf="f['facilityDetails'].get('facilityPhone')?.invalid && submitted" class="error-message">
             מספר טלפון תקין נדרש.
           </div>
         </div>
-      </div>
+        
+        <div class="form-group full-width">
+          <label for="facilityAddress">כתובת המסגרת *</label>
+          <input id="facilityAddress" type="text" formControlName="facilityAddress" 
+                 [class.is-invalid]="f['facilityDetails'].get('facilityAddress')?.invalid && submitted" class="control-large">
+          <div *ngIf="f['facilityDetails'].get('facilityAddress')?.invalid && submitted" class="error-message">
+            כתובת המסגרת נדרשת.
+          </div>
+        </div>
+      </div> <!-- /form-grid -->
     </fieldset>
 
-    <fieldset>
-      <legend><h3>השתתפות עצמית והצהרות</h3></legend>
+    <!-- קבוצת השתתפות עצמית והצהרות -->
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        <i class="fas fa-hand-holding-usd"></i> השתתפות עצמית והצהרות
+      </legend>
       
       <div class="form-group full-width">
         <label for="monthlySelfParticipation">ידוע לי כי קבלת השירות כרוכה בהשתתפות עצמית חודשית, העומדת על (₪) *</label>
-        <input id="monthlySelfParticipation" type="number" formControlName="monthlySelfParticipation" [class.is-invalid]="f['monthlySelfParticipation']?.invalid && submitted">
+        <input id="monthlySelfParticipation" type="number" formControlName="monthlySelfParticipation" 
+               [class.is-invalid]="f['monthlySelfParticipation']?.invalid && submitted" class="control-large">
         <div *ngIf="f['monthlySelfParticipation']?.invalid && submitted" class="error-message">
           סכום השתתפות עצמית חודשית נדרש.
         </div>
       </div>
 
-      <div class="form-group full-width checkbox-group">
+      <div class="form-group full-width checkbox-group declaration-checkbox">
         <label>
-          <input type="checkbox" formControlName="noOtherProgramDeclaration">
+          <input type="checkbox" formControlName="noOtherProgramDeclaration" class="large-checkbox">
           אני מצהיר/ה כי בני/בתי אינו/ה מקבל/ת תכנית "טיפול בריאותי מקדם" בתקצוב משרד הבריאות בשום מסגרת אחרת. *
         </label>
         <div *ngIf="f['noOtherProgramDeclaration']?.invalid && submitted" class="error-message">
@@ -151,34 +186,38 @@
       </div>
     </fieldset>
 
-    <fieldset>
-      <legend><h3>פרטי הורים/אפוטרופוס (חתימת הורה 1 חובה)</h3></legend>
+    <!-- קבוצת פרטי הורים/אפוטרופוס -->
+    <fieldset class="form-fieldset signature-container">
+      <legend class="fieldset-legend">
+        <i class="fas fa-signature"></i> פרטי הורים/אפוטרופוס (חתימת הורה 1 חובה)
+      </legend>
       
+      <!-- הורה 1 (חובה) -->
       <div formGroupName="parent1" class="parent-section">
-        <h4>הורה/אפוטרופוס 1 (חובה)</h4>
-        <div class="form-row">
+        <h4 class="parent-title">הורה/אפוטרופוס 1 (חובה)</h4>
+        <div class="form-grid signature-grid">
+          
           <div class="form-group">
             <label for="p1Name">שם מלא *</label>
-            <input id="p1Name" type="text" formControlName="name" [class.is-invalid]="f['parent1'].get('name')?.invalid && submitted">
+            <input id="p1Name" type="text" formControlName="name" [class.is-invalid]="f['parent1'].get('name')?.invalid && submitted" class="control-large">
             <div *ngIf="f['parent1'].get('name')?.invalid && submitted" class="error-message">
               שם מלא נדרש.
             </div>
           </div>
           <div class="form-group">
             <label for="p1Phone">מספר טלפון *</label>
-            <input id="p1Phone" type="tel" formControlName="phone" [class.is-invalid]="f['parent1'].get('phone')?.invalid && submitted">
+            <input id="p1Phone" type="tel" formControlName="phone" [class.is-invalid]="f['parent1'].get('phone')?.invalid && submitted" class="control-large">
             <div *ngIf="f['parent1'].get('phone')?.invalid && submitted" class="error-message">
               מספר טלפון תקין נדרש.
             </div>
           </div>
-        </div>
-        
-        <div class="signature-pad-container">
+          
+          <div class="signature-pad-wrapper">
             <label>חתימה דיגיטלית (צייר עם העכבר/אצבע) *</label>
             <canvas #parent1SignatureCanvas 
                     class="signature-canvas"
-                    width="350" 
-                    height="100"
+                    width="400" 
+                    height="120"
                     (mousedown)="startDrawing(ctx1, $event)"
                     (mousemove)="draw(ctx1, $event)"
                     (mouseup)="stopDrawing(1)"
@@ -186,43 +225,44 @@
                     (touchstart)="startDrawing(ctx1, $event)"
                     (touchmove)="draw(ctx1, $event)"
                     (touchend)="stopDrawing(1)"
+                    [class.is-invalid]="f['parent1'].get('signature')?.invalid && submitted"
             ></canvas>
-            <button type="button" class="clear-button" (click)="clearSignature(1)">נקה חתימה</button>
+            <div class="signature-actions">
+                <button type="button" class="clear-button" (click)="clearSignature(1)"><i class="fas fa-eraser"></i> נקה חתימה</button>
+                <div class="signature-date">תאריך: {{ healthDeclarationForm.get('formDate')?.value | date:'dd/MM/yyyy' }}</div>
+            </div>
             <input type="hidden" formControlName="signature">
             <div *ngIf="f['parent1'].get('signature')?.invalid && submitted" class="error-message">
                 חתימת הורה 1 נדרשת.
             </div>
-        </div>
-        
-        <div class="signature-mock date-only">
-            <p><span>תאריך: {{ healthDeclarationForm.get('formDate')?.value | date:'dd/MM/yyyy' }}</span></p>
+          </div>
         </div>
       </div>
 
-      <hr>
+      <hr class="separator">
 
+      <!-- הורה 2 (אופציונלי) -->
       <div formGroupName="parent2" class="parent-section">
-        <h4>הורה/אפוטרופוס 2 (אופציונלי)</h4>
-        <div class="form-row">
+        <h4 class="parent-title">הורה/אפוטרופוס 2 (אופציונלי)</h4>
+        <div class="form-grid signature-grid">
           <div class="form-group">
             <label for="p2Name">שם מלא</label>
-            <input id="p2Name" type="text" formControlName="name">
+            <input id="p2Name" type="text" formControlName="name" class="control-large">
           </div>
           <div class="form-group">
             <label for="p2Phone">מספר טלפון</label>
-            <input id="p2Phone" type="tel" formControlName="phone" [class.is-invalid]="f['parent2'].get('phone')?.value && f['parent2'].get('phone')?.invalid">
+            <input id="p2Phone" type="tel" formControlName="phone" [class.is-invalid]="f['parent2'].get('phone')?.value && f['parent2'].get('phone')?.invalid" class="control-large">
             <div *ngIf="f['parent2'].get('phone')?.value && f['parent2'].get('phone')?.invalid" class="error-message">
               מספר טלפון תקין נדרש.
             </div>
           </div>
-        </div>
-        
-        <div class="signature-pad-container">
+          
+          <div class="signature-pad-wrapper">
             <label>חתימה דיגיטלית (צייר עם העכבר/אצבע)</label>
             <canvas #parent2SignatureCanvas 
                     class="signature-canvas"
-                    width="350" 
-                    height="100"
+                    width="400" 
+                    height="120"
                     (mousedown)="startDrawing(ctx2, $event)"
                     (mousemove)="draw(ctx2, $event)"
                     (mouseup)="stopDrawing(2)"
@@ -231,23 +271,28 @@
                     (touchmove)="draw(ctx2, $event)"
                     (touchend)="stopDrawing(2)"
             ></canvas>
-            <button type="button" class="clear-button" (click)="clearSignature(2)">נקה חתימה</button>
+             <div class="signature-actions">
+                <button type="button" class="clear-button" (click)="clearSignature(2)"><i class="fas fa-eraser"></i> נקה חתימה</button>
+                <div class="signature-date">תאריך: {{ healthDeclarationForm.get('formDate')?.value | date:'dd/MM/yyyy' }}</div>
+            </div>
             <input type="hidden" formControlName="signature">
-        </div>
-        
-        <div class="signature-mock date-only">
-            <p><span>תאריך: {{ healthDeclarationForm.get('formDate')?.value | date:'dd/MM/yyyy' }}</span></p>
+          </div>
         </div>
       </div>
     </fieldset>
 
-    <div class="actions">
-      <button type="submit" class="submit-button">שלח טופס</button>
-      <button type="button" class="reset-button" (click)="onReset()">אפס טופס</button>
+    <div class="form-footer">
+      <div *ngIf="submitted && healthDeclarationForm.invalid" class="form-summary-error">
+        🔴 נא תקן את השגיאות המסומנות בטופס לפני השליחה.
+      </div>
+      
+      <div class="actions">
+        <button type="submit" class="submit-button"><i class="fas fa-paper-plane"></i> שלח טופס</button>
+        <button type="button" class="reset-button" (click)="onReset()"><i class="fas fa-sync-alt"></i> אפס טופס</button>
+      </div>
     </div>
   </form>
-
-  <div *ngIf="submitted && healthDeclarationForm.invalid" class="form-summary-error">
-    🔴 נא תקן את השגיאות המסומנות בטופס לפני השליחה.
-  </div>
 </div>
+
+<!-- קישור ל-Font Awesome לשימוש באיקונים -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

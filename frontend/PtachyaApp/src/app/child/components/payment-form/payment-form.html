@@ -1,1 +1,388 @@
-<p>payment-form works!</p>
+<!-- payment-form.html: טופס בקשת הנחה - מעוצב ורספונסיבי -->
+
+<div class="declaration-container">
+  <header class="form-header">
+    <h1 class="title">
+      <i class="fas fa-percent"></i> בקשה לקבלת הנחה - הצהרת הורה
+    </h1>
+    <p class="subtitle">שנה"ל תשפ"ו | נא למלא את הטופס בכתב ברור ובמלואו.</p>
+  </header>
+
+  <form [formGroup]="discountRequestForm" (ngSubmit)="onSubmit()" dir="rtl" class="form-layout">
+
+    <!-- פרטי מגיש הבקשה -->
+    <fieldset class="form-fieldset section-primary">
+      <legend class="fieldset-legend">
+        <i class="fas fa-user"></i> פרטי מגיש הבקשה
+      </legend>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="declarantName">שם מלא מצהיר/ה *</label>
+          <input id="declarantName" type="text" formControlName="declarantName" class="control-large"
+                 [class.is-invalid]="isInvalid('declarantName')">
+          @if (isInvalid('declarantName')) {
+            <div class="error-message">שם מלא נדרש.</div>
+          }
+        </div>
+        
+        <div class="form-group">
+          <label for="declarantId">תעודת זהות *</label>
+          <input id="declarantId" type="text" formControlName="declarantId" class="control-large"
+                 [class.is-invalid]="isInvalid('declarantId')">
+          @if (isInvalid('declarantId')) {
+            <div class="error-message">נדרש מס' ת"ז תקין (9 ספרות).</div>
+          }
+        </div>
+      </div>
+      
+      <div class="form-group full-width radio-group-container">
+        <label>מצב משפחתי *</label>
+        <div class="radio-group control-large">
+          @for (status of maritalStatuses; track status) {
+            <label>
+              <input type="radio" formControlName="maritalStatus" [value]="status"> {{ status }}
+            </label>
+          }
+        </div>
+        @if (isInvalid('maritalStatus')) {
+          <div class="error-message">יש לבחור מצב משפחתי.</div>
+        }
+      </div>
+    </fieldset>
+
+    <!-- פרטי הילד/ה שלמענו מוגשת הבקשה -->
+    <fieldset formGroupName="studentDetails" class="form-fieldset section-secondary">
+      <legend class="fieldset-legend">
+        <i class="fas fa-child-reaching"></i> פרטי התלמיד/ה (שם/הגננת)
+      </legend>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="studentName">שם התלמיד/ה *</label>
+          <input id="studentName" type="text" formControlName="studentName" class="control-large"
+                 [class.is-invalid]="isInvalid('studentDetails.studentName')">
+          @if (isInvalid('studentDetails.studentName')) {
+            <div class="error-message">שם התלמיד/ה נדרש.</div>
+          }
+        </div>
+        
+        <div class="form-group">
+          <label for="studentId">מס' ת"ז *</label>
+          <input id="studentId" type="text" formControlName="studentId" class="control-large"
+                 [class.is-invalid]="isInvalid('studentDetails.studentId')">
+          @if (isInvalid('studentDetails.studentId')) {
+            <div class="error-message">מס' ת"ז תקין נדרש.</div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="kindergarten">גן *</label>
+          <input id="kindergarten" type="text" formControlName="kindergarten" class="control-large"
+                 [class.is-invalid]="isInvalid('studentDetails.kindergarten')">
+          @if (isInvalid('studentDetails.kindergarten')) {
+            <div class="error-message">שם הגן נדרש.</div>
+          }
+        </div>
+        
+        <div class="form-group">
+          <label for="city">עיר *</label>
+          <input id="city" type="text" formControlName="city" class="control-large"
+                 [class.is-invalid]="isInvalid('studentDetails.city')">
+          @if (isInvalid('studentDetails.city')) {
+            <div class="error-message">שם העיר נדרש.</div>
+          }
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ילדים נוספים בחזקת ההורה (FormArray) -->
+    <fieldset class="form-fieldset section-tertiary">
+      <legend class="fieldset-legend">
+        <i class="fas fa-users"></i> ילדים נוספים עד גיל 18 בחזקתך
+      </legend>
+      
+      <div class="form-grid children-count-grid">
+        <div class="form-group full-width">
+          <label for="childrenCount">מספר הילדים עד גיל 18 אשר בחזקתי *</label>
+          <input id="childrenCount" type="number" formControlName="childrenCount" class="control-large"
+                 (change)="updateChildrenInCustodyArray(discountRequestForm.get('childrenCount')?.value)"
+                 [class.is-invalid]="isInvalid('childrenCount')">
+          @if (isInvalid('childrenCount')) {
+            <div class="error-message">נדרש מספר תקין (0 ומעלה).</div>
+          }
+        </div>
+      </div>
+      
+      <div class="children-list-wrapper">
+        <h4 class="children-list-title">פרטי הילדים הנוספים:</h4>
+        <div formArrayName="childrenInCustody" class="children-array-container">
+          @for (child of childrenInCustody.controls; track i; let i = $index) {
+            <div [formGroupName]="i" class="child-row">
+              <span class="child-index">ילד {{ i + 1 }}</span>
+              <div class="form-grid child-details-grid">
+                <div class="form-group">
+                  <label>שם פרטי</label>
+                  <input type="text" formControlName="firstName" class="control-large">
+                </div>
+                <div class="form-group">
+                  <label>שם משפחה</label>
+                  <input type="text" formControlName="lastName" class="control-large">
+                </div>
+                <div class="form-group">
+                  <label>מס' זהות</label>
+                  <input type="text" formControlName="id" class="control-large"
+                         [class.is-invalid]="child.get('id')?.invalid && submitted()">
+                  @if (child.get('id')?.invalid && submitted()) {
+                    <div class="error-message">מס' ת"ז תקין (9 ספרות) נדרש.</div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        
+        @if (childrenInCustody.controls.length > (discountRequestForm.get('childrenCount')?.value || 0) && submitted()) {
+            <div class="error-message list-error mt-2">יש למלא פרטים עבור כל מספר הילדים שהצהרת עליו.</div>
+        }
+      </div>
+    </fieldset>
+
+    <!-- סיבות לבקשת הנחה - בחירה מרובה -->
+    <fieldset formGroupName="discountReasons" class="form-fieldset section-reasons">
+      <legend class="fieldset-legend">
+        <i class="fas fa-list-check"></i> בחר סיבות לבקשת הנחה (ניתן לבחור אחת או יותר) *
+      </legend>
+      
+      <div class="checkbox-group reasons-grid">
+        <label class="checkbox-label" [class.checked]="discountReasons.get('lowIncome')?.value">
+          <input type="checkbox" formControlName="lowIncome">
+          הכנסות נמוכות
+        </label>
+        <label class="checkbox-label" [class.checked]="discountReasons.get('otherChildSpecialEd')?.value">
+          <input type="checkbox" formControlName="otherChildSpecialEd">
+          ילד נוסף במסגרת חינוך מיוחד אחרת (יש לצרף אישור לימודים מהמסגרת)
+        </label>
+        <label class="checkbox-label" [class.checked]="discountReasons.get('socialWorkerRec')?.value">
+          <input type="checkbox" formControlName="socialWorkerRec">
+          המלצה מעובדת סוציאלית של הרשות המקומית
+        </label>
+      </div>
+      
+      @if (discountRequestForm.get('discountReasons')?.errors?.['atLeastOneRequired'] && submitted()) {
+        <div class="error-message mt-3">יש לבחור לפחות סיבה אחת לבקשת הנחה.</div>
+      }
+    </fieldset>
+
+    <!-- פרטי הכנסה (מוצג רק אם נבחר "הכנסות נמוכות") -->
+    @if (discountReasons.get('lowIncome')?.value) {
+      <fieldset formGroupName="lowIncomeDetails" class="form-fieldset section-income">
+        <legend class="fieldset-legend">
+          <i class="fas fa-shekel-sign"></i> פרטי הכנסה (למבקשי הנחה בשל הכנסות נמוכות)
+        </legend>
+        
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr class="table-header">
+                <th scope="col" class="column-name"></th>
+                <th scope="col" class="column-spouse">בן הזוג</th>
+                <th scope="col" class="column-spouse">בת הזוג</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- שורה 1: מעמד אישי -->
+              <tr>
+                <th scope="row" class="row-header">מעמד אישי *</th>
+                <td class="data-cell">
+                  <select formControlName="spouse1Status" [class.is-invalid]="isInvalid('lowIncomeDetails.spouse1Status')" class="control-large">
+                    <option value="">בחר...</option>
+                    @for (status of employmentStatuses; track status) {
+                      <option [value]="status">{{ status }}</option>
+                    }
+                  </select>
+                </td>
+                <td class="data-cell">
+                  <select formControlName="spouse2Status" [class.is-invalid]="isInvalid('lowIncomeDetails.spouse2Status')" class="control-large">
+                    <option value="">בחר...</option>
+                    @for (status of employmentStatuses; track status) {
+                      <option [value]="status">{{ status }}</option>
+                    }
+                  </select>
+                </td>
+              </tr>
+              <!-- שורה 2: הכנסה חודשית ממוצעת -->
+              <tr>
+                <th scope="row" class="row-header">הכנסה חודשית ממוצעת (כולל מזונות) ₪ *</th>
+                <td class="data-cell">
+                  <input type="number" formControlName="spouse1AvgMonthlyIncome" [class.is-invalid]="isInvalid('lowIncomeDetails.spouse1AvgMonthlyIncome')" class="control-large">
+                </td>
+                <td class="data-cell">
+                  <input type="number" formControlName="spouse2AvgMonthlyIncome" [class.is-invalid]="isInvalid('lowIncomeDetails.spouse2AvgMonthlyIncome')" class="control-large">
+                </td>
+              </tr>
+              <!-- שורה 3: סה"כ ב-3 חודשים אחרונים -->
+              <tr>
+                <th scope="row" class="row-header">סה"כ ב-3 חודשים אחרונים ₪ *</th>
+                <td class="data-cell">
+                  <input type="number" formControlName="spouse1Total3Months" [class.is-invalid]="isInvalid('lowIncomeDetails.spouse1Total3Months')" class="control-large">
+                </td>
+                <td class="data-cell">
+                  <input type="number" formControlName="spouse2Total3Months" [class.is-invalid]="isInvalid('lowIncomeDetails.spouse2Total3Months')" class="control-large">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- העלאת מסמכים להכנסה -->
+        <p class="document-requirement">
+          <i class="fas fa-file-pdf"></i> דרישת מסמכים: יש לצרף 3 תלושי משכורת אחרונים של 2 בני הזוג (או דפי חשבון בנק).
+        </p>
+        <div class="form-group full-width upload-group">
+          <input type="file" #lowIncomeFileInput class="hidden-file-input" 
+                (change)="onFileChange($event, 'lowIncomeDocsUploaded')">
+          
+          <button type="button" class="upload-button" (click)="lowIncomeFileInput.click()">
+            <span [innerHTML]="discountRequestForm.get('requiredDocuments.lowIncomeDocsUploaded')?.value ? 
+              ('✅ ' + (discountRequestForm.get('requiredDocuments.lowIncomeDocsUploaded')?.value || 'הועלה בהצלחה')) : 
+              '📎 לחץ להעלאת קבצים'"></span>
+          </button>
+          
+          <label class="upload-label">העלאת מסמכי הכנסה *</label>
+          
+          <input type="hidden" [formControlName]="'lowIncomeDocsUploaded'" [class.is-invalid]="isInvalid('requiredDocuments.lowIncomeDocsUploaded')">
+          @if (isInvalid('requiredDocuments.lowIncomeDocsUploaded')) {
+            <div class="error-message">יש להעלות מסמכי הכנסה.</div>
+          }
+        </div>
+        
+      </fieldset>
+    }
+
+    <!-- דרישת אישור לימודים (מוצג רק אם נבחר "חינוך מיוחד אחר") -->
+    @if (discountReasons.get('otherChildSpecialEd')?.value) {
+      <fieldset class="form-fieldset section-docs-blue">
+        <legend class="fieldset-legend">
+          <i class="fas fa-certificate"></i> אישור לימודים (חינוך מיוחד אחר)
+        </legend>
+        <p class="document-requirement">
+          דרישת מסמכים: יש לצרף אישור לימודים מהמסגרת החינוכית המיוחדת האחרת.
+        </p>
+        <div class="form-group full-width upload-group">
+          <input type="file" #specialEdFileInpur class="hidden-file-input" 
+                (change)="onFileChange($event, 'otherSpecialEdDocsUploaded')">
+
+          <button type="button" class="upload-button" (click)="specialEdFileInpur.click()">
+            <span [innerHTML]="discountRequestForm.get('requiredDocuments.otherSpecialEdDocsUploaded')?.value ? 
+              ('✅ ' + (discountRequestForm.get('requiredDocuments.otherSpecialEdDocsUploaded')?.value || 'הועלה בהצלחה')) : 
+              '📎 לחץ להעלאת קבצים'"></span>
+          </button>
+          
+          <label class="upload-label">העלאת אישור לימודים *</label>
+          
+          <input type="hidden" [formControlName]="'otherSpecialEdDocsUploaded'" [class.is-invalid]="isInvalid('requiredDocuments.otherSpecialEdDocsUploaded')">
+          @if (isInvalid('requiredDocuments.otherSpecialEdDocsUploaded')) {
+            <div class="error-message">יש להעלות אישור לימודים.</div>
+          }
+        </div>
+      </fieldset>
+    }
+
+    <!-- ⭐ דרישת אסמכתא מעובדת סוציאלית (מוצג רק אם נבחר) -->
+    @if (discountReasons.get('socialWorkerRec')?.value) {
+      <fieldset class="form-fieldset section-docs-orange">
+        <legend class="fieldset-legend">
+          <i class="fas fa-handshake"></i> אסמכתא מעובדת סוציאלית
+        </legend>
+        <p class="document-requirement">
+          דרישת מסמכים: יש לצרף מכתב המלצה מעובדת סוציאלית של הרשות המקומית.
+        </p>
+        <div class="form-group full-width upload-group">
+          <input type="file" #socialWorkerFileInput class="hidden-file-input" 
+                (change)="onFileChange($event, 'socialWorkerDocsUploaded')">
+
+          <button type="button" class="upload-button" (click)="socialWorkerFileInput.click()">
+            <span [innerHTML]="discountRequestForm.get('requiredDocuments.socialWorkerDocsUploaded')?.value ? 
+              ('✅ ' + (discountRequestForm.get('requiredDocuments.socialWorkerDocsUploaded')?.value || 'הועלה בהצלחה')) : 
+              '📎 לחץ להעלאת קבצים'"></span>
+          </button>
+
+          <label class="upload-label">העלאת אסמכתא *</label>
+
+          <input type="hidden" [formControlName]="'socialWorkerDocsUploaded'" [class.is-invalid]="isInvalid('requiredDocuments.socialWorkerDocsUploaded')">
+          @if (isInvalid('requiredDocuments.socialWorkerDocsUploaded')) {
+            <div class="error-message">יש להעלות אסמכתא מעובדת סוציאלית.</div>
+          }
+        </div>
+      </fieldset>
+    }
+
+    <!-- נימוק לבקשת ההנחה -->
+    <fieldset class="form-fieldset section-reasoning">
+      <legend class="fieldset-legend">
+        <i class="fas fa-pencil-alt"></i> נימוק לבקשת ההנחה *
+      </legend>
+      <div class="form-group full-width">
+        <label for="reasoning" class="sr-only">נימוק</label>
+        <textarea id="reasoning" formControlName="reasoning" rows="4" class="control-large"
+              placeholder="יש לכתוב בכתב ברור את הנימוק לבקשת ההנחה..."
+              [class.is-invalid]="isInvalid('reasoning')"></textarea>
+        @if (isInvalid('reasoning')) {
+          <div class="error-message">נימוק נדרש.</div>
+        }
+      </div>
+    </fieldset>
+
+    <!-- חתימת הורה -->
+    <fieldset class="form-fieldset signature-container section-signature">
+      <legend class="fieldset-legend">
+        <i class="fas fa-signature"></i> חתימת הורה
+      </legend>
+
+      <div class="signature-pad-wrapper">
+        <label>חתימה דיגיטלית (צייר עם העכבר/אצבע) *</label>
+        <canvas #parentSignatureCanvas 
+                class="signature-canvas"
+                width="400" 
+                height="120"
+                (mousedown)="startDrawing(ctx, $event)"
+                (mousemove)="draw(ctx, $event)"
+                (mouseup)="stopDrawing()"
+                (mouseleave)="stopDrawing()"
+                (touchstart)="startDrawing(ctx, $event)"
+                (touchmove)="draw(ctx, $event)"
+                (touchend)="stopDrawing()"
+                [class.is-invalid]="isInvalid('parentSignature')"
+        ></canvas>
+        <div class="signature-actions">
+          <button type="button" class="clear-button" (click)="clearSignature()"><i class="fas fa-eraser"></i> נקה חתימה</button>
+          <div class="signature-date">תאריך: {{ date() | date:'dd/MM/yyyy' }}</div>
+        </div>
+        <input type="hidden" formControlName="parentSignature">
+        @if (isInvalid('parentSignature')) {
+          <div class="error-message">חתימת הורה נדרשת.</div>
+        }
+      </div>
+    </fieldset>
+
+    <div class="form-footer">
+      @if (submissionMessage()) {
+        <div class="form-alert"
+          [class.success]="submissionMessage()?.includes('נשלח') || submissionMessage()?.includes('נבחר בהצלחה')"
+          [class.error]="submissionMessage()?.includes('שגיאה')">
+          {{ submissionMessage() }}
+        </div>
+      }
+      
+      <div class="actions">
+        <button type="submit" class="submit-button"><i class="fas fa-paper-plane"></i> שלח טופס</button>
+        <button type="button" class="reset-button" (click)="onReset()"><i class="fas fa-sync-alt"></i> אפס טופס</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<!-- קישור ל-Font Awesome לשימוש באיקונים -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

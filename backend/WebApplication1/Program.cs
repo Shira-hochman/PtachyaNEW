@@ -1,40 +1,40 @@
 ﻿using Bo.Interfaces;
 using Bo.Services;
-using Dal.Models; // ה-DbContext שלך
+using Dal.Models;
 using Dal.Repositories;
 using Dal.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Ptachya.DAL.Repositories;
 using OfficeOpenXml;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Authentication.JwtBearer; // ✅ ודא שזה קיים!
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication; // ⬅️ יש לוודא שגם ה-using הזה קיים, למרות שהוא לא נשלח, ליתר ביטחון
+using Ptachya.DAL.Repositories;
 
 // הגדרת רישיון EPPlus
 ExcelPackage.License.SetNonCommercialPersonal("שם פרטי");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// הגדרת שם המדיניות כמשתנה (מומלץ למניעת טעויות כתיב)
+// הגדרת שם המדיניות כמשתנה 
 const string MyCorsPolicy = "AllowSpecificOrigin";
 
 // 1. הוספת שירות CORS (AddCors)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyCorsPolicy, // נותנים שם למדיניות: "AllowSpecificOrigin"
+    options.AddPolicy(name: MyCorsPolicy,
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // ⬅️ המקור של Angular
-                  .AllowAnyHeader()                     // מאפשר כל כותרת
-                  .AllowAnyMethod();                     // מאפשר כל מתודה
+            policy.WithOrigins("http://localhost:4200")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
         });
 });
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
+// הגדרת JWT
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key not configured");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -58,25 +58,31 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<PtachiyaContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// הרשמה לרפוזיטוריז (DAL & BO)
+// ⭐️ הרשמה לכל השירותים והרפוזיטוריז:
+
+// DAL/Repositories
 builder.Services.AddScoped<IChildRepository, ChildRepository>();
-builder.Services.AddScoped<IChildService, ChildService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IKindergartenRepository, KindergartenRepository>();
-builder.Services.AddScoped<IKindergartenService, KindergartenService>();
-builder.Services.AddScoped<Bo.Interfaces.IImportService, Bo.Services.ImportService>();
 builder.Services.AddScoped<IFormRepository, FormRepository>();
 
+// BO/Services
+builder.Services.AddScoped<IChildService, ChildService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IKindergartenService, KindergartenService>();
 builder.Services.AddScoped<IFormService, FormService>();
+builder.Services.AddScoped<Bo.Interfaces.IImportService, Bo.Services.ImportService>();
+
+// 🛑 הוספת ITokenService (פתרון שגיאת DI)
+builder.Services.AddScoped<Bo.Interfaces.ITokenService, Bo.Services.TokenService>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // 2. הפעלת Middleware של CORS (UseCors)
-// המיקום חשוב: צריך להיות אחרי app.Build() ולפני UseAuthorization
-app.UseCors(MyCorsPolicy); // ⬅️ **התיקון המרכזי: שימוש בשם המדיניות הנכון**
+app.UseCors(MyCorsPolicy);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

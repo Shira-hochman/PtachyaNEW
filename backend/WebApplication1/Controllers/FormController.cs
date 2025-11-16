@@ -7,10 +7,12 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Bo.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
 [EnableCors("AllowSpecificOrigin")]
+[Authorize]
 public class FormController : ControllerBase
 {
     private readonly IFormService _formService;
@@ -24,6 +26,13 @@ public class FormController : ControllerBase
     // ⭐️ מחזירים Task<IActionResult> כי אנו מחזירים FileResult
     public async Task<IActionResult> SubmitHealthDeclaration([FromBody] HealthDeclarationDto declarationDto)
     {
+        var authenticatedChildIdNumber = User.Claims.FirstOrDefault(c => c.Type == "ChildIdNumber")?.Value;
+
+        if (authenticatedChildIdNumber != declarationDto.ChildDetails.ChildId.ToString())
+        {
+            // אם תעודת הזהות המצורפת לטופס לא תואמת לזו שבתוקן, החזר שגיאה
+            return Forbid("אינך מורשה לשלוח טופס זה עבור ילד זה.");
+        }
         try
         {
             // 1. יצירת הקובץ ואיחזור מערך הבתים של ה-PDF

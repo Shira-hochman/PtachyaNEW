@@ -44,16 +44,24 @@ export class Login implements OnInit {
     }
     
     this.authService.getChildDetails(this.childId, this.birthDate).subscribe({
-      next: (child: Child) => {
-        this.message = `התחברות מוצלחת! ברוך הבא, ${child.firstName} ${child.lastName}`;
-        this.router.navigate(['/main']); 
-      },
-      error: (err) => {
-        // טיפול בשגיאת רשת או שגיאת סטטוס HTTP
-        const errorMsg = err.error?.title || err.error?.message || 'אחד מהנתונים שהוקש שגוי. נסה שנית.';
-        this.message = errorMsg; 
-        console.error('Login failed:', err);
-      }
-    });
+     next: (response) => {
+        // ⭐️ תיקון: שולפים את נתוני הילד המלאים מתוך ה-Service 
+        // (ה-Service כבר שמר אותם ב-LocalStorage, כפי שהגדרנו)
+         const child = this.authService.getCurrentChild();
+         
+         if (child) {
+            this.message = `התחברות מוצלחת! ברוך הבא, ${child.firstName} ${child.lastName}`;
+            this.router.navigate(['/main']); 
+         } else {
+             this.message = 'התחברות הצליחה אך פרטי הילד לא נשמרו. אנא נסה שנית.';
+         }
+      },
+      error: (err) => {
+        // טיפול בשגיאת רשת או שגיאת סטטוס HTTP
+        const errorMsg = err.error?.title || err.error?.message || 'אחד מהנתונים שהוקש שגוי. נסה שנית.';
+        this.message = errorMsg; 
+        console.error('Login failed:', err);
+      }
+    });
 }
 }
