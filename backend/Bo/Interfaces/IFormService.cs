@@ -7,5 +7,6 @@ namespace Bo.Interfaces
     {
         // ⭐️ מחזירה Task<byte[]> של קובץ PDF
         Task<byte[]> ProcessAndGenerateHealthDeclarationAsync(HealthDeclarationDto declarationDto);
+        Task<byte[]> ProcessAndGenerateDiscountRequestAsync(DiscountRequestDto requestDto);
     }
 }

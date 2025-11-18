@@ -17,8 +17,14 @@ public class FormService : IFormService
 
     private const string ScriptsFolder = "Scripts";
     private const string PermanentFormsFolder = "PermanentForms"; // תיקייה קבועה לשמירת PDF
-    private const string PythonScriptName = "generate_pdf_from_docx.py";
-    private const string TemplateFileName = "health_declaration_template.docx";
+
+    // ⭐️⭐️⭐️ הגדרת שני סקריפטים נפרדים ⭐️⭐️⭐️
+    private const string HealthPythonScriptName = "generate_pdf_from_docx.py"; // סקריפט מורכב ישן
+    private const string DiscountPythonScriptName = "process_discount_request.py"; // סקריפט חדש נקי
+
+    // ⭐️ שמות תבניות
+    private const string HealthTemplateFileName = "health_declaration_template.docx";
+    private const string DiscountTemplateFileName = "discount_request_template_official.docx";
 
 
     public FormService(IFormRepository formRepository, IConfiguration configuration)
@@ -27,52 +33,78 @@ public class FormService : IFormService
         _configuration = configuration;
     }
 
+    // ⭐️ שיטה קיימת: הצהרת בריאות (משתמש ב-generate_pdf_from_docx.py)
     public async Task<byte[]> ProcessAndGenerateHealthDeclarationAsync(HealthDeclarationDto declarationDto)
+    {
+        return await ProcessAndGenerateFormAsync(
+            declarationDto,
+            HealthTemplateFileName,
+            HealthPythonScriptName, // 🛑 שימוש בסקריפט הבריאות
+            $"declaration_{declarationDto.ChildDetails.ChildId}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf",
+            // פונקציה לשמירת לינק
+            async (pdfFileName, childId) =>
+            {
+                string baseUrl = _configuration["AppSettings:BaseUrl"] ?? "http://localhost:5000/";
+                string formLink = $"{baseUrl}api/Files/DownloadForm/{pdfFileName}";
+                Console.WriteLine($"Saving link for child ID: {childId} → {formLink}");
+                await _formRepository.UpdateChildFormLinkAsync(childId, formLink);
+            }
+        );
+    }
+
+    // ⭐️⭐️⭐️ שיטה חדשה: בקשת הנחה (משתמש ב-process_discount_request.py) ⭐️⭐️⭐️
+    public async Task<byte[]> ProcessAndGenerateDiscountRequestAsync(DiscountRequestDto requestDto)
+    {
+        return await ProcessAndGenerateFormAsync(
+            requestDto,
+            DiscountTemplateFileName,
+            DiscountPythonScriptName, // 🛑 שימוש בסקריפט ההנחה
+            $"discount_request_{requestDto.StudentDetails.StudentId}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf",
+            null // אין פונקציית שמירת לינק
+        );
+    }
+
+
+    // ⭐️⭐️⭐️ פונקציית עזר כללית לכל סוגי הטפסים ⭐️⭐️⭐️
+    private async Task<byte[]> ProcessAndGenerateFormAsync<T>(
+        T formData,
+        string templateFileName,
+        string pythonScriptName, // ⭐️ פרמטר חדש
+        string pdfFileName,
+        Func<string, int, Task>? postProcessAction) where T : class
     {
         var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-        // הגדרת נתיבים
-        string pythonScriptPath = Path.Combine(baseDirectory, ScriptsFolder, PythonScriptName);
-        string templatePath = Path.Combine(baseDirectory, "Templates", TemplateFileName);
+        // ⭐️ שימוש בשם הסקריפט שהתקבל כפרמטר
+        string pythonScriptPath = Path.Combine(baseDirectory, ScriptsFolder, pythonScriptName);
+        string templatePath = Path.Combine(baseDirectory, "Templates", templateFileName);
 
         string pythonExecutable = _configuration["AppSettings:PythonExecutablePath"] ?? "python";
         string libreOfficeExecutable = _configuration["AppSettings:LibreOfficeExecutablePath"] ?? "soffice";
 
-        // יצירת נתיב קבוע לשמירת הקובץ
         var permanentDirectory = Path.Combine(baseDirectory, PermanentFormsFolder);
         Directory.CreateDirectory(permanentDirectory);
 
-        // שם הקובץ הסופי
-        var pdfFileName = $"declaration_{declarationDto.ChildDetails.ChildId}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf";
         var permanentPdfPath = Path.Combine(permanentDirectory, pdfFileName);
-
-        // ** שינוי קריטי: יצירת URL מלא לגישה ציבורית **
-        // נניח שיש לך קונטרולר בשם 'Files' ופעולה בשם 'DownloadForm'.
-        // ה-Controller הזה צריך לדעת לקבל את ה-pdfFileName ולשלוף את הקובץ מהדיסק.
-        string baseUrl = _configuration["AppSettings:BaseUrl"] ?? "http://localhost:5000/"; // לדוגמה
-        string formLink = $"{baseUrl}api/Files/DownloadForm/{pdfFileName}";
-
 
         if (!File.Exists(templatePath))
         {
             throw new FileNotFoundException($"Template file not found: {templatePath}. Make sure it is copied to the output folder.");
         }
 
-        // 2. הכנת הנתונים ל-JSON (אין שינוי)
+        // הכנת הנתונים ל-JSON
         var dataForPython = new
         {
-            form_data = declarationDto,
-            output_pdf_path = permanentPdfPath, // שומרים ישר לנתיב הקבוע
+            form_data = formData,
+            output_pdf_path = permanentPdfPath,
             template_path = templatePath,
             libre_office_path = libreOfficeExecutable
         };
         var jsonInput = JsonSerializer.Serialize(dataForPython, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-
-        // 3. הפעלת סקריפט הפייתון (אין שינוי)
+        // הפעלת סקריפט הפייתון
         await RunPythonScript(pythonExecutable, pythonScriptPath, jsonInput);
 
-        // 4. קריאת קובץ ה-PDF שנוצר (אין שינוי)
         if (!File.Exists(permanentPdfPath))
         {
             throw new FileNotFoundException("PDF file was not created by the Python script. Check Python/soffice logs in the console.");
@@ -80,14 +112,19 @@ public class FormService : IFormService
 
         byte[] pdfBytes = await File.ReadAllBytesAsync(permanentPdfPath);
 
-        // 5. שמירת הקישור לטופס בטבלת Child
-        Console.WriteLine($"Saving link for child ID: {declarationDto.ChildDetails.ChildId} → {formLink}");
-        await _formRepository.UpdateChildFormLinkAsync(declarationDto.ChildDetails.ChildId, formLink);
+        // 5. שמירת הקישור לטופס אם נדרש (רק עבור הצהרת בריאות)
+        if (postProcessAction != null)
+        {
+            // הנחה: לטופס HealthDeclarationDto קיים ChildDetailsDto עם ChildId
+            if (formData is HealthDeclarationDto healthDto)
+            {
+                await postProcessAction(pdfFileName, healthDto.ChildDetails.ChildId);
+            }
+        }
 
-
-        // 6. מחזירים את הבתים להורדה ללקוח
         return pdfBytes;
     }
+
 
     // פונקציה מבודדת להרצת הפייתון (ללא שינוי)
     private async Task RunPythonScript(string pythonExecutable, string pythonScriptPath, string jsonInput)
