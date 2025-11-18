@@ -64,7 +64,7 @@ namespace Bo.Services
                 existingChild.BirthDate = row.BirthDate.Value;
                 existingChild.SchoolYear = row.SchoolYear;
                 existingChild.KindergartenId = kindergartenId;
-                existingChild.FormLink = row.FormLink;
+                existingChild.HealthDeclarationLink = row.FormLink;
                 existingChild.IdNumber=row.IdNumber;
                 existingChild.Phone = row.Phone; // טלפון ההורה נכנס לשדה של הילד
                 existingChild.Email = row.Email; // אימייל ההורה נכנס לשדה של הילד

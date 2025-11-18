@@ -4,6 +4,7 @@ using Dal.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dal.Migrations
 {
     [DbContext(typeof(PtachiyaContext))]
-    partial class PtachiyaContextModelSnapshot : ModelSnapshot
+    [Migration("20251118184421_RenameFormLinkAndAddDiscountLink")]
+    partial class RenameFormLinkAndAddDiscountLink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,9 +71,6 @@ namespace Dal.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("UploadedDocumentPaths")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("lastName")
                         .IsRequired()

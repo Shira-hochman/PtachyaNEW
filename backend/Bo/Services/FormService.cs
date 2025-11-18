@@ -53,18 +53,37 @@ public class FormService : IFormService
     }
 
     // ⭐️⭐️⭐️ שיטה חדשה: בקשת הנחה (משתמש ב-process_discount_request.py) ⭐️⭐️⭐️
-    public async Task<byte[]> ProcessAndGenerateDiscountRequestAsync(DiscountRequestDto requestDto)
+    // ⭐️⭐️⭐️ שיטה חדשה: בקשת הנחה (כעת מקבלת את נתיבי הקבצים) ⭐️⭐️⭐️
+    public async Task<byte[]> ProcessAndGenerateDiscountRequestAsync(DiscountRequestDto requestDto, string uploadedPaths)
     {
+        // הפונקציה ProcessAndGenerateFormAsync מקבלת:
+        // 1. formData
+        // 2. templateFileName
+        // 3. pythonScriptName
+        // 4. pdfFileName
+        // 5. postProcessAction (ה-Lambda Function ששומרת לינקים)
+
         return await ProcessAndGenerateFormAsync(
             requestDto,
             DiscountTemplateFileName,
-            DiscountPythonScriptName, // 🛑 שימוש בסקריפט ההנחה
+            DiscountPythonScriptName,
             $"discount_request_{requestDto.StudentDetails.StudentId}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf",
-            null // אין פונקציית שמירת לינק
-        );
+
+            // ⭐️⭐️⭐️ פונקציית שמירת לינק ונתיבים (הגרסה הנכונה) ⭐️⭐️⭐️
+            async (pdfFileName, childId) =>
+            {
+                string baseUrl = _configuration["AppSettings:BaseUrl"] ?? "http://localhost:5000/";
+                string formLink = $"{baseUrl}api/Files/DownloadDiscountForm/{pdfFileName}";
+
+                // 1. שמירת קישור ה-PDF הראשי
+                await _formRepository.UpdateChildDiscountLinkAsync(childId, formLink);
+
+                // 2. שמירת נתיבי הקבצים הנוספים (CSV)
+                await _formRepository.UpdateChildDocumentPathsAsync(childId, uploadedPaths);
+            }
+        ); // סגירת הסוגר של return await ProcessAndGenerateFormAsync(...);
     }
-
-
+    // סגירת הסוגר של המתודה
     // ⭐️⭐️⭐️ פונקציית עזר כללית לכל סוגי הטפסים ⭐️⭐️⭐️
     private async Task<byte[]> ProcessAndGenerateFormAsync<T>(
         T formData,
@@ -113,12 +132,28 @@ public class FormService : IFormService
         byte[] pdfBytes = await File.ReadAllBytesAsync(permanentPdfPath);
 
         // 5. שמירת הקישור לטופס אם נדרש (רק עבור הצהרת בריאות)
+        // 5. שמירת הקישור לטופס אם נדרש
         if (postProcessAction != null)
         {
-            // הנחה: לטופס HealthDeclarationDto קיים ChildDetailsDto עם ChildId
+            // הנחה: לטופס HealthDeclarationDto קיים ChildDetailsDto עם ChildId (int)
             if (formData is HealthDeclarationDto healthDto)
             {
                 await postProcessAction(pdfFileName, healthDto.ChildDetails.ChildId);
+            }
+            // ⭐️⭐️⭐️ הוספת טיפול בטופס הנחה ⭐️⭐️⭐️
+            else if (formData is DiscountRequestDto discountDto)
+            {
+                // ⭐️⭐️⭐️ תיקון: המרה מ-string ל-int ⭐️⭐️⭐️
+                if (int.TryParse(discountDto.StudentDetails.StudentId, out int childIdInt))
+                {
+                    // מעביר את תעודת הזהות כ-int
+                    await postProcessAction(pdfFileName, childIdInt);
+                }
+                else
+                {
+                    // במקרה שתעודת הזהות אינה מספר (למרות שהאנגולר אמור למנוע זאת)
+                    throw new ArgumentException($"StudentId '{discountDto.StudentDetails.StudentId}' is not a valid integer for child ID conversion.");
+                }
             }
         }
 

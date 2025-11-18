@@ -10,4 +10,8 @@ public interface IFormRepository
 
     // ⭐️ הצהרה חדשה: פותרת את שגיאת הקומפילציה ב-FormService
     Task UpdateChildFormLinkAsync(int childId, string formLink);
+
+    Task UpdateChildDiscountLinkAsync(int childId, string formLink);
+    // הוסף לממשק IFormRepository
+    Task UpdateChildDocumentPathsAsync(int childId, string paths);
 }

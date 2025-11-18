@@ -40,7 +40,7 @@ namespace Bo.Services
                 lastName=dto.LastName,
                 SchoolYear = dto.SchoolYear,
 
-                FormLink = dto.FormLink,
+                HealthDeclarationLink = dto.FormLink,
                 Phone = dto.Phone,
                 Email = dto.Email,
                 BirthDate = dto.BirthDate,

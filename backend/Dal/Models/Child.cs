@@ -19,7 +19,11 @@ public partial class Child
 
     public string SchoolYear { get; set; } = null!;
 
-    public string? FormLink { get; set; }
+    
+    public string? HealthDeclarationLink { get; set; }
+
+ 
+    public string? DiscountRequestLink { get; set; }
 
     public string Phone { get; set; } = null!;
 
@@ -32,4 +36,6 @@ public partial class Child
     public virtual Kindergarten Kindergarten { get; set; } = null!;
 
     public virtual Payment? Payment { get; set; }
+
+    public string? UploadedDocumentPaths { get; set; }
 }

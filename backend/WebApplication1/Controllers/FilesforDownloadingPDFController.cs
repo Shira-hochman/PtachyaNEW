@@ -41,4 +41,31 @@ public class FilesController : ControllerBase
             return StatusCode(500, "Internal error while fetching file.");
         }
     }
+    // ⭐️⭐️⭐️ הוספת המתודה החדשה לטיפול בטופס הנחה ⭐️⭐️⭐️
+    // Route: api/Files/DownloadDiscountForm/{fileName}
+    [HttpGet("DownloadDiscountForm/{fileName}")]
+    public async Task<IActionResult> DownloadDiscountForm(string fileName)
+    {
+        // הלוגיקה זהה לחלוטין למתודת ה-DownloadForm הקיימת, כיוון ששני הקבצים 
+        // נשמרים באותה תיקייה (PermanentFormsFolder).
+        try
+        {
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var permanentDirectory = Path.Combine(baseDirectory, PermanentFormsFolder);
+            var fullPath = Path.Combine(permanentDirectory, fileName);
+
+            if (!System.IO.File.Exists(fullPath))
+            {
+                return NotFound($"Discount form file not found at path: {fullPath}");
+            }
+
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+            return File(fileBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error serving discount file {fileName}: {ex.Message}");
+            return StatusCode(500, "Internal error while fetching discount file.");
+        }
+    }
 }

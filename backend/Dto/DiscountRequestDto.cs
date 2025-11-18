@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Dto
 {
@@ -70,5 +72,28 @@ namespace Dto
         public string? OtherSpecialEdDocsUploaded { get; set; }
         public string? SocialWorkerDocsUploaded { get; set; }
     }
+    public class DiscountRequestSubmissionDto
+    {
+        // ⭐️ הנתונים הראשיים של הטופס שנשלחו כ-JSON string תחת השם 'data'
+        // חשוב: השם "data" כאן חייב להתאים ל-formData.append('data', ...) באנגולר
+        [FromForm(Name = "data")]
+        public string Data { get; set; } = null!;
 
+        // ⭐️ הקבצים המצורפים (חייבים להתאים לשמות ששלחנו: lowIncomeFile וכו')
+        public IFormFile? LowIncomeFile { get; set; }
+        public IFormFile? SpecialEdFile { get; set; }
+        public IFormFile? SocialWorkerFile { get; set; }
+
+        // מתודת עזר פשוטה לאיסוף הקבצים
+        public List<IFormFile> GetAttachments()
+        {
+            var files = new List<IFormFile>();
+            // ⭐️ שימוש בבדיקה מפורשת של null לפני ההוספה ⭐️
+            if (LowIncomeFile != null) files.Add(LowIncomeFile);
+            if (SpecialEdFile != null) files.Add(SpecialEdFile);
+            if (SocialWorkerFile != null) files.Add(SocialWorkerFile);
+            return files;
+        }
+
+    }
 }
