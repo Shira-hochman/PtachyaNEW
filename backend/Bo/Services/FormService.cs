@@ -131,7 +131,7 @@ public class FormService : IFormService
 
         byte[] pdfBytes = await File.ReadAllBytesAsync(permanentPdfPath);
 
-        // 5. שמירת הקישור לטופס אם נדרש (רק עבור הצהרת בריאות)
+       
         // 5. שמירת הקישור לטופס אם נדרש
         if (postProcessAction != null)
         {

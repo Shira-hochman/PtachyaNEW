@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, Afte
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormService } from '../../services/form.service'; // ⭐️ ייבוא FormService
+import { ChildAuthService } from '../../services/child-auth.service';
+import { Child } from '../../../../models/child';
 
 // ממשק פשוט לילד בחזקת ההורה (Child in Custody)
 interface ChildInCustody {
@@ -55,7 +57,8 @@ export class PaymentForm implements OnInit, AfterViewInit {
   constructor(
     private fb: FormBuilder,
     private datePipe: DatePipe,
-    private formService: FormService // ⭐️ הזרקת השירות
+    private formService: FormService, // ⭐️ הזרקת השירות
+    private authService: ChildAuthService
   ) { }
 
   // מחזיר את קבוצת הסיבות לבקשת הנחה
@@ -74,12 +77,23 @@ export class PaymentForm implements OnInit, AfterViewInit {
     return !!control?.invalid && (!!control?.dirty || !!control?.touched || this.submitted());
   }
 
-  ngOnInit(): void {
-    this.date.set(this.datePipe.transform(new Date(), 'yyyy-MM-dd'));
-    this.initForm();
-    this.setupConditionalLogic();
-  }
+  // PaymentForm.ts
 
+ngOnInit(): void {
+    this.date.set(this.datePipe.transform(new Date(), 'yyyy-MM-dd'));
+    this.initForm();
+    this.setupConditionalLogic();
+    
+    // ⭐️⭐️⭐️ שליפה ומילוי אוטומטי ⭐️⭐️⭐️
+    const childData = this.authService.getCurrentChild();
+    if (childData) {
+        this.populateForm(childData); 
+    } else {
+        // אם אין ילד מאומת, ניתן לנתב או להשאיר למילוי ידני
+        console.warn('No authenticated child found. Discount form must be filled manually.');
+    }
+    // ⭐️⭐️⭐️ סוף שליפה ומילוי אוטומטי ⭐️⭐️⭐️
+}
   ngAfterViewInit(): void {
     // אתחול Canvas רק אם האלמנט קיים
     if (this.canvas && this.canvas.nativeElement) {
@@ -350,6 +364,27 @@ export class PaymentForm implements OnInit, AfterViewInit {
     }
   }
 
+  // PaymentForm.ts
+
+// ⭐️⭐️⭐️ מתודה חדשה: מילוי טופס ההנחה מנתוני הילד השמורים ⭐️⭐️⭐️
+populateForm(child: Child): void {
+    this.discountRequestForm.patchValue({
+        // 1. פרטי מגיש הבקשה (הורה/מצהיר)
+        // הנחה: ההורה המחובר הוא מגיש הבקשה
+       
+        // 2. פרטי התלמיד
+        studentDetails: {
+            studentName: child.firstName,
+            studentId: child.idNumber,
+            // Kindergarten ו-City לא קיימים במודל Child הנוכחי. 
+            // אם הם מגיעים עם ChildDto, הם ימולאו:
+            // kindergarten: child.kindergarten.name, 
+            // city: child.kindergarten.city,
+            // אם הם לא קיימים, תצטרך לשלוף אותם בנפרד!
+        }
+        // ... אם יש שדות נוספים מהילד שצריך למלא (כמו טלפון/אימייל)
+    });
+}
   // שליחת הטופס
   // שליחת הטופס (המתודה המעודכנת)
   onSubmit(): void {

@@ -1,0 +1,67 @@
+<div class="management-header">
+    <h1>👧 ניהול פרטי ילדים</h1>
+    <p>צפייה, חיפוש, סינון ועריכת נתוני ילדים.</p>
+</div>
+
+<div class="controls-bar">
+    <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (ngModelChange)="loadChildren()"
+        placeholder="🔎 חיפוש לפי שם, ת''ז..."
+        class="search-input"
+    >
+    
+    <select [(ngModel)]="selectedKindergartenId" (ngModelChange)="loadChildren()" class="filter-select">
+        <option [ngValue]="null">כל הגנים</option>
+        <option *ngFor="let garden of kindergartens" [ngValue]="garden.id">
+            גן {{ garden.name }}
+        </option>
+    </select>
+    
+    <button class="add-button" [routerLink]="['/admin/children/add']">➕ הוסף ילד חדש</button>
+</div>
+
+<div *ngIf="isLoading" class="status-message loading">טוען נתונים...</div>
+<div *ngIf="errorMessage" class="status-message error">{{ errorMessage }}</div>
+
+
+<div *ngIf="children && children.length > 0 && !isLoading" class="children-table-container">
+    <h2>רשימת ילדים ({{ children.length }})</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>מספר פנימי</th>
+                <th>תעודת זהות</th>
+                <th>שם פרטי</th>
+                <th>שם משפחה</th>
+                <th>תאריך לידה</th>
+                <th>קוד גן</th>
+                <th>אימייל</th>
+                <th>סטטוס תשלום</th> <th>פעולות</th> </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let child of children">
+                <td>{{ child.childId }}</td>
+                <td>{{ child.idNumber }}</td>
+                <td>{{ child.firstName }}</td>
+                <td>{{ child.lastName }}</td>
+                <td>{{ child.birthDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ child.kindergartenId }}</td>
+                <td>{{ child.email }}</td>
+                <td [class.paid]="child.paymentId" [class.unpaid]="!child.paymentId">
+                    {{ child.paymentId ? 'שולם' : 'ממתין' }}
+                </td> 
+                
+                <td class="actions-cell">
+                    <button class="action-btn edit" (click)="editChild(child.childId)">✏️ ערוך</button>
+                    <button class="action-btn docs" [routerLink]="['/admin/forms', child.childId]">📄 מסמכים</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div *ngIf="children && children.length === 0 && !isLoading && !errorMessage" class="status-message info">
+    הרשימה נטענה, אך לא נמצאו ילדים.
+</div>

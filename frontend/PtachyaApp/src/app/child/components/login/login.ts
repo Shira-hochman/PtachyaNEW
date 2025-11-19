@@ -51,7 +51,7 @@ export class Login implements OnInit {
          
          if (child) {
             this.message = `התחברות מוצלחת! ברוך הבא, ${child.firstName} ${child.lastName}`;
-            this.router.navigate(['/main']); 
+            this.router.navigate(['/child/main']); 
          } else {
              this.message = 'התחברות הצליחה אך פרטי הילד לא נשמרו. אנא נסה שנית.';
          }

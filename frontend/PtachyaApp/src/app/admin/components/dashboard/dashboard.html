@@ -1,0 +1,59 @@
+<div class="dashboard-header">
+    <h1>👋 ברוך הבא ללוח המחוונים הראשי</h1>
+    <p>מבט-על על סטטוס המערכת.</p>
+</div>
+
+<div *ngIf="isLoading" class="loading-message">
+    טוען נתונים סטטיסטיים...
+</div>
+
+<div *ngIf="!isLoading" class="dashboard-grid">
+    <div class="stat-card total-children">
+        <div class="icon">👧</div>
+        <div class="details">
+            <span class="value">{{ stats.totalChildren }}</span>
+            <span class="label">סה"כ ילדים רשומים</span>
+        </div>
+    </div>
+
+    <div class="stat-card active-gardens">
+        <div class="icon">🌳</div>
+        <div class="details">
+            <span class="value">{{ stats.activeGardens }}</span>
+            <span class="label">גנים פעילים</span>
+        </div>
+    </div>
+    
+    <div class="stat-card pending-forms alert-card">
+        <div class="icon">📄</div>
+        <div class="details">
+            <span class="value">{{ stats.pendingForms }}</span>
+            <span class="label">טפסים ממתינים לאישור</span>
+        </div>
+        <button class="quick-link" routerLink="/admin/forms">בדוק טפסים עכשיו →</button>
+    </div>
+
+    <div class="stat-card unpaid-payments alert-card">
+        <div class="icon">💰</div>
+        <div class="details">
+            <span class="value">{{ stats.unpaidPayments }}</span>
+            <span class="label">תשלומים שלא הושלמו</span>
+        </div>
+        <button class="quick-link" routerLink="/admin/payments">טפל בתשלומים →</button>
+    </div>
+</div>
+
+<div class="action-section">
+    <h2>פעולות מהירות</h2>
+    <div class="quick-actions">
+        <button class="action-button" routerLink="/admin/children">
+            <span class="icon">🔎</span> צפייה וניהול ילדים
+        </button>
+        <button class="action-button primary" routerLink="/admin/update-data">
+            <span class="icon">📤</span> עדכון נתונים מקבצי Excel
+        </button>
+        <button class="action-button" routerLink="/admin/gardens">
+            <span class="icon">➕</span> הוספת/עריכת פרטי גן
+        </button>
+    </div>
+</div>

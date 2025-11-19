@@ -26,7 +26,7 @@ export class LoginComponent {
         // אם הצלחה - בצע ניתוב
         if (res.isSuccess) {
           // ✅ תיקון אבטחה: ניתוב למסך הראשי ללא פרמטרים ב-URL
-          this.router.navigate(['/data-update']); 
+          this.router.navigate(['/admin/dashboard']); 
         } else {
           this.message = res.message || 'שגיאה בהתחברות';
         }

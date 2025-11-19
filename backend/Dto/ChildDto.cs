@@ -22,7 +22,10 @@ namespace Dto
 
         public string SchoolYear { get; set; } = null!;
 
-        public string? FormLink { get; set; }
+        public string? HealthDeclarationLink { get; set; }
+
+
+        public string? DiscountRequestLink { get; set; }
 
         public string Phone { get; set; } = null!;
 

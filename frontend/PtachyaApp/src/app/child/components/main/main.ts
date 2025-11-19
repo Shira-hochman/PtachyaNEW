@@ -18,7 +18,7 @@ export class Main {
    */
   onButton1Click(): void {
     // ⭐️ ניתוב לנתיב טופס הצהרת הבריאות
-    this.router.navigate(['/health-declaration']);
+    this.router.navigate(['/child/health-declaration']);
   }
 
   /**
@@ -26,6 +26,6 @@ export class Main {
    */
   onButton2Click(): void {
     // ⭐️ ניתוב לנתיב טופס התשלום
-    this.router.navigate(['/payment-form']);
+    this.router.navigate(['/child/payment-form']);
   }
 }
