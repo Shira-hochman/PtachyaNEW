@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap');
+
+:host {
+  display: block;
+  font-family: 'Heebo', sans-serif;
+  height: 100%;
+}
+
+.main-wrapper {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Header --- */
+.top-header {
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 0.8rem 1.5rem;
+  border-bottom: 4px solid #cb1518; /* פס בורדו עליון */
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  height: 45px;
+  object-fit: contain;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left; /* כדי שהטקסט יהיה מיושר יפה */
+}
+
+.greeting {
+  font-weight: 700;
+  color: #333;
+  font-size: 1rem;
+}
+
+.date {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #cb1518;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-btn:hover {
+  background-color: #fce4ec;
+}
+
+/* --- Main Content --- */
+.dashboard-content {
+  flex: 1;
+  padding: 2rem 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.welcome-banner {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.welcome-banner h1 {
+  color: #cb1518;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.welcome-banner p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* --- Cards Grid --- */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 0 1rem;
+}
+
+/* --- Action Card --- */
+.action-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.03);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* פס צבעוני בצד ימין של כל כרטיס */
+.action-card::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background-color: #e2e8f0;
+  transition: background-color 0.3s;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+.action-card:hover::before {
+  background-color: #4bb8cf; /* הופך לטורקיז במעבר */
+}
+
+/* Icons */
+.card-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.health-icon {
+  background-color: #fff0f5; /* ורוד בהיר */
+  color: #cb1518;
+}
+
+.payment-icon {
+  background-color: #e6fffa; /* טורקיז בהיר */
+  color: #4bb8cf;
+}
+
+.card-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Text */
+.card-text {
+  flex: 1;
+}
+
+.card-text h3 {
+  margin: 0 0 0.4rem 0;
+  color: #2d3748;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.card-text p {
+  margin: 0;
+  color: #718096;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Arrow */
+.card-arrow {
+  color: #cbd5e0;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.action-card:hover .card-arrow {
+  color: #4bb8cf;
+  transform: translateX(-5px); /* תזוזה קטנה שמאלה */
+}
+
+/* --- Footer --- */
+.main-footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: #a0aec0;
+  font-size: 0.85rem;
+  margin-top: auto;
+}
+
+/* --- אנימציות --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- רספונסיביות --- */
+@media (max-width: 640px) {
+  .header-content {
+    flex-direction: row; 
+  }
+  
+  .greeting {
+    font-size: 0.9rem;
+  }
+  
+  .date {
+    display: none; /* חוסך מקום במובייל */
+  }
+
+  .welcome-banner h1 {
+    font-size: 1.75rem;
+  }
+
+  .action-card {
+    padding: 1.5rem;
+  }
+}
