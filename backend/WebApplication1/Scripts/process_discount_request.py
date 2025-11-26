@@ -1,296 +1,328 @@
 ﻿import json
 import sys
 import os
-import io
-import base64
 import subprocess
+import base64
+import io
 import shutil
 from datetime import datetime
 from docx import Document
-from docx.shared import Inches
-from mailmerge import MailMerge 
+from docx.shared import Inches, Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_ALIGN_VERTICAL
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Emu # נדרש לתיקון רוחב טבלאות
 
-# הגדרות קבועות מהקוד הישן שלך
+# הגדרות סביבה
 TEMP_DIR = os.path.join(os.path.expanduser('~'), 'ptachya_temp_forms')
 os.makedirs(TEMP_DIR, exist_ok=True)
-FOUR_SPACES = '    '
-NINE_UNDERSCORES = '_________'
 
-# ----------------- ⭐️⭐️⭐️ פונקציות עזר (חובה שיופיעו כאן) ⭐️⭐️⭐️ -----------------
+PLACEHOLDER_LINE = "______________________"
+CHECK_MARK = "V"
+data = {}
+
+# ----------------------------- עזר -----------------------------
 
 def format_date(date_str: str) -> str:
-    """ממיר תאריך YYYY-MM-DD ל-DD/MM/YYYY."""
+    """ ⭐️ תיקון תאריך: מנקה את חלק הזמן (T00:00:00) ⭐️ """
     try:
-        if not date_str: return "_______"
+        # חותך את המחרוזת לפני 'T' אם קיימת, וממיר לפורמט נקי
+        if not date_str: return PLACEHOLDER_LINE
         date_part = date_str.split('T')[0]
         return datetime.strptime(date_part, '%Y-%m-%d').strftime('%d/%m/%Y')
     except:
-        return "_______"
+        return clean_value(date_str) # אם הפורמט שונה, מחזיר את המקור נקי
 
-def get_mark(form_value) -> str:
-    """מחזיר 'X' אם הערך הוא True, אחרת מחרוזת ריקה."""
-    # נתונים מגיעים כ-bool/string מ-C#
-    return 'X' if form_value == True or str(form_value).lower() == 'true' else ' '
 
-def clean_and_format_value(value) -> str:
-    """מטפל בערכי None או ריקים ומחזיר מחרוזת נקייה."""
-    if value is None:
-        return "_______"
-    val = str(value).strip()
-    if not val or val == 'null':
-        return "_______"
+def clean_value(value, default=PLACEHOLDER_LINE):
+    if not value or str(value).strip() == "" or str(value).lower() == "null":
+        return default
+    return str(value)
+
+
+def add_rtl(par):
+    par.paragraph_format.rtl = True
+    par.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    return par
+
+
+def add_paragraph(document, text="", style="RTL_Normal", space_after=6):
+    p = document.add_paragraph(text, style=style)
+    add_rtl(p)
+    p.paragraph_format.space_after = Pt(space_after)
+    return p
+
+
+def underline_run(par, text):
+    r = par.add_run(text)
+    r.font.underline = True
+    return r
+
+
+def rtl_table(document, rows, cols):
+    tbl = document.add_table(rows=rows, cols=cols)
+    tbl.autofit = False # מונע מטבלה להתפרס על כל רוחב הדף
     
-    # 🛑 חשוב: הוספת הלוגיקה לטיפול במספרים
-    if isinstance(value, (int, float)) or (isinstance(value, str) and val.replace('.', '').isdigit()):
-        return val
-        
-    return val
+    for row in tbl.rows:
+        for cell in row.cells:
+            for p in cell.paragraphs:
+                add_rtl(p)
+    return tbl
 
-def InsertSignatureImage(doc, placeholder_text, base64_data):
-    """מוצא ומחליף טקסט Placeholder בתמונת Base64 בתוך הפסקה או תא בטבלה."""
-    if not base64_data:
-        replacement_text = '_______ (לא נחתם) _______'
+
+# ----------------------------- חתימה -----------------------------
+
+def insert_signature(document, base64_data):
+    """ ⭐️ תיקון חתימה: משתמש בטבלה לסידור תאריך וחתימה (כפי שתוקן ב-V13) ⭐️ """
+    
+    # 1. יצירת טבלה נסתרת ליישור דו-צדדי
+    sig_table = document.add_table(rows=1, cols=2)
+    sig_table.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    sig_table.style = 'Table Grid'
+    
+    # הסרת גבולות הטבלה (כדי שלא יראו את הריבוע)
+    try:
+        tbl_pr = sig_table._tbl.tblPr 
+        tbl_pr.attrib.pop(qn('w:tblBorders'), None)
+    except:
+        pass
+    
+    # 1. יצירת פסקה עבור החתימה (צד ימין)
+    cell_sig = sig_table.cell(0, 0)
+    p_sig = cell_sig.paragraphs[0]
+    p_sig.clear()
+    p_sig.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    
+    p_sig.add_run("חתימת הורים: ").bold = True
+    
+    if not base64_data or base64_data == "null":
+        p_sig.add_run(" (לא נחתם)").bold = True
     else:
-        replacement_text = ''
-        
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                if placeholder_text in cell.text:
-                    cell.text = cell.text.replace(placeholder_text, replacement_text)
-                    if base64_data:
-                        try:
-                            base64WithoutPrefix = base64_data.split(',')[-1]
-                            image_bytes = base64.b64decode(base64WithoutPrefix)
-                            image_stream = io.BytesIO(image_bytes)
-                            cell.paragraphs[0].add_run().add_picture(image_stream, width=Inches(1.5), height=Inches(0.4))
-                        except Exception as e:
-                            print(f"Error embedding signature: {e}", file=sys.stderr)
-                            cell.paragraphs[0].add_run(' (שגיאת חתימה) ')
-                    return
-    
-    for p in doc.paragraphs:
-        if placeholder_text in p.text:
-            p.text = p.text.replace(placeholder_text, replacement_text)
-            if base64_data:
-                try:
-                    base64WithoutPrefix = base64_data.split(',')[-1]
-                    image_bytes = base64.b64decode(base64WithoutPrefix)
-                    image_stream = io.BytesIO(image_bytes)
-                    p.add_run().add_picture(image_stream, width=Inches(1.5), height=Inches(0.4))
-                except:
-                    p.add_run(' (שגיאת חתימה) ')
-            return
-            
-def replace_and_style_stable(paragraph, key, value):
-    """משתמשת בשיטת ה-run המיוחדת כדי לשמור על העיצוב המקורי."""
-    if key not in paragraph.text:
-        return False
-    
-    original_font = None
-    for run in paragraph.runs:
-        if key in run.text:
-            original_font = run.font
-            break
-            
-    is_mark = (value == 'X' or value == ' ')
-    if is_mark:
-        content_value = str(value)
-        underline_value = False
-    elif value:
-        content_value = f" {str(value)} "
-        underline_value = True
-    else:
-        content_value = NINE_UNDERSCORES
-        underline_value = False
+        try:
+            img_bytes = base64.b64decode(base64_data.split(",")[-1])
+            img = io.BytesIO(img_bytes)
+            p_sig.add_run().add_picture(img, width=Inches(1.5))
+        except:
+            p_sig.add_run("(שגיאה בטעינת חתימה)").bold = True
 
-    original_text = paragraph.text
-    temp_placeholder = f"@@@TEMP_PH_{key}@@@"
+    # 2. יצירת פסקה עבור התאריך (צד שמאל)
+    cell_date = sig_table.cell(0, 1)
+    p_date = cell_date.paragraphs[0]
+    p_date.clear()
+    p_date.alignment = WD_ALIGN_PARAGRAPH.LEFT
     
-    if key in original_text:
-        original_text = original_text.replace(key, temp_placeholder)
-        paragraph.clear()
-        parts = original_text.split(temp_placeholder)
-
-        for i, part in enumerate(parts):
-            paragraph.add_run(part)
-            
-            if i < len(parts) - 1:
-                if not underline_value:
-                    paragraph.add_run(content_value)
-                else:
-                    new_run = paragraph.add_run(content_value)
-                    if original_font:
-                        new_run.font.name = original_font.name
-                        new_run.font.size = original_font.size
-                        new_run.font.bold = original_font.bold
-                    new_run.font.underline = True
-    return True
-            
-# ----------------- ⭐️ הפונקציה המרכזית ⭐️ -----------------
-
-def fill_and_convert_to_pdf(data_wrapper: dict, output_pdf_path: str, template_path: str, libre_office_path: str):
-    
-    form_data = data_wrapper.get('form_data', {})
-    
-    student = form_data.get('studentDetails', {})
-    reasons = form_data.get('discountReasons', {})
-    income = form_data.get('lowIncomeDetails', {})
-    docs = form_data.get('requiredDocuments', {})
-    children_in_custody = form_data.get('childrenInCustody', [])
-    signature_base64 = form_data.get('parentSignature', '')
-    
-    # 1. מיפוי נתונים שטוח עבור ה-replace_and_style_stable
-    replace_map = {
-        '<<Date>>': format_date(form_data.get('formDate')),
-        '<<DeclarantName>>': form_data.get('declarantName'),
-        '<<DeclarantId>>': form_data.get('declarantId'),
-        '<<MaritalStatus>>': form_data.get('maritalStatus'),
-        '<<ChildrenCount>>': str(form_data.get('childrenCount')),
-        '<<Reasoning>>': form_data.get('reasoning'),
-        
-        # פרטי תלמיד
-        '<<StudentName>>': clean_and_format_value(student.get('studentName')),
-        '<<StudentId>>': clean_and_format_value(student.get('studentId')),
-        '<<Kindergarten>>': clean_and_format_value(student.get('kindergarten')),
-        '<<City>>': clean_and_format_value(student.get('city')),
-        
-        # סימונים (X)
-        '<<LowIncome>>': get_mark(reasons.get('lowIncome')),
-        '<<OtherChildSpecialEd>>': get_mark(reasons.get('otherChildSpecialEd')),
-        '<<SocialWorkerRec>>': get_mark(reasons.get('socialWorkerRec')),
-        
-        # פרטי הכנסה
-        '<<Spouse1Status>>': clean_and_format_value(income.get('spouse1Status')),
-        '<<Spouse2Status>>': clean_and_format_value(income.get('spouse2Status')),
-        '<<Spouse1AvgMonthlyIncome>>': clean_and_format_value(income.get('spouse1AvgMonthlyIncome')),
-        '<<Spouse2AvgMonthlyIncome>>': clean_and_format_value(income.get('spouse2AvgMonthlyIncome')),
-        '<<Spouse1Total3Months>>': clean_and_format_value(income.get('spouse1Total3Months')),
-        '<<Spouse2Total3Months>>': clean_and_format_value(income.get('spouse2Total3Months')),
-        
-        # מסמכים
-        '<<LowIncomeDocsUploaded>>': clean_and_format_value(docs.get('lowIncomeDocsUploaded')),
-        '<<OtherSpecialEdDocsUploaded>>': clean_and_format_value(docs.get('otherSpecialEdDocsUploaded')),
-        '<<SocialWorkerDocsUploaded>>': clean_and_format_value(docs.get('socialWorkerDocsUploaded')),
-    }
-    
-    # 1.1: הוספת שדות הילדים הקשיחים למפה (עד 4)
-    for i in range(4):
-        child_item = children_in_custody[i] if i < len(children_in_custody) else {}
-        replace_map[f'<<ChildFirstName_{i}>>'] = clean_and_format_value(child_item.get('firstName'))
-        replace_map[f'<<ChildLastName_{i}>>'] = clean_and_format_value(child_item.get('lastName'))
-        replace_map[f'<<ChildId_{i}>>'] = clean_and_format_value(child_item.get('id'))
+    p_date.add_run("תאריך: ").bold = True
+    underline_run(p_date, format_date(data.get("formDate")))
 
 
-    # 2. הכנה וטעינת המסמך
-    temp_docx_base_name = os.path.basename(output_pdf_path).replace('.pdf', '')
-    temp_docx_path = os.path.join(TEMP_DIR, f"filled_temp_{temp_docx_base_name}.docx")
+# ----------------------------- בניית המסמך -----------------------------
+
+def create_doc(data, output_pdf_path, libre_path, template_path):
 
     if not os.path.exists(template_path):
-        raise FileNotFoundError(f"Template file not found at: {template_path}")
+        raise FileNotFoundError("Template not found.")
 
-    shutil.copyfile(template_path, temp_docx_path)
-    doc = Document(temp_docx_path)
-    
-    # 3. החלפת כל שדות הטקסט באמצעות השיטה העמידה (כולל טבלאות 3 ו-4)
-    def process_element(element):
-        if hasattr(element, 'paragraphs'):
-            for paragraph in element.paragraphs:
-                for key, value in replace_map.items():
-                    # 🛑 השתמש ב replace_and_style_stable לכל השדות!
-                    replace_and_style_stable(paragraph, key, value)
-    
-    process_element(doc)
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                process_element(cell)
+    doc = Document(template_path)
 
-    # 4. טיפול בטבלת הילדים הנוספים (טבלה 2)
-    if len(doc.tables) >= 2:
-        child_table = doc.tables[1] 
-        
-        # 🛑🛑🛑 ניקוי שורות ה-Placeholder הקשיחות 🛑🛑🛑
-        # אנחנו מוחקים את כל השורות פרט לכותרת (אינדקס 0)
-        # מכיוון שהנתונים מולאו קשיח באמצעות MailMerge, עלינו למחוק את ה-4 שורות הדוגמה
-        
-        # מחיקת 4 שורות ה-Placeholder הקשיחות
-        rows_to_delete = min(len(child_table.rows) - 1, 4)
-        for i in range(rows_to_delete):
-            # אנחנו תמיד מוחקים את שורה 1, כי השורות מעל עולות למעלה
-             child_table._element.remove(child_table.rows[1]._element)
-             
-        # מילוי שורות חדשות רק אם יש יותר מ-4 ילדים (ה-4 הראשונים מולאו קשיח)
-        if len(children_in_custody) > 4: 
-            for i in range(4, len(children_in_custody)):
-                child_item = children_in_custody[i]
-                new_row = child_table.add_row()
-                # סדר העמודות: שם פרטי, שם משפחה, מס' זהות
-                new_row.cells[0].text = clean_and_format_value(child_item.get('firstName'))
-                new_row.cells[1].text = clean_and_format_value(child_item.get('lastName'))
-                new_row.cells[2].text = clean_and_format_value(child_item.get('id'))
-    
-    # 5. הטמעת החתימה
-    signature_base64 = form_data.get('parentSignature', '')
-    InsertSignatureImage(doc, '<<ParentSignature>>', signature_base64)
-    
-    # 6. שמירת קובץ ה-DOCX המלא
-    doc.save(temp_docx_path)
-    
-    # 7. המרת DOCX ל-PDF
-    expected_pdf_name = os.path.basename(temp_docx_path).replace('.docx', '.pdf')
-    generated_pdf_path = os.path.join(TEMP_DIR, expected_pdf_name)
-    
-    try:
-        subprocess.run(
-            [
-                data_wrapper.get('libre_office_path'), 
-                '--headless', 
-                '--convert-to', 'pdf', 
-                temp_docx_path, 
-                '--outdir', TEMP_DIR
-            ],
-            capture_output=True, text=True, check=True, timeout=60
-        )
-        
-        # 8. העתקת הקובץ למיקום שה-C# מצפה לו
-        shutil.copyfile(generated_pdf_path, output_pdf_path)
+    # יצירת סטייל RTL אם לא קיים
+    if "RTL_Normal" not in doc.styles:
+        st = doc.styles.add_style("RTL_Normal", WD_STYLE_TYPE.PARAGRAPH)
+        st.font.name = "Arial"
+        st.font.size = Pt(11)
 
-    except subprocess.CalledProcessError as e:
-        # זה ייתן לנו את הודעת השגיאה המדויקת של LibreOffice
-        raise Exception(f"PDF Conversion failed (soffice). Error: {e.stderr}")
-    except FileNotFoundError:
-        raise Exception(f"LibreOffice command not found. Please check 'LibreOfficeExecutablePath' in appsettings.")
+    # מחיקת תוכן אחרי בס"ד
+    found = False
+    for p in doc.paragraphs:
+        if 'בס"ד' in p.text or "בס\"ד" in p.text:
+            found = True
+            p.clear()
+            p.add_run('בס"ד')
+        elif found:
+            p._element.getparent().remove(p._element)
 
-    finally:
-        if os.path.exists(temp_docx_path):
-            os.remove(temp_docx_path)
-        if os.path.exists(generated_pdf_path):
-            os.remove(generated_pdf_path)
+    # ---------------------------------------------------
+    # ⭐️⭐️ דחיסת תוכן (מוריד רווחים ל-0.5pt אם הטופס ארוך) ⭐️⭐️
+    num_children = int(data.get("childrenCount", 0))
+    low_income = data.get("discountReasons", {}).get("lowIncome", False)
+    
+    base_spacing = 6
+    if num_children > 2 and low_income:
+        base_spacing = 3 # דחיסה קלה
+
+    # רווחים אחרי בס״ד
+    for _ in range(4):
+        add_paragraph(doc, "")
+
+    student = data.get("studentDetails", {})
+    reasons = data.get("discountReasons", {})
+    income = data.get("lowIncomeDetails", {})
+    children = data.get("childrenInCustody", [])
+
+    # ---------------------------------------------------
+    # כותרות
+    p = add_paragraph(doc, "הצהרת הורה לצורך מתן הנחה", space_after=4)
+    p.runs[0].bold = True
+    p.runs[0].font.size = Pt(13)
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    p = add_paragraph(doc, "במימון טיפולי טב\"מ - שנה\"ל תשפ\"ו", space_after=12)
+    p.runs[0].bold = True
+    p.runs[0].font.size = Pt(13)
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    add_paragraph(doc, "לכבוד", space_after=base_spacing)
+    add_paragraph(doc, "הנהלת פתחיה", space_after=base_spacing + 6)
+
+    # ---------------------------------------------------
+    # פרטי תלמיד
+    p = add_paragraph(doc, space_after=base_spacing)
+    p.add_run("שם התלמיד/ה: ").bold = True
+    underline_run(p, clean_value(student.get("studentName")))
+
+    p.add_run("  מ.ז.: ").bold = True
+    underline_run(p, clean_value(student.get("studentId")))
+
+    p.add_run("  גן: ").bold = True
+    underline_run(p, clean_value(student.get("kindergarten")))
+
+    p.add_run("  עיר: ").bold = True
+    underline_run(p, clean_value(student.get("city")))
+
+    # ---------------------------------------------------
+    # פרטי מצהיר
+    p = add_paragraph(doc, space_after=base_spacing)
+    p.add_run("אני הח\"מ ").bold = True
+    underline_run(p, clean_value(data.get("declarantName")))
+
+    p.add_run("  ת.ז.: ").bold = True
+    underline_run(p, clean_value(data.get("declarantId")))
+
+    p.add_run("  מצב משפחתי: ").bold = True
+    underline_run(p, clean_value(data.get("maritalStatus")))
+
+    add_paragraph(doc, "מצהיר/ה בזאת כדלקמן:", space_after=12)
+
+    # ---------------------------------------------------
+    # ילדים
+    p = add_paragraph(doc, space_after=base_spacing)
+    p.add_run("א. מספר הילדים מעל גיל 18: ").bold = True
+    underline_run(p, str(num_children))
+    p.add_run(" (יש לצרף צילום ת.ז. כולל הספח)")
+
+    tbl = rtl_table(doc, num_children + 1, 3)
+
+    # ⭐️⭐️ הדגשת כותרות טבלה ⭐️⭐️
+    hdr = tbl.rows[0].cells
+    hdr[0].paragraphs[0].add_run("שם פרטי").bold = True
+    hdr[1].paragraphs[0].add_run("שם משפחה").bold = True
+    hdr[2].paragraphs[0].add_run("מס' זהות").bold = True
+
+    for i in range(num_children):
+        row = tbl.rows[i + 1].cells
+        c = children[i] if i < len(children) else {}
+        # ⭐️ הדגשת תוכן טבלה ⭐️
+        row[0].paragraphs[0].add_run(clean_value(c.get("firstName"), "")).bold = True
+        row[1].paragraphs[0].add_run(clean_value(c.get("lastName"), "")).bold = True
+        row[2].paragraphs[0].add_run(clean_value(c.get("id"), "")).bold = True
+
+    add_paragraph(doc, "", space_after=base_spacing)
+
+    # ---------------------------------------------------
+    # סעיף ב
+    p = add_paragraph(doc, "ב. אני מבקש/ת הנחה מהסיבה:", space_after=base_spacing)
+    p.runs[0].bold = True # ⭐️ הדגשת הכותרת ⭐️
+
+    def add_reason(text, selected):
+        if not selected:
+            return
+        p = add_paragraph(doc, space_after=3)
+        p.paragraph_format.left_indent = Inches(0.4)
+        p.add_run(f"• [{CHECK_MARK}] ").bold = True
+        p.add_run(text).bold = True # ⭐️ הדגשת הסיבה הנבחרת ⭐️
+
+    add_reason("הכנסות נמוכות", low_income)
+    add_reason("ילד נוסף במסגרת חינוך מיוחד (עם אישור לימודים)", reasons.get("otherChildSpecialEd"))
+    add_reason("המלצה מעובדת סוציאלית", reasons.get("socialWorkerRec"))
+
+    add_paragraph(doc, "", space_after=base_spacing)
+
+    # ---------------------------------------------------
+    # סעיף ג – טבלת הכנסות
+    if low_income:
+        p = add_paragraph(doc, "ג. יש לצרף 3 תלושי משכורת...", space_after=base_spacing)
+        p.runs[0].bold = True # ⭐️ הדגשת הכותרת ⭐️
+
+        add_paragraph(doc, "יש למלא את הפרטים:", space_after=base_spacing)
+
+        tbl = rtl_table(doc, 4, 3)
+
+        # ⭐️⭐️ הדגשת כותרות טבלה ⭐️⭐️
+        tbl.rows[0].cells[1].paragraphs[0].add_run("בן הזוג").bold = True
+        tbl.rows[0].cells[2].paragraphs[0].add_run("בת הזוג").bold = True
+
+        tbl.cell(1, 0).paragraphs[0].add_run("מעמד אישי").bold = True
+        tbl.cell(1, 1).paragraphs[0].add_run(clean_value(income.get("spouse1Status"), "שכיר / עצמאי / לא עובד")).bold = True
+        tbl.cell(1, 2).paragraphs[0].add_run(clean_value(income.get("spouse2Status"), "שכירה / עצמאית / לא עובדת")).bold = True
+
+        tbl.cell(2, 0).paragraphs[0].add_run("הכנסה חודשית ממוצעת").bold = True
+        tbl.cell(2, 1).paragraphs[0].add_run(clean_value(income.get("spouse1AvgMonthlyIncome"))).bold = True
+        tbl.cell(2, 2).paragraphs[0].add_run(clean_value(income.get("spouse2AvgMonthlyIncome"))).bold = True
+
+        tbl.cell(3, 0).paragraphs[0].add_run("סה\"כ ב־3 חודשים").bold = True
+        tbl.cell(3, 1).paragraphs[0].add_run(clean_value(income.get("spouse1Total3Months"))).bold = True
+        tbl.cell(3, 2).paragraphs[0].add_run(clean_value(income.get("spouse2Total3Months"))).bold = True
+
+    add_paragraph(doc, "", space_after=base_spacing)
+
+    # ---------------------------------------------------
+    # נימוק
+    p = add_paragraph(doc, space_after=base_spacing)
+    p.add_run("ד. נימוק לבקשה: ").bold = True # ⭐️ הדגשת הכותרת ⭐️
+    underline_run(p, clean_value(data.get("reasoning"), PLACEHOLDER_LINE * 3))
+
+    add_paragraph(doc, "", space_after=base_spacing)
+
+    # ---------------------------------------------------
+    # חתימה
+    insert_signature(doc, data.get("parentSignature"))
+
+    # ---------------------------------------------------
+    # שמירה + PDF
+    temp_docx = os.path.join(TEMP_DIR, "temp_output.docx")
+    doc.save(temp_docx)
+
+    subprocess.run([
+        libre_path, "--headless", "--convert-to", "pdf",
+        temp_docx, "--outdir", TEMP_DIR
+    ], check=True)
+
+    generated_pdf = temp_docx.replace(".docx", ".pdf")
+    shutil.copyfile(generated_pdf, output_pdf_path)
+
+    os.remove(temp_docx)
+    os.remove(generated_pdf)
 
 
-# ----------------- הפונקציה הראשית להפעלה -----------------
+# ----------------------------- main -----------------------------
 
 def main():
-    try:
-        input_json_data = sys.stdin.read()
-        data_wrapper = json.loads(input_json_data)
+    global data
+    wrapper = json.loads(sys.stdin.read())
 
-        output_path = data_wrapper.get('output_pdf_path')
-        template_path = data_wrapper.get('template_path')
-        libre_office_path = data_wrapper.get('libre_office_path') 
+    data = wrapper.get("form_data", {})
+    out = wrapper.get("output_pdf_path")
+    libre = wrapper.get("libre_office_path")
+    template = wrapper.get("template_path")
 
-        if not output_path or not template_path or not libre_office_path:
-            raise ValueError("נתיב שמירה, נתיב תבנית או נתיב LibreOffice חסרים.")
+    if not out or not libre or not template:
+        raise Exception("נתונים חסרים.")
 
-        fill_and_convert_to_pdf(data_wrapper, output_path, template_path, libre_office_path)
+    # ⭐️⭐️⭐️ העברת template_path כארגומנט לפונקציה ⭐️⭐️⭐️
+    create_doc(data, out, libre, template)
 
-        print(json.dumps({'status': 'success', 'path': output_path}))
-
-    except Exception as e:
-        print(json.dumps({'status': 'error', 'message': str(e)}), file=sys.stderr)
-        sys.exit(1)
+    print(json.dumps({"status": "success", "path": out}))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
