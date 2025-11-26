@@ -79,17 +79,17 @@ def replace_and_style_stable(paragraph, key, value, special_handling=False):
         underline_value = True
     else:
         content_value = NINE_UNDERSCORES
-        underline_value = False # אם זה קווים, לא צריך קו תחתון פונטי נוסף
-        if special_handling: # עבור שדות הילד, נשתמש בקו ארוך יותר במקרה של ריק
-             content_value = " " + "_" * 10 + " "
+        underline_value = False  # אם זה קווים, לא צריך קו תחתון פונטי נוסף
+        if special_handling:  # עבור שדות הילד, נשתמש בקו ארוך יותר במקרה של ריק
+            content_value = " " + "_" * 10 + " "
 
     original_text = paragraph.text
     temp_placeholder = f"@@@TEMP_PH_{key}@@@"
-    
+
     # 1. החלפת הטקסט הפנימי במחרוזת זמנית
     if key in original_text:
         original_text = original_text.replace(key, temp_placeholder)
-        
+
         # 2. ניקוי הפסקה (נחוץ כדי להבטיח שהעיצוב נבנה מחדש נכון)
         paragraph.clear()
         parts = original_text.split(temp_placeholder)
@@ -97,7 +97,7 @@ def replace_and_style_stable(paragraph, key, value, special_handling=False):
         # 3. הוספת הריצות
         for i, part in enumerate(parts):
             paragraph.add_run(part)
-            
+
             if i < len(parts) - 1:
                 if not underline_value:
                     # מילוי ב-X או קווים קבועים (NINE_UNDERSCORES)
@@ -109,9 +109,9 @@ def replace_and_style_stable(paragraph, key, value, special_handling=False):
                         new_run.font.name = original_font.name
                         new_run.font.size = original_font.size
                         new_run.font.bold = original_font.bold
-                    new_run.font.underline = True 
-                
-                # טיפול מיוחד לשדות הילד עם רווחים
+                    new_run.font.underline = True
+
+                    # טיפול מיוחד לשדות הילד עם רווחים
                 if special_handling and i < len(parts) - 1:
                     paragraph.add_run(FOUR_SPACES)
     return True
@@ -152,7 +152,7 @@ def fill_and_convert_to_pdf(data: dict, output_pdf_path: str, template_path: str
 
     # מפתחות מיוחדים לשדות הילד הבעייתיים
     child_special_keys = {'{{ChildFirstName}}', '{{ChildLastName}}', '{{ChildID}}', '{{ChildDateOfBirth}}'}
-    
+
     temp_docx_base_name = os.path.basename(output_pdf_path).replace('.pdf', '')
     temp_docx_path = os.path.join(TEMP_DIR, f"filled_temp_{temp_docx_base_name}.docx")
 
@@ -168,18 +168,17 @@ def fill_and_convert_to_pdf(data: dict, output_pdf_path: str, template_path: str
         for paragraph in element.paragraphs:
             # 1. טיפול בשדות הילד המופיעים בפסקה אחת (שיטת השימור)
             is_child_paragraph = any(key in paragraph.text for key in child_special_keys)
-            
+
             if is_child_paragraph:
                 for key in child_special_keys:
                     # שימוש ב-replace_and_style_stable
                     replace_and_style_stable(paragraph, key, replace_map.get(key, ''), special_handling=True)
-            
+
             # 2. טיפול בכל שאר המפתחות (כולל שדות הילד שכבר טופלו בשלב 1)
             for key, value in replace_map.items():
                 if key not in child_special_keys or not is_child_paragraph:
                     # שימוש ב-replace_and_style המקורית
                     replace_and_style_stable(paragraph, key, value, special_handling=False)
-
 
     # מעבר על כל הפסקאות והטבלאות במסמך
     process_element(doc)

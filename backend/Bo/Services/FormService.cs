@@ -26,7 +26,7 @@ public class FormService : IFormService
 
     // ⭐️ שמות תבניות
     private const string HealthTemplateFileName = "health_declaration_template.docx";
-    private const string DiscountTemplateFileName = "discount_request_template_official.docx";
+    private const string DiscountTemplateFileName = "רקע.docx";
 
 
     public FormService(IFormRepository formRepository, IConfiguration configuration, IFileStorageService fileStorageService) // ⭐️ הוספה לקונסטרוקטור
