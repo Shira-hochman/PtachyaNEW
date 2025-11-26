@@ -1,31 +1,44 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router'; // 1. ייבוא Router
-import { CommonModule } from '@angular/common'; // 2. חובה עבור קומפוננטות standalone
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-main',
-  standalone: true, // 3. הגדרה כ-standalone
-  imports: [CommonModule], // 4. ייבוא CommonModule
-  templateUrl: './main.html',
-  styleUrl: './main.css',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './main.html', // ודאי שהשמות תואמים לקבצים שלך
+  styleUrls: ['./main.css'],
 })
-export class Main {
-  // 5. הזרקת ה-Router
+export class Main implements OnInit {
+  
+  // משתנה לשם המשתמש (ניתן לשלוף אותו מה-Service בהמשך)
+  userName: string = 'הורה/ילד יקר'; 
+  currentDate: string = '';
+
   constructor(private router: Router) {}
 
+  ngOnInit(): void {
+    // הגדרת התאריך הנוכחי לתצוגה
+    const now = new Date();
+    this.currentDate = now.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
   /**
-   * ניווט לטופס הצהרת בריאות (הכפתור הראשון)
+   * ניווט לטופס הצהרת בריאות
    */
   onButton1Click(): void {
-    // ⭐️ ניתוב לנתיב טופס הצהרת הבריאות
     this.router.navigate(['/child/health-declaration']);
   }
 
   /**
-   * ניווט לטופס התשלום שיצרנו (הכפתור השני)
+   * ניווט לטופס התשלום
    */
   onButton2Click(): void {
-    // ⭐️ ניתוב לנתיב טופס התשלום
     this.router.navigate(['/child/payment-form']);
+  }
+  
+  logout(): void {
+      // כאן תוסיפי בעתיד לוגיקת התנתקות
+      this.router.navigate(['/login']);
   }
 }

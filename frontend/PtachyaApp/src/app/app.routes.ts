@@ -18,7 +18,7 @@ import { DataUpdateComponent } from './admin/components/data-update/data-update'
 // ----------------------------------------------------------------------
 // 2. ייבוא קומפוננטות משתמש (Parent/Child Modules)
 // ----------------------------------------------------------------------
-import { Login as ParentLoginComponent } from './child/components/login/login'; 
+import { LoginComponent as ParentLoginComponent } from './child/components/login/login'; 
 import { Main } from './child/components/main/main';
 import { HealthDeclarationComponent } from './child/components/health-declaration/health-declaration';
 import { PaymentForm } from './child/components/payment-form/payment-form'; 

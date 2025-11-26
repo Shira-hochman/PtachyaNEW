@@ -1,125 +1,192 @@
-/* dashboard.component.css */
+/* הגדרות גלובליות לאפליקציה (שעוברות דרך admin-layout) */
+:root {
+    --color-primary: #007bff; /* כחול בסיסי (משמש פחות ב-Dashboard) */
+    --color-accent: #28a745; /* ירוק-כחלחל (כמו באתר) */
+    --color-text: #333;
+    --color-bg-light: #f8f9fa;
+    --color-shadow: rgba(0, 0, 0, 0.08);
+}
 
+.dashboard-wrapper {
+    padding: 20px;
+    direction: rtl; /* כיוון קריאה מימין לשמאל */
+    font-family: 'Arial', sans-serif;
+}
+
+/* ------------------ כותרת ------------------ */
 .dashboard-header h1 {
     font-size: 2rem;
-    color: #3f51b5;
+    color: var(--color-text); /* צבע טקסט ראשי */
     margin-bottom: 5px;
 }
 
 .dashboard-header p {
-    color: #757575;
+    color: #6c757d;
     margin-bottom: 30px;
 }
 
-/* ------------------ רשת כרטיסיות סטטיסטיקה ------------------ */
+/* ------------------ רשת סטטיסטיקה ------------------ */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* יצירת רשת מגיבה */
-    gap: 20px;
+    /* מגיב: 2 עמודות לרוחב קטן, 4 לרוחב גדול */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+    gap: 25px;
     margin-bottom: 40px;
 }
 
 .stat-card {
     background-color: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    display: flex;
-    align-items: center;
-    transition: transform 0.2s;
+    padding: 25px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px var(--color-shadow);
+    transition: transform 0.3s ease-out;
+    border-right: 5px solid transparent; /* קו הפרדה ויזואלי */
+    display: grid;
+    grid-template-columns: 1fr;
 }
 
 .stat-card:hover {
-    transform: translateY(-3px); /* אפקט קטן למראה מקצועי */
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.icon {
-    font-size: 3rem;
-    margin-left: 15px;
+.card-icon {
+    color: var(--color-accent);
+    margin-bottom: 15px;
+    font-size: 1.5rem;
 }
 
-.details {
+.card-details {
     display: flex;
     flex-direction: column;
 }
 
-.value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #3f51b5;
-}
-
-.label {
-    color: #757575;
+.card-label {
     font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 600;
 }
 
-/* כרטיסיות התראה */
-.alert-card {
-    border-left: 5px solid #ff9800; /* סמן כתום לאזהרה */
-    display: block; /* כדי לאפשר כפתור נפרד למטה */
+.card-value {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: var(--color-text); 
+    margin-top: 5px;
 }
 
-.alert-card .value {
-    color: #ff9800;
+/* ⭐️⭐️⭐️ הוספת עיצוב הכרטיסיות הרגילות ⭐️⭐️⭐️ */
+
+/* כרטיסיית ילדים רשומים - כחול */
+.stat-card.total-children {
+    border-right-color: #007bff; /* כחול */
+}
+.stat-card.total-children .card-icon,
+.stat-card.total-children .card-value {
+    color: #007bff; /* צביעת האייקון והערך בכחול */
 }
 
-.quick-link {
+/* כרטיסיית גנים פעילים - ירוק */
+.stat-card.active-gardens {
+    border-right-color: var(--color-accent); /* ירוק-כחלחל */
+}
+.stat-card.active-gardens .card-icon,
+.stat-card.active-gardens .card-value {
+    color: var(--color-accent); /* צביעת האייקון והערך בירוק */
+}
+
+
+/* התראות (Alerts) */
+.alert.pending-forms {
+    border-right-color: #ffc107; /* צהוב/כתום אזהרה */
+}
+.alert.pending-forms .card-value {
+    color: #ffc107;
+}
+
+.alert.unpaid-payments {
+    border-right-color: #dc3545; /* אדום דחוף */
+}
+.alert.unpaid-payments .card-value {
+    color: #dc3545;
+}
+
+/* כפתורי לינק מהיר בתוך כרטיסיות */
+.action-link {
     background: none;
     border: none;
-    color: #3f51b5;
-    font-weight: bold;
+    color: var(--color-accent); 
+    font-weight: 600;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 15px;
     padding: 0;
     text-align: right;
     display: block;
     width: 100%;
+    transition: color 0.2s;
+    font-size: 0.9rem;
 }
 
+.action-link:hover {
+    color: #007bff;
+}
 
-/* ------------------ כפתורי פעולה מהירה ------------------ */
+/* ------------------ פעולות מהירות ------------------ */
 .action-section h2 {
-    color: #333;
+    font-size: 1.5rem;
+    color: var(--color-text);
     margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
 }
 
-.quick-actions {
+.quick-actions-grid {
     display: flex;
-    gap: 15px;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .action-button {
-    flex: 1;
-    background-color: #e3f2fd; /* כחול בהיר */
-    color: #3f51b5;
-    border: 1px solid #90caf9;
-    padding: 20px;
-    border-radius: 8px;
-    cursor: pointer;
+    flex: 1 1 250px; /* גמיש, אבל לא יקטן מ-250px */
+    padding: 25px;
+    border-radius: 10px;
     font-size: 1.1rem;
-    font-weight: bold;
-    transition: background-color 0.2s;
+    font-weight: 700;
+    cursor: pointer;
     text-align: center;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.action-button:hover {
-    background-color: #bbdefb;
-}
-
-.action-button .icon {
+.action-icon {
     display: block;
-    font-size: 1.5rem;
-    margin-bottom: 5px;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
 }
 
-.action-button.primary {
-    background-color: #3f51b5;
+/* כפתור ראשי - ניהול ילדים */
+.primary-btn {
+    background-color: var(--color-accent); 
     color: white;
+    border: 2px solid var(--color-accent);
+    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
 }
 
-.action-button.primary:hover {
-    background-color: #303f9f;
+.primary-btn:hover {
+    background-color: #218838;
+}
+
+/* כפתורים משניים */
+.secondary-btn {
+    background-color: white;
+    color: var(--color-accent); 
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.secondary-btn:hover {
+    background-color: #e2e6ea;
+    color: #0056b3;
 }

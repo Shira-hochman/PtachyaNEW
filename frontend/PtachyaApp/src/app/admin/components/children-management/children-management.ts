@@ -1,51 +1,52 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { HttpClientModule } from '@angular/common/http'; 
-import { FormsModule } from '@angular/forms'; // ⬅️ ייבוא לשימוש ב-ngModel לחיפוש/סינון
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ChildDataService, ChildDto } from '../../services/child-data.service';
-import { RouterLink } from '@angular/router'; // ⬅️ לניווט למסך הוספת ילד
+// import { EditChildModalComponent } from '../edit-child-modal/edit-child-modal.component'; // ⬅️ ייבוא המודל לעריכה
 
 @Component({
-  selector: 'app-children-management', // ⬅️ שם הסלקטור החדש
+  selector: 'app-children-management', 
   standalone: true, 
-  imports: [CommonModule, HttpClientModule, FormsModule, RouterLink], // ⬅️ הוספנו FormsModule ו-RouterLink
-  templateUrl: './children-management.html', // ⬅️ נניח ששם קובץ ה-HTML שונה/עודכן
+  imports: [CommonModule, HttpClientModule, FormsModule, RouterLink], // ⬅️ הוספת המודל
+  templateUrl: './children-management.html', 
   styleUrl: './children-management.css'
 })
-export class ChildrenManagementComponent implements OnInit { // ⬅️ שם הקלאס החדש
+export class ChildrenManagementComponent implements OnInit {
   
   children: ChildDto[] | null = null; 
   isLoading: boolean = false;
   errorMessage: string | null = null;
   
-  // ⭐️ שדות חדשים לחיפוש וסינון
+  // פילטרים
   searchTerm: string = '';
   selectedKindergartenId: number | null = null;
-  kindergartens: any[] = [{ id: 1, name: 'גן אלון' }, { id: 2, name: 'גן ברוש' }]; // נתונים לדוגמה
+  kindergartens: any[] = [{ id: 1, name: 'גן אלון' }, { id: 2, name: 'גן ברוש' }]; 
   
+  // ⭐️ משתנים לניהול המודל
+  isModalOpen: boolean = false;
+  childToEdit: ChildDto | null = null; 
+
   constructor(private childDataService: ChildDataService) { }
 
   ngOnInit() {
-    this.loadChildren(); // ⭐️ טוענים נתונים אוטומטית בכניסה למסך
+    this.loadChildren(); 
   }
 
   /**
-   * טוען את רשימת הילדים מהשרת עם פרמטרים של חיפוש וסינון
+   * טוען ומסנן את רשימת הילדים (צד לקוח לצורך הדגמה)
    */
   loadChildren(): void {
     this.isLoading = true;
     this.errorMessage = null;
     this.children = null; 
     
-    // 💡 בפרויקט אמיתי, היינו קוראים לשירות חדש:
-    // this.childDataService.getFilteredChildren(this.searchTerm, this.selectedKindergartenId).subscribe({ ... });
-
-    // כרגע נשתמש בקיים ונבצע סינון בסיסי בצד לקוח לצורך הדגמה
     this.childDataService.getAllChildren().subscribe({
         next: (data: ChildDto[]) => {
             let filteredData = data;
             
-            // ⭐️ סינון בסיסי לפי טקסט (כאשר זה בצד לקוח)
+            // סינון לפי טקסט
             if (this.searchTerm) {
                 const term = this.searchTerm.toLowerCase();
                 filteredData = filteredData.filter(child => 
@@ -54,19 +55,10 @@ export class ChildrenManagementComponent implements OnInit { // ⬅️ שם הק
                     child.idNumber.includes(term)
                 );
             }
-            // ⭐️ סינון לפי גן
-           // ילדים עם שגיאת TS2367 (השוואת סוגים לא תואמים)
-// ⭐️ סינון לפי גן - הבלוק המתוקן
+            // סינון לפי גן (מניעת שגיאת סוג)
             if (this.selectedKindergartenId !== null) {
-                // המרת הערך הנבחר מה-HTML למספר
                 const selectedId = Number(this.selectedKindergartenId);
-                
-                filteredData = filteredData.filter(child => {
-                    // 💡 כדי למנוע שגיאות סוג, אנו ממירים גם את השדה באובייקט הילד למספר
-                    // אנו משתמשים ב-== במקום === כדי לאפשר השוואה גם אם הטיפוסים שונים קלות,
-                    // או שפשוט נמיר את שניהם למספרים:
-                    return Number(child.kindergartenId) === selectedId;
-                });
+                filteredData = filteredData.filter(child => Number(child.kindergartenId) === selectedId);
             }
             
             this.children = filteredData;
@@ -81,9 +73,37 @@ export class ChildrenManagementComponent implements OnInit { // ⬅️ שם הק
     });
   }
 
-  // ⭐️ פונקציה לטיפול בלחיצה על "עריכה"
+  /**
+   * פותח את חלון עריכת הילד הנבחר
+   */
   editChild(childId: number): void {
-    alert(`פתח חלון עריכה עבור ילד ID: ${childId}`);
-    // 💡 כאן נפעיל מודל קופץ (Modal) עם טופס העריכה
+    const selectedChild = this.children?.find(c => c.childId === childId);
+    if (selectedChild) {
+      this.childToEdit = selectedChild;
+      this.isModalOpen = true; // פתיחת המודל
+    }
+  }
+
+  /**
+   * מטפל באירוע שמירת הילד מהמודל
+   */
+  handleChildUpdate(updatedChild: ChildDto): void {
+    // עדכון רשימת הילדים הנוכחית ב-UI (לצורך רענון מיידי)
+    if (this.children) {
+      const index = this.children.findIndex(c => c.childId === updatedChild.childId);
+      if (index > -1) {
+        this.children[index] = updatedChild; 
+      }
+    }
+    this.isModalOpen = false; 
+    this.childToEdit = null;
+  }
+  
+  /**
+   * סוגר את המודל (ביטול או שמירה)
+   */
+  handleModalClose(): void {
+    this.isModalOpen = false;
+    this.childToEdit = null;
   }
 }

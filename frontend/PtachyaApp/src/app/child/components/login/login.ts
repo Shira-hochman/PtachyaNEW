@@ -1,67 +1,64 @@
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // 1. חובה עבור [(ngModel)]
-import { CommonModule } from '@angular/common'; // 2. חובה עבור קומפוננטות standalone
-import { Router } from '@angular/router'; 
-import { ChildAuthService } from '../../services/child-auth.service'; 
-import { Child } from '../../../../models/child'; // ייבוא המודל
+import { CommonModule } from '@angular/common'; // חובה עבור ngIf, ngClass וכו'
+import { FormsModule } from '@angular/forms';   // חובה עבור ngModel
+import { Router } from '@angular/router';
+import { ChildAuthService } from '../../services/child-auth.service'; // ודאי שהנתיב נכון
 
 @Component({
   selector: 'app-login',
-  // 4. הקומפוננטה היא standalone
-  standalone: true, 
-  imports: [
-    FormsModule, 
-    CommonModule 
-  ],
-  templateUrl: './login.html', // 5. ודא ששם הקובץ הוא 'login.html'
-  styleUrl: './login.css',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './login.html',
+  styleUrls: ['./login.css']
 })
-export class Login implements OnInit { 
+export class LoginComponent implements OnInit {
   
-  // 6. הוספת המשתנים הנדרשים על ידי ה-HTML
-  childId: string = ''; 
+  childId: string = '';
   birthDate: string = '';
   message: string = '';
+  isLoading: boolean = false; // הוספתי משתנה לניהול מצב טעינה (ספינר)
 
-  // הודעות השגיאה הצפויות מהשרת (כדי להבדיל הצלחה מכישלון)
-  private errorMessages = ['שגוי', 'אחד מהנתונים שהוקש שגוי'];
-
-  // 7. הזרקת ה-Service וה-Router
   constructor(
-    private authService: ChildAuthService, 
+    private authService: ChildAuthService,
     private router: Router
   ) {}
-  
-  ngOnInit(): void {
-  }
 
- login() {
-    this.message = 'בדיקת נתונים...';
+  ngOnInit(): void {}
+
+  login() {
+    this.message = '';
     
+    // ולידציה בסיסית
     if (!this.childId || !this.birthDate) {
         this.message = 'יש למלא את כל השדות.';
         return;
     }
     
+    this.isLoading = true; // הפעלת אנימציית טעינה
+    this.message = 'בודק נתונים...';
+
     this.authService.getChildDetails(this.childId, this.birthDate).subscribe({
-     next: (response) => {
-        // ⭐️ תיקון: שולפים את נתוני הילד המלאים מתוך ה-Service 
-        // (ה-Service כבר שמר אותם ב-LocalStorage, כפי שהגדרנו)
-         const child = this.authService.getCurrentChild();
-         
-         if (child) {
-            this.message = `התחברות מוצלחת! ברוך הבא, ${child.firstName} ${child.lastName}`;
-            this.router.navigate(['/child/main']); 
-         } else {
+      next: (response) => {
+        const child = this.authService.getCurrentChild();
+        
+        if (child) {
+           this.message = `התחברות מוצלחת! ברוך הבא, ${child.firstName} ${child.lastName}`;
+           // השהייה קצרה כדי שהמשתמש יראה את ההודעה לפני המעבר
+           setTimeout(() => {
+             this.router.navigate(['/child/main']); 
+           }, 1000);
+        } else {
+             this.isLoading = false;
              this.message = 'התחברות הצליחה אך פרטי הילד לא נשמרו. אנא נסה שנית.';
-         }
-      },
-      error: (err) => {
-        // טיפול בשגיאת רשת או שגיאת סטטוס HTTP
-        const errorMsg = err.error?.title || err.error?.message || 'אחד מהנתונים שהוקש שגוי. נסה שנית.';
-        this.message = errorMsg; 
-        console.error('Login failed:', err);
-      }
-    });
-}
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        // חילוץ הודעת השגיאה
+        const errorMsg = err.error?.title || err.error?.message || 'אחד מהנתונים שהוקש שגוי. נסה שנית.';
+        this.message = errorMsg; 
+        console.error('Login failed:', err);
+      }
+    });
+  }
 }

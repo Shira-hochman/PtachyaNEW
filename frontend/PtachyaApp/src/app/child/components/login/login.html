@@ -1,22 +1,67 @@
-<div class="login-container">
-  <h2>כניסה לאזור הילד/הורה</h2>
+<div class="login-page" dir="rtl">
+  
+  <div class="login-card">
+    
+    <!-- כותרת ולוגו -->
+    <div class="card-header">
+      <div class="logo-container">
+        <!-- ניתן להחליף את ה-src ללוגו המקומי שלך -->
+        <img src="https://upload.wikimedia.org/wikipedia/he/4/4b/%D7%A4%D7%AA%D7%97%D7%99%D7%94.png" alt="לוגו פתחיה" class="logo">
+      </div>
+      <h2>כניסה לאזור הילד/הורה</h2>
+      <p class="subtitle">אנא הזינו את פרטי הילד/ה לכניסה למערכת</p>
+    </div>
 
-  <input
-    type="text"
-    [(ngModel)]="childId"
-    placeholder="תעודת זהות של הילד"
-    required
-    maxlength="9"
-  />
+    <!-- טופס -->
+    <div class="card-body">
+      
+      <!-- שדה תעודת זהות -->
+      <div class="form-group">
+        <label for="childId">תעודת זהות</label>
+        <div class="input-wrapper">
+          <input
+            id="childId"
+            type="text"
+            [(ngModel)]="childId"
+            placeholder="הקלד ת.ז. (9 ספרות)"
+            maxlength="9"
+            [class.input-error]="message && !childId && message !== 'בודק נתונים...'"
+          />
+          <span class="icon">🆔</span>
+        </div>
+      </div>
 
-  <input
-    type="date"
-    [(ngModel)]="birthDate"
-    placeholder="תאריך לידה"
-    required
-  />
+      <!-- שדה תאריך לידה -->
+      <div class="form-group">
+        <label for="birthDate">תאריך לידה</label>
+        <div class="input-wrapper">
+          <input
+            id="birthDate"
+            type="date"
+            [(ngModel)]="birthDate"
+            [class.input-error]="message && !birthDate && message !== 'בודק נתונים...'"
+          />
+        </div>
+      </div>
 
-  <button (click)="login()">התחברות</button>
+      <!-- כפתור התחברות -->
+      <button (click)="login()" [disabled]="isLoading" class="btn-login">
+        <span *ngIf="!isLoading">התחברות</span>
+        <span *ngIf="isLoading" class="loader"></span> <!-- ספינר CSS -->
+      </button>
 
-  <p>{{ message }}</p>
+      <!-- הודעות -->
+      <div class="message-container" *ngIf="message">
+        <p [ngClass]="{'success-msg': message.includes('מוצלחת'), 'error-msg': !message.includes('מוצלחת') && !message.includes('בודק')}">
+          {{ message }}
+        </p>
+      </div>
+
+    </div>
+    
+    <div class="card-footer">
+      <p>© כל הזכויות שמורות לעמותת פתחיה</p>
+    </div>
+
+  </div>
 </div>

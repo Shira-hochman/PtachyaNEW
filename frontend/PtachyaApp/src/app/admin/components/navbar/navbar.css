@@ -1,0 +1,97 @@
+/* ------------------ גלובלי ------------------ */
+:host {
+    display: block;
+    direction: rtl;
+}
+
+/* ------------------ פס הניווט הראשי ------------------ */
+.admin-navbar {
+    /* גוונים בהשראת אתר פתחיה (כחול כהה/אפור בהיר) */
+    background-color: #ffffff; 
+    border-bottom: 3px solid #007bff; /* קו כחול הדגשה למטה */
+    color: #333;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 50; /* ודא שהוא מעל התוכן */
+    height: 60px; /* גובה קבוע */
+}
+
+/* ------------------ לוגו וכותרת המערכת ------------------ */
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.petachya-logo {
+    height: 40px; /* גודל לוגו */
+    width: auto;
+    object-fit: contain;
+}
+
+.system-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #555;
+}
+
+/* ------------------ פרטי משתמש ופעולות ------------------ */
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.manager-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #007bff; /* שם המנהל בכחול */
+}
+
+.logout-btn {
+    background-color: #dc3545; /* אדום/אזהרה ליציאה */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.logout-btn svg {
+    stroke: white;
+}
+
+/* ------------------ רספונסיביות ------------------ */
+
+@media (max-width: 768px) {
+    .admin-navbar {
+        padding: 10px 15px;
+    }
+    
+    .system-title {
+        display: none; /* הסתרת כותרת המערכת במסכים קטנים */
+    }
+
+    .manager-name {
+        font-size: 0.9rem;
+    }
+
+    .logout-btn {
+        padding: 6px 10px;
+        font-size: 0.9rem;
+    }
+}

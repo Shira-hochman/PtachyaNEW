@@ -20,7 +20,6 @@ namespace Dal_Repository.ModelsConverters
                 LastName = child.lastName,
                 FirstName=child.FirstName,
                 SchoolYear = child.SchoolYear,
-                HealthDeclarationLink = child.HealthDeclarationLink,
                 Phone = child.Phone,
                 Email = child.Email
             };
@@ -36,7 +35,6 @@ namespace Dal_Repository.ModelsConverters
                 BirthDate = childDto.BirthDate,
                 //FullName = childDto.FullName,
                 SchoolYear = childDto.SchoolYear,
-                HealthDeclarationLink = childDto.HealthDeclarationLink,
                 Phone = childDto.Phone,
                 Email = childDto.Email
             };
@@ -52,7 +50,6 @@ namespace Dal_Repository.ModelsConverters
                 //FullName = importDto.FullName,
                 BirthDate = importDto.BirthDate!.Value,
                 SchoolYear = importDto.SchoolYear,
-                HealthDeclarationLink = importDto.FormLink,
                 KindergartenId = kindergartenId,
                 Phone = phone, 
                 Email = email  
@@ -69,7 +66,6 @@ namespace Dal_Repository.ModelsConverters
             existingChild.BirthDate = childDto.BirthDate;
             //existingChild.FullName = childDto.FullName;
             existingChild.SchoolYear = childDto.SchoolYear;
-            existingChild.HealthDeclarationLink = childDto.HealthDeclarationLink;
             existingChild.Phone = childDto.Phone;
             existingChild.Email = childDto.Email;
         }

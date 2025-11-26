@@ -1,0 +1,107 @@
+/* הגדרת משתני צבע כלליים */
+:root {
+    --color-sidebar-bg: #ffffff; 
+    --color-sidebar-border: #e0e0e0; 
+    --color-text-normal: #4a4a4a; 
+    --color-text-hover: #007bff; /* כחול לריחוף */
+    --color-active-bg: #e6f2ff; /* רקע כחול בהיר מאוד לפריט פעיל */
+    --color-active-border: #007bff; /* כחול הדגשה לפריט פעיל */
+    --color-icon-normal: #4a4a4a; /* ⭐️ תיקון: צבע אייקון רגיל - אפור כהה (גלוי תמיד) ⭐️ */
+    --color-icon-hover: #007bff; /* אייקון כחול לריחוף */
+}
+
+.admin-sidebar {
+    width: 250px;
+    min-width: 250px;
+    background-color: var(--color-sidebar-bg);
+    border-left: 1px solid var(--color-sidebar-border); 
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.03);
+    padding: 15px 0;
+    height: 100%;
+    overflow-y: auto; 
+    direction: rtl; 
+    position: relative; 
+}
+
+/* ------------------ פריט בתפריט ------------------ */
+.menu-item {
+    padding: 12px 25px;
+    margin: 4px 0;
+    cursor: pointer;
+    color: var(--color-text-normal);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border-right: 5px solid transparent; 
+    font-size: 1rem;
+    outline: none; 
+}
+
+.menu-item:hover {
+    background-color: var(--color-hover); 
+    color: var(--color-text-hover); 
+}
+
+/* ------------------ אייקונים ------------------ */
+.item-icon {
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    width: 20px; 
+    height: 20px;
+}
+
+.menu-item svg {
+    stroke: var(--color-icon-normal); /* ⭐️ צבע אייקון גלוי תמיד ⭐️ */
+    transition: stroke 0.2s ease;
+}
+
+.menu-item:hover svg {
+    stroke: var(--color-icon-hover); 
+}
+
+/* ------------------ מצב פעיל (Active Link) ------------------ */
+.active-link {
+    background-color: var(--color-active-bg); 
+    color: var(--color-active-border) !important; 
+    font-weight: bold;
+    border-right-color: var(--color-active-border); /* קו הדגשה כחול בולט בצד ימין */
+}
+
+.active-link svg {
+    stroke: var(--color-active-border); /* אייקון כחול בולט כשהפריט פעיל */
+}
+
+/* ------------------ רספונסיביות (למסכים קטנים) ------------------ */
+@media (max-width: 992px) {
+    .admin-sidebar {
+        width: 70px; 
+        min-width: 70px;
+        padding: 15px 0;
+        border-left: none; 
+        box-shadow: none;
+    }
+
+    .item-label {
+        display: none; 
+    }
+
+    .menu-item {
+        justify-content: center; 
+        padding: 15px 0;
+        gap: 0;
+        border-right: 3px solid transparent; 
+    }
+
+    .active-link {
+        border-right-color: var(--color-active-border); 
+        background-color: var(--color-hover); 
+        color: var(--color-text-hover) !important; 
+    }
+
+    .active-link svg {
+        stroke: var(--color-icon-hover); 
+    }
+}

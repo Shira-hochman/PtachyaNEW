@@ -70,22 +70,32 @@ public partial class PtachiyaContext : DbContext
                 .HasColumnName("phone");
         });
 
+        // מתוך קובץ PtachiyaContext.cs
         modelBuilder.Entity<Form>(entity =>
         {
             entity.HasKey(e => e.FormId).HasName("PK__Forms__FB05B7DD3B2B1448");
 
-            // 🛑 הוסר: entity.Property(e => e.FormLink).HasMaxLength(255);
-
-            // ⭐️ מיפוי לשדות החדשים:
+            // 🛑 מחיקה: נמחק את כל הקטע של FileContent 
+            /*
             entity.Property(e => e.FileContent)
                 .HasColumnType("varbinary(max)"); // מאפשר אחסון קבצים גדולים
+            */
+
+            // ⭐️ הוספה: מיפוי השדות החדשים (אם המודל שלהם הוזן נכון):
+            entity.Property(e => e.FormType).HasMaxLength(50);
+            entity.Property(e => e.FilePath).HasMaxLength(512); // הגדרת אורך נתיב
+            entity.Property(e => e.AttachmentPaths).HasMaxLength(4000); // נתיבים מרובים
+
+            // השאר את ה-ContentType (אם עדיין קיים במודל):
             entity.Property(e => e.ContentType)
                 .HasMaxLength(255)
                 .IsRequired(true);
 
             entity.Property(e => e.SubmittedDate).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Child).WithMany(p => p.Forms)
+      
+
+        entity.HasOne(d => d.Child).WithMany(p => p.Forms)
                 .HasForeignKey(d => d.ChildId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Forms__ChildId__59063A47");
