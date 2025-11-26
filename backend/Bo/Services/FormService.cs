@@ -9,11 +9,13 @@ using Dal.Models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Linq;
+using NPOI.POIFS.Properties;
 
 public class FormService : IFormService
 {
     private readonly IFormRepository _formRepository;
     private readonly IConfiguration _configuration;
+    private readonly IFileStorageService _fileStorageService;
 
     private const string ScriptsFolder = "Scripts";
     private const string PermanentFormsFolder = "PermanentForms"; // תיקייה קבועה לשמירת PDF
@@ -27,91 +29,129 @@ public class FormService : IFormService
     private const string DiscountTemplateFileName = "discount_request_template_official.docx";
 
 
-    public FormService(IFormRepository formRepository, IConfiguration configuration)
+    public FormService(IFormRepository formRepository, IConfiguration configuration, IFileStorageService fileStorageService) // ⭐️ הוספה לקונסטרוקטור
     {
         _formRepository = formRepository;
         _configuration = configuration;
+        _fileStorageService = fileStorageService; // ⭐️ שמירה בשדה פרטי
     }
 
-    // ⭐️ שיטה קיימת: הצהרת בריאות (משתמש ב-generate_pdf_from_docx.py)
+    // ... (קוד קיים) ...
+
+    // ⭐️ שיטה קיימת: הצהרת בריאות
+    // FormService.cs
+
     public async Task<byte[]> ProcessAndGenerateHealthDeclarationAsync(HealthDeclarationDto declarationDto)
     {
+        // 1. ⭐️ שלב קריטי: המרת ChildId (ת"ז) ל-string
+        string idNumber = declarationDto.ChildDetails.ChildId.ToString();
+
+        // 2. ⭐️ איתור המפתח הראשי ChildId ב-DB לפי תעודת הזהות
+        int? actualChildPK = await _formRepository.GetChildPkByIdNumberAsync(idNumber);
+
+        if (!actualChildPK.HasValue)
+        {
+            // 🛑 שגיאה: הילד לא קיים במסד הנתונים
+            throw new ArgumentException($"Child with ID number {idNumber} not found in database.");
+        }
+
+        int childPK = actualChildPK.Value;
+
+        // 3. שימוש ב-PK הנכון (childPK) בכל מקום
         return await ProcessAndGenerateFormAsync(
             declarationDto,
             HealthTemplateFileName,
-            HealthPythonScriptName, // 🛑 שימוש בסקריפט הבריאות
-            $"declaration_{declarationDto.ChildDetails.ChildId}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf",
-            // פונקציה לשמירת לינק
-            async (pdfFileName, childId) =>
+            HealthPythonScriptName,
+            $"declaration_{childPK}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf", // ⬅️ שימוש ב-PK
+
+            async (finalPath, childId) =>
             {
-                string baseUrl = _configuration["AppSettings:BaseUrl"] ?? "http://localhost:5000/";
-                string formLink = $"{baseUrl}api/Files/DownloadForm/{pdfFileName}";
-                Console.WriteLine($"Saving link for child ID: {childId} → {formLink}");
-                await _formRepository.UpdateChildFormLinkAsync(childId, formLink);
+                var newFormEntry = new Form
+                {
+                    ChildId = childPK, // ⬅️ ⭐️ שימוש ב-PK הנכון לשמירה!
+                    FormType = "HEALTH_DECLARATION",
+                    FilePath = finalPath,
+                    SubmittedDate = DateTime.Now,
+                    ContentType = "application/pdf"
+                };
+                await _formRepository.AddAsync(newFormEntry);
+                Console.WriteLine($"Form record created for Health Declaration. Child ID: {childPK}");
             }
         );
     }
 
-    // ⭐️⭐️⭐️ שיטה חדשה: בקשת הנחה (משתמש ב-process_discount_request.py) ⭐️⭐️⭐️
-    // ⭐️⭐️⭐️ שיטה חדשה: בקשת הנחה (כעת מקבלת את נתיבי הקבצים) ⭐️⭐️⭐️
+    // ⭐️⭐️⭐️ שיטה חדשה: בקשת הנחה ⭐️⭐️⭐️
+    // FormService.cs - מתודת ProcessAndGenerateDiscountRequestAsync
+
     public async Task<byte[]> ProcessAndGenerateDiscountRequestAsync(DiscountRequestDto requestDto, string uploadedPaths)
     {
-        // הפונקציה ProcessAndGenerateFormAsync מקבלת:
-        // 1. formData
-        // 2. templateFileName
-        // 3. pythonScriptName
-        // 4. pdfFileName
-        // 5. postProcessAction (ה-Lambda Function ששומרת לינקים)
+        // 1. ⭐️ שלב קריטי: איתור המפתח הראשי (PK) לפי תעודת הזהות ⭐️
+        string idNumber = requestDto.StudentDetails.StudentId;
 
+        // 2. איתור המפתח הראשי ChildId ב-DB
+        // 💡 הערה: חובה לוודא שפונקציה זו קיימת ב-IFormRepository
+        int? actualChildPK = await _formRepository.GetChildPkByIdNumberAsync(idNumber);
+
+        if (!actualChildPK.HasValue)
+        {
+            // 🛑 אם הילד לא קיים, נזרק שגיאה
+            throw new ArgumentException($"Child (Student) with ID number {idNumber} not found in database.");
+        }
+
+        int childPK = actualChildPK.Value; // ⬅️ זהו המפתח הראשי (PK) הנכון!
+
+        // 3. שימוש ב-PK הנכון (childPK) בהמשך הקוד
         return await ProcessAndGenerateFormAsync(
             requestDto,
             DiscountTemplateFileName,
             DiscountPythonScriptName,
-            $"discount_request_{requestDto.StudentDetails.StudentId}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf",
+            // ⬅️ שימוש ב-PK בשם הקובץ
+            $"discount_request_{childPK}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pdf",
 
-            // ⭐️⭐️⭐️ פונקציית שמירת לינק ונתיבים (הגרסה הנכונה) ⭐️⭐️⭐️
-            async (pdfFileName, childId) =>
+            // ⭐️⭐️⭐️ ה-Lambda Function לשמירת ה-DB ⭐️⭐️⭐️
+            async (finalPath, _) => // ⬅️ הפרמטר childId לא נחוץ כאן, משתמשים ב-childPK
             {
-                string baseUrl = _configuration["AppSettings:BaseUrl"] ?? "http://localhost:5000/";
-                string formLink = $"{baseUrl}api/Files/DownloadDiscountForm/{pdfFileName}";
-
-                // 1. שמירת קישור ה-PDF הראשי
-                await _formRepository.UpdateChildDiscountLinkAsync(childId, formLink);
-
-                // 2. שמירת נתיבי הקבצים הנוספים (CSV)
-                await _formRepository.UpdateChildDocumentPathsAsync(childId, uploadedPaths);
+                var newFormEntry = new Form
+                {
+                    ChildId = childPK, // ⬅️ ⭐️ שימוש ב-PK הנכון לשמירה!
+                    FormType = "DISCOUNT_REQUEST",
+                    FilePath = finalPath,
+                    AttachmentPaths = uploadedPaths,
+                    SubmittedDate = DateTime.Now,
+                    ContentType = "application/pdf"
+                };
+                await _formRepository.AddAsync(newFormEntry);
+                Console.WriteLine($"Form record created for Discount Request. Child ID: {childPK}");
             }
-        ); // סגירת הסוגר של return await ProcessAndGenerateFormAsync(...);
+        );
     }
-    // סגירת הסוגר של המתודה
-    // ⭐️⭐️⭐️ פונקציית עזר כללית לכל סוגי הטפסים ⭐️⭐️⭐️
+
+ 
+    // ⭐️⭐️⭐️ פונקציית עזר כללית לכל סוגי הטפסים - גרסה סופית ⭐️⭐️⭐️
     private async Task<byte[]> ProcessAndGenerateFormAsync<T>(
         T formData,
         string templateFileName,
-        string pythonScriptName, // ⭐️ פרמטר חדש
+        string pythonScriptName,
         string pdfFileName,
         Func<string, int, Task>? postProcessAction) where T : class
     {
+        // --- 1. הגדרת נתיבים ומשתנים (ללא שינוי) ---
         var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
-        // ⭐️ שימוש בשם הסקריפט שהתקבל כפרמטר
         string pythonScriptPath = Path.Combine(baseDirectory, ScriptsFolder, pythonScriptName);
         string templatePath = Path.Combine(baseDirectory, "Templates", templateFileName);
-
         string pythonExecutable = _configuration["AppSettings:PythonExecutablePath"] ?? "python";
         string libreOfficeExecutable = _configuration["AppSettings:LibreOfficeExecutablePath"] ?? "soffice";
 
         var permanentDirectory = Path.Combine(baseDirectory, PermanentFormsFolder);
         Directory.CreateDirectory(permanentDirectory);
-
         var permanentPdfPath = Path.Combine(permanentDirectory, pdfFileName);
 
+        // --- 2. הכנת נתונים והרצת Python (ללא שינוי) ---
         if (!File.Exists(templatePath))
         {
             throw new FileNotFoundException($"Template file not found: {templatePath}. Make sure it is copied to the output folder.");
         }
 
-        // הכנת הנתונים ל-JSON
         var dataForPython = new
         {
             form_data = formData,
@@ -121,45 +161,78 @@ public class FormService : IFormService
         };
         var jsonInput = JsonSerializer.Serialize(dataForPython, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-        // הפעלת סקריפט הפייתון
         await RunPythonScript(pythonExecutable, pythonScriptPath, jsonInput);
+        Console.WriteLine("DEBUG: Python script finished. Starting file existence check.");
 
-        if (!File.Exists(permanentPdfPath))
+        // --- 3. בדיקת קיום והמתנה לקובץ (מניעת File Lock) ---
+        int maxAttempts = 5;
+        int delayMs = 200;
+        bool fileFound = false;
+
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            if (File.Exists(permanentPdfPath))
+            {
+                fileFound = true;
+                break;
+            }
+            await Task.Delay(delayMs);
+        }
+
+        if (!fileFound)
         {
             throw new FileNotFoundException("PDF file was not created by the Python script. Check Python/soffice logs in the console.");
         }
 
-        byte[] pdfBytes = await File.ReadAllBytesAsync(permanentPdfPath);
+        // --- 4. שמירת הקובץ ב-IFileStorageService (הכנה לענן) ---
 
-       
-        // 5. שמירת הקישור לטופס אם נדרש
+        byte[] pdfBytes = await File.ReadAllBytesAsync(permanentPdfPath);
+        string finalPath = await _fileStorageService.SaveBytesAsync(
+            pdfBytes,
+            pdfFileName,
+            PermanentFormsFolder
+        );
+
+        try
+        {
+            File.Delete(permanentPdfPath);
+            Console.WriteLine("DEBUG: Deleted temporary PDF file.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"WARNING: Could not delete temporary file {permanentPdfPath}. Error: {ex.Message}");
+        }
+
+        // --- 5. שמירת רשומת ה-DB (Post Process) - התיקון כאן ---
+
         if (postProcessAction != null)
         {
-            // הנחה: לטופס HealthDeclarationDto קיים ChildDetailsDto עם ChildId (int)
+            // ⭐️⭐️⭐️ התיקון: יש להשתמש ב-ID הנכון שהפונקציה הראשית (ProcessAndGenerate...) חישבה
+
+            // הצהרת בריאות: ה-ID הנכון (שהוא ה-PK) כבר חושב במתודה הראשית
             if (formData is HealthDeclarationDto healthDto)
             {
-                await postProcessAction(pdfFileName, healthDto.ChildDetails.ChildId);
+                // ❌ הבעיה: המשתנה childPK לא קיים בהיקף הזה.
+                // הפתרון: לשלוף את ה-ChildId מה-DTO כפי שהוא (שהוא המפתח הראשי ב-Lambda)
+                await postProcessAction(finalPath, healthDto.ChildDetails.ChildId); // ⬅️ שימוש ב-ChildDetails.ChildId
             }
-            // ⭐️⭐️⭐️ הוספת טיפול בטופס הנחה ⭐️⭐️⭐️
             else if (formData is DiscountRequestDto discountDto)
             {
-                // ⭐️⭐️⭐️ תיקון: המרה מ-string ל-int ⭐️⭐️⭐️
+                // טיפול בהמרת ה-ID מ-string ל-int
                 if (int.TryParse(discountDto.StudentDetails.StudentId, out int childIdInt))
                 {
-                    // מעביר את תעודת הזהות כ-int
-                    await postProcessAction(pdfFileName, childIdInt);
+                    await postProcessAction(finalPath, childIdInt);
                 }
                 else
                 {
-                    // במקרה שתעודת הזהות אינה מספר (למרות שהאנגולר אמור למנוע זאת)
                     throw new ArgumentException($"StudentId '{discountDto.StudentDetails.StudentId}' is not a valid integer for child ID conversion.");
                 }
             }
         }
 
+        // --- 6. החזרת הקובץ לקונטרולר ---
         return pdfBytes;
     }
-
 
     // פונקציה מבודדת להרצת הפייתון (ללא שינוי)
     private async Task RunPythonScript(string pythonExecutable, string pythonScriptPath, string jsonInput)

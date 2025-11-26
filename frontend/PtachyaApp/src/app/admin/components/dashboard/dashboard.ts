@@ -1,13 +1,11 @@
-// dashboard.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
-// נניח שייצרתם service לנתוני מנהל (AdminService)
-// import { AdminService } from '../../services/admin.service';
+import { RouterLink } from '@angular/router'; // ⬅️ ייבוא לניווט מהיר
 
 @Component({
   selector: 'app-dashboard',
   standalone: true, 
-  imports: [CommonModule], 
+  imports: [CommonModule, RouterLink], // הוספנו RouterLink
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -15,10 +13,10 @@ export class DashboardComponent implements OnInit {
   
   // נתונים שיבואו מהשרת (דוגמא)
   stats = {
-    totalChildren: 0,
-    activeGardens: 0,
-    pendingForms: 0,
-    unpaidPayments: 0
+    totalChildren: 450,
+    activeGardens: 15,
+    pendingForms: 7,
+    unpaidPayments: 12
   };
   
   isLoading: boolean = true;
@@ -30,16 +28,8 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboardStats() {
-    // 💡 כאן נבצע קריאת API שתחזיר את כל המידע הסטטיסטי
-    
     // סימולציה של טעינת נתונים
     setTimeout(() => {
-        this.stats = {
-            totalChildren: 450,
-            activeGardens: 15,
-            pendingForms: 7,
-            unpaidPayments: 12
-        };
         this.isLoading = false;
     }, 1000);
   }

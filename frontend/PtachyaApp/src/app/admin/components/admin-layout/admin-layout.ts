@@ -18,5 +18,5 @@ import { NavbarComponent } from '../navbar/navbar';
 })
 export class AdminLayoutComponent {
   // נתון לדוגמה שאפשר להציג ב-Navbar
-  managerName: string = 'המנהל הראשי'; 
+ 
 }

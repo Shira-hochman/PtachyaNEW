@@ -72,6 +72,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IKindergartenService, KindergartenService>();
 builder.Services.AddScoped<IFormService, FormService>();
 builder.Services.AddScoped<Bo.Interfaces.IImportService, Bo.Services.ImportService>();
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
 // 🛑 הוספת ITokenService (פתרון שגיאת DI)
 builder.Services.AddScoped<Bo.Interfaces.ITokenService, Bo.Services.TokenService>();

@@ -21,80 +21,16 @@ public class FormRepository : IFormRepository
         await _context.SaveChangesAsync();
     }
 
-    // ⭐️ פונקציה חדשה: עדכון קישור לטופס בטבלת Child
-    public async Task UpdateChildFormLinkAsync(int childId, string formLink)
+    // ⭐️ מימוש: מציאת המפתח הראשי ChildId לפי IdNumber (תעודת הזהות)
+    public async Task<int?> GetChildPkByIdNumberAsync(string idNumber)
     {
-        // 1. המרת ה-int (המכיל את הת.ז.) למחרוזת, מכיוון שהשדה IdNumber ב-DB הוא string.
-        string identityNumberString = childId.ToString();
+        var child = await _context.Children
+            .Where(c => c.IdNumber == idNumber)
+            .Select(c => (int?)c.ChildId) // ⬅️ מחזיר את ChildId (המפתח הראשי)
+            .FirstOrDefaultAsync();
 
-        // 2. מחפשים את הילד לפי תעודת זהות (IdNumber)
-        // עכשיו החיפוש הוא: c.IdNumber == identityNumberString
-        var childToUpdate = await _context.Children.FirstOrDefaultAsync(c => c.IdNumber == identityNumberString);
-
-        if (childToUpdate != null)
-        {
-            // 3. פשוט מעדכנים את השדה (Entity Framework עוקב אחרי השינוי)
-            childToUpdate.HealthDeclarationLink = formLink;
-
-            // 4. שולח את העדכון (UPDATE) למסד הנתונים
-            await _context.SaveChangesAsync();
-            Console.WriteLine($"Link saved successfully for child T.Z.: {identityNumberString} with link: {formLink}");
-        }
-        else
-        {
-            // 5. אם הילד לא נמצא, זורקים חריגה מפורשת
-            throw new InvalidOperationException($"Child with T.Z. {identityNumberString} not found in database! Cannot save form link.");
-        }
+        return child;
     }
 
-    // ⭐️⭐️⭐️ פונקציה חדשה: עדכון קישור בקשת הנחה ⭐️⭐️⭐️
-    public async Task UpdateChildDiscountLinkAsync(int childId, string formLink)
-    {
-        // 1. המרת ה-int (המכיל את הת.ז.) למחרוזת, מכיוון שהשדה IdNumber ב-DB הוא string.
-        string identityNumberString = childId.ToString();
-
-        // 2. מחפשים את הילד לפי תעודת זהות (IdNumber)
-        var childToUpdate = await _context.Children.FirstOrDefaultAsync(c => c.IdNumber == identityNumberString);
-
-        if (childToUpdate != null)
-        {
-            // 3. 🛑 השינוי העיקרי כאן! עדכון שדה הקישור להנחה.
-            childToUpdate.DiscountRequestLink = formLink;
-
-            // 4. שולח את העדכון (UPDATE) למסד הנתונים
-            await _context.SaveChangesAsync();
-            Console.WriteLine($"Discount link saved successfully for child T.Z.: {identityNumberString} with link: {formLink}");
-        }
-        else
-        {
-            // 5. אם הילד לא נמצא, זורקים חריגה מפורשת
-            throw new InvalidOperationException($"Child with T.Z. {identityNumberString} not found in database! Cannot save discount form link.");
-        }
-    }
-
-    // הוסף את המתודה הבאה למחלקת FormRepository
-    // ⭐️⭐️⭐️ פונקציה חדשה: עדכון נתיבי הקבצים המצורפים (CSV) ⭐️⭐️⭐️
-    public async Task UpdateChildDocumentPathsAsync(int childId, string paths)
-    {
-        // 1. המרת ה-int (המכיל את הת.ז.) למחרוזת
-        string identityNumberString = childId.ToString();
-
-        // 2. מחפשים את הילד לפי תעודת זהות (IdNumber)
-        var childToUpdate = await _context.Children.FirstOrDefaultAsync(c => c.IdNumber == identityNumberString);
-
-        if (childToUpdate != null)
-        {
-            // 3. עדכון השדה UploadedDocumentPaths
-            childToUpdate.UploadedDocumentPaths = paths;
-
-            // 4. שולח את העדכון למסד הנתונים
-            await _context.SaveChangesAsync();
-            Console.WriteLine($"Attachment paths saved successfully for child T.Z.: {identityNumberString}. Paths: {paths}");
-        }
-        else
-        {
-            throw new InvalidOperationException($"Child with T.Z. {identityNumberString} not found! Cannot save attachment paths.");
-        }
-    }
 
 }

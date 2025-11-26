@@ -17,11 +17,13 @@ using System.Text.Json;
 public class FormController : ControllerBase
 {
     private readonly IFormService _formService;
-    private const string AttachmentsFolder = "DiscountAttachments"; // ⭐️ תיקייה לקבצים מצורפים
+    private readonly IFileStorageService _fileStorageService; // ⭐️ הוספה: הזרקת השירות החדש
+    private const string AttachmentsFolder = "DiscountAttachments";
 
-    public FormController(IFormService formService)
+    public FormController(IFormService formService, IFileStorageService fileStorageService) // ⭐️ הוספה לקונסטרוקטור
     {
         _formService = formService;
+        _fileStorageService = fileStorageService;
     }
 
     [HttpPost("submit-health-declaration")]
@@ -56,17 +58,14 @@ public class FormController : ControllerBase
             return StatusCode(500, "שגיאה פנימית בעת יצירת הקובץ. אנא נסה שנית.");
         }
     }
-
-    // ⭐️⭐️⭐️ נקודת קצה חדשה לטופס בקשת הנחה ⭐️⭐️⭐️
-    // ⭐️⭐️⭐️ נקודת הקצה המעודכנת: מקבלת FromForm DTO ⭐️⭐️⭐️
     [HttpPost("submit-discount-request")]
-    public async Task<IActionResult> SubmitDiscountRequest([FromForm] DiscountRequestSubmissionDto formSubmission) // ⭐️ השתמש ב-DTO החדש
+    public async Task<IActionResult> SubmitDiscountRequest([FromForm] DiscountRequestSubmissionDto formSubmission)
     {
-        // 1. פיענוח נתוני הטופס מתוך ה-JSON string
+        // 1. פיענוח נתונים (נשאר כפי שהוא)
         DiscountRequestDto requestDto;
+        // ... (קוד פיענוח ו-BadRequest) ...
         try
         {
-            // PropertyNameCaseInsensitive = true נחוץ כי האנגולר שולח camelCase
             requestDto = JsonSerializer.Deserialize<DiscountRequestDto>(
                 formSubmission.Data,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
@@ -78,59 +77,48 @@ public class FormController : ControllerBase
             return BadRequest("Failed to parse form data.");
         }
 
-        // 2. בדיקת הרשאה (כפי שהייתה קודם)
+        // 2. בדיקת הרשאה (נשאר כפי שהוא)
         var authenticatedChildIdNumber = User.Claims.FirstOrDefault(c => c.Type == "ChildIdNumber")?.Value;
         if (authenticatedChildIdNumber != requestDto.StudentDetails.StudentId.ToString())
         {
             return StatusCode(403, "אינך מורשה לשלוח טופס הנחה עבור תלמיד זה.");
         }
 
-        // 3. שמירת הקבצים המצורפים פיזית על הדיסק ואיסוף נתיביהם
-        string allSavedPaths = await SaveAndCombineUploadedFiles(formSubmission.GetAttachments()); // ⭐️ שמירה ואיסוף נתיבים (CSV)
+        // 3. שמירת הקבצים המצורפים
+        string allSavedPaths = await CombineAndSaveFiles(formSubmission.GetAttachments());
 
+        // ⭐️⭐️⭐️ הבלוק הראשי עם ה-try/catch המשוקם ⭐️⭐️⭐️
         try
         {
-            // 4. קורא לשירות החדש המטפל בבקשת ההנחה, כולל נתיבי הקבצים שנשמרו
-            // ⭐️ חתימת השירות ProcessAndGenerateDiscountRequestAsync תצטרך להשתנות!
+            // 4. קורא לשירות החדש המטפל בבקשת ההנחה
             byte[] fileBytes = await _formService.ProcessAndGenerateDiscountRequestAsync(requestDto, allSavedPaths);
 
             // 5. יצירת שם קובץ PDF והחזרתו
             string newFileName = $"Discount_Request_{requestDto.StudentDetails.StudentId}_{DateTime.Now:yyyyMMdd}.pdf";
-            return File(fileBytes, "application/pdf", newFileName);
+            return File(fileBytes, "application/pdf", newFileName); // ✅ החזרה מוצלחת
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Controller Error (Discount): {ex.Message}");
+            // ✅ החזרת שגיאה (500) במקרה של כשל
             return StatusCode(500, $"שגיאה פנימית בשרת בעת יצירת קובץ ההנחה: {ex.Message}");
         }
+        // 🛑 אין צורך ב-return נוסף כאן
     }
-
-    // ⭐️⭐️⭐️ פונקציית עזר לשמירת קבצים והפיכתם ל-CSV ⭐️⭐️⭐️
-    private async Task<string> SaveAndCombineUploadedFiles(List<IFormFile> files)
+    private async Task<string> CombineAndSaveFiles(List<IFormFile> files)
     {
-        var savedFileNames = new List<string>();
-        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        var attachmentsDirectory = Path.Combine(baseDirectory, AttachmentsFolder);
-        Directory.CreateDirectory(attachmentsDirectory);
-
+        var savedPaths = new List<string>();
         foreach (var file in files)
         {
             if (file.Length > 0)
             {
-                // יצירת שם קובץ ייחודי (GUID) + שם הקובץ המקורי
-                string uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
-                string filePath = Path.Combine(attachmentsDirectory, uniqueFileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-                // שומרים את שם הקובץ הייחודי (שם בלבד)
-                savedFileNames.Add(uniqueFileName);
+                // שימוש בשירות ה-Interface החדש
+                // שימו לב: השדה AttachmentsFolder הוגדר כקבוע במחלקה
+                string path = await _fileStorageService.SaveFileAsync(file, AttachmentsFolder);
+                savedPaths.Add(path);
             }
         }
-
         // מחזירים את כל שמות הקבצים המופרדים בפסיק (CSV)
-        return string.Join(",", savedFileNames);
+        return string.Join(",", savedPaths);
     }
 }

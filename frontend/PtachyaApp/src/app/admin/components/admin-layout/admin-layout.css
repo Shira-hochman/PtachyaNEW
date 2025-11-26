@@ -1,35 +1,35 @@
-/* admin-layout.component.css */
-
 /* ------------------ עקרונות בסיס ------------------ */
 :host {
-    display: block; /* כדי שהקומפוננטה תמלא את כל המסך */
+    display: block;
     height: 100vh;
     background-color: #f4f7f6; /* רקע בהיר ונעים */
 }
 
 .admin-container {
     height: 100%;
-    display: flex; /* Flex כדי לחלק בין ה-Navbar לתוכן הראשי */
+    display: flex;
     flex-direction: column;
 }
 
 .main-content-wrapper {
     display: flex;
-    flex: 1; /* תופס את כל הגובה הנותר */
-    overflow: hidden; /* למניעת גלילת יתר לא רצויה */
+    flex: 1; 
+    overflow: hidden; 
+    /* ⭐️⭐️⭐️ תיקון מיקום: מעביר את ה-Sidebar לצד ימין בפריסת RTL ⭐️⭐️⭐️ */
+    flex-direction: row-reverse; 
 }
 
 /* ------------------ איזור התוכן הראשי ------------------ */
 .content-area {
-    flex-grow: 1; /* תופס את כל רוחב המסך הנותר */
+    flex-grow: 1; 
     padding: 20px;
-    overflow-y: auto; /* מאפשר גלילה רק בתוכן אם הוא ארוך */
+    overflow-y: auto; 
+    direction: rtl; /* לוודא כיוון מימין לשמאל */
 }
 
 /* ------------------ עיצוב כללי של כותרות וקונטיינרים ------------------ */
-/* כדי לתת תחושה מקצועית יותר לכל התוכן שיוצג בתוכו */
 .content-area h1 {
-    color: #3f51b5; /* כחול ראשי - צבע מרשים ומקצועי */
+    color: #333;
     margin-bottom: 20px;
     font-size: 1.8rem;
     padding-bottom: 10px;

@@ -20,10 +20,7 @@ public partial class Child
     public string SchoolYear { get; set; } = null!;
 
     
-    public string? HealthDeclarationLink { get; set; }
-
- 
-    public string? DiscountRequestLink { get; set; }
+   
 
     public string Phone { get; set; } = null!;
 
@@ -37,5 +34,4 @@ public partial class Child
 
     public virtual Payment? Payment { get; set; }
 
-    public string? UploadedDocumentPaths { get; set; }
 }

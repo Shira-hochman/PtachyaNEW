@@ -7,11 +7,7 @@ public interface IFormRepository
 {
     // משמש לשמירת הטופס החדש שנוצר (כולל קובץ Word)
     Task AddAsync(Form entity);
+    // ⭐️ הוספה: פונקציה למציאת המפתח הראשי הפנימי (PK) לפי תעודת זהות (IdNumber)
+    Task<int?> GetChildPkByIdNumberAsync(string idNumber);
 
-    // ⭐️ הצהרה חדשה: פותרת את שגיאת הקומפילציה ב-FormService
-    Task UpdateChildFormLinkAsync(int childId, string formLink);
-
-    Task UpdateChildDiscountLinkAsync(int childId, string formLink);
-    // הוסף לממשק IFormRepository
-    Task UpdateChildDocumentPathsAsync(int childId, string paths);
 }

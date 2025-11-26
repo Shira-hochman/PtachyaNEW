@@ -1,1 +1,22 @@
-<p>navbar works!</p>
+<header class="admin-navbar">
+    
+    <!-- 1. לוגו פתחיה -->
+    <div class="logo-section">
+        <img 
+            src="https://upload.wikimedia.org/wikipedia/he/4/4b/%D7%A4%D7%AA%D7%97%D7%99%D7%94.png" 
+            alt="Logo" 
+            class="petachya-logo"
+            onerror="this.onerror=null;this.src='https://placehold.co/100x40/007bff/white?text=LOGO'"
+        >
+        <span class="system-title">מערכת ניהול - פתחיה</span>
+    </div>
+
+    <!-- 2. נתוני משתמש וכפתור יציאה -->
+    <div class="user-actions">
+        <span class="manager-name">{{ managerName }}</span>
+        <button class="logout-btn" (click)="logout()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            יציאה
+        </button>
+    </div>
+</header>

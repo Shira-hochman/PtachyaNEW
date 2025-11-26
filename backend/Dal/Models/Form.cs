@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Dal.Models.Form.cs
+
+using System;
 using System.Collections.Generic;
 
 namespace Dal.Models;
@@ -9,13 +11,19 @@ public partial class Form
 
     public int ChildId { get; set; }
 
-    // 🛑 הוסר: public string FormLink { get; set; } = null!;
+    // ⭐️ שדה חדש: הגדרת סוג הטופס
+    public string FormType { get; set; } = null!;
 
-    // ⭐️ הוספה: שדה לשמירת תוכן הקובץ הבינארי
-    public byte[]? FileContent { get; set; }
+    // ⭐️ שדה חדש: הקישור/נתיב של קובץ ה-PDF הראשי
+    public string? FilePath { get; set; }
 
-    // ⭐️ הוספה: סוג הקובץ (MIME Type)
-    public string ContentType { get; set; } = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    // ⭐️ שדה חדש: נתיבי הקבצים המצורפים (CSV)
+    public string? AttachmentPaths { get; set; }
+
+    // 🛑 השדה FileContent נמחק (כפי שביקשת)
+    // 🛑 אם הוא עדיין קיים, מחק אותו: public byte[]? FileContent { get; set; }
+
+    public string? ContentType { get; set; } = "application/pdf";
 
     public DateTime? SubmittedDate { get; set; }
 
