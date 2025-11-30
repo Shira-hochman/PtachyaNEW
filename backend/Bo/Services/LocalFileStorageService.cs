@@ -1,29 +1,28 @@
-﻿// Bo.Services/LocalFileStorageService.cs
-
-using Bo.Interfaces;
+﻿using Bo.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration; // חובה לייבא
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
-// שימו לב: יש לוודא שה-namespace נכון
 public class LocalFileStorageService : IFileStorageService
 {
     private readonly string _baseDirectory;
+    private readonly string _baseUrl;
 
-    public LocalFileStorageService()
+    // הזרקת Configuration כדי לדעת מה הכתובת של השרת (למשל https://localhost:7222/)
+    public LocalFileStorageService(IConfiguration configuration)
     {
-        // קביעת תיקיית הבסיס (היכן שהשרת רץ)
         _baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        // קורא את ה-BaseUrl מתוך appsettings.json, או משתמש בברירת מחדל
+        _baseUrl = configuration["AppSettings:BaseUrl"] ?? "https://localhost:7222/";
     }
 
-    // יישום שמירת IFormFile (קבצים נלווים)
     public async Task<string> SaveFileAsync(IFormFile file, string containerName)
     {
         var attachmentsDirectory = Path.Combine(_baseDirectory, containerName);
         Directory.CreateDirectory(attachmentsDirectory);
 
-        // יצירת שם קובץ ייחודי כדי למנוע דריסה
         string uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
         string filePath = Path.Combine(attachmentsDirectory, uniqueFileName);
 
@@ -32,11 +31,11 @@ public class LocalFileStorageService : IFileStorageService
             await file.CopyToAsync(stream);
         }
 
-        // מחזירים את שם הקובץ הייחודי בלבד (היחסי לתיקיית הבסיס)
-        return Path.Combine(containerName, uniqueFileName);
+        // ⭐️ שינוי קריטי: החזרת URL מלא להורדה במקום נתיב פיזי
+        // פורמט: https://localhost:7222/api/Files/Download/{containerName}/{uniqueFileName}
+        return $"{_baseUrl}api/Files/Download/{containerName}/{uniqueFileName}";
     }
 
-    // יישום שמירת byte array (ה-PDF שנוצר)
     public async Task<string> SaveBytesAsync(byte[] fileBytes, string fileName, string containerName)
     {
         var directory = Path.Combine(_baseDirectory, containerName);
@@ -45,7 +44,7 @@ public class LocalFileStorageService : IFileStorageService
         string filePath = Path.Combine(directory, fileName);
         await File.WriteAllBytesAsync(filePath, fileBytes);
 
-        // מחזירים את הנתיב היחסי
-        return Path.Combine(containerName, fileName);
+        // ⭐️ שינוי קריטי: החזרת URL מלא להורדה
+        return $"{_baseUrl}api/Files/Download/{containerName}/{fileName}";
     }
 }

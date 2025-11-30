@@ -36,8 +36,20 @@ public class FormService : IFormService
         _fileStorageService = fileStorageService; // ⭐️ שמירה בשדה פרטי
     }
 
-    // ... (קוד קיים) ...
+    public async Task ApproveFormAsync(int formId)
+    {
+        await _formRepository.ApproveFormAsync(formId);
+    }
 
+    public async Task<List<Form>> GetPendingFormsAsync()
+    {
+        return await _formRepository.GetPendingFormsAsync();
+    }
+
+    public async Task<List<Form>> GetApprovedFormsAsync()
+    {
+        return await _formRepository.GetApprovedFormsAsync();
+    }
     // ⭐️ שיטה קיימת: הצהרת בריאות
     // FormService.cs
 
@@ -126,8 +138,10 @@ public class FormService : IFormService
         );
     }
 
- 
+
     // ⭐️⭐️⭐️ פונקציית עזר כללית לכל סוגי הטפסים - גרסה סופית ⭐️⭐️⭐️
+    // ... (שאר הקוד בקובץ נשאר זהה)
+
     private async Task<byte[]> ProcessAndGenerateFormAsync<T>(
         T formData,
         string templateFileName,
@@ -135,43 +149,43 @@ public class FormService : IFormService
         string pdfFileName,
         Func<string, int, Task>? postProcessAction) where T : class
     {
-        // --- 1. הגדרת נתיבים ומשתנים (ללא שינוי) ---
         var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
         string pythonScriptPath = Path.Combine(baseDirectory, ScriptsFolder, pythonScriptName);
         string templatePath = Path.Combine(baseDirectory, "Templates", templateFileName);
         string pythonExecutable = _configuration["AppSettings:PythonExecutablePath"] ?? "python";
         string libreOfficeExecutable = _configuration["AppSettings:LibreOfficeExecutablePath"] ?? "soffice";
 
-        var permanentDirectory = Path.Combine(baseDirectory, PermanentFormsFolder);
-        Directory.CreateDirectory(permanentDirectory);
-        var permanentPdfPath = Path.Combine(permanentDirectory, pdfFileName);
+        // ⭐️ תיקון: שימוש בתיקייה זמנית נפרדת ליצירה הראשונית
+        var tempDirectory = Path.Combine(baseDirectory, "TempGeneration");
+        Directory.CreateDirectory(tempDirectory); // מוודא שהיא קיימת
+        var tempPdfPath = Path.Combine(tempDirectory, pdfFileName); // הקובץ הזמני
 
-        // --- 2. הכנת נתונים והרצת Python (ללא שינוי) ---
         if (!File.Exists(templatePath))
         {
-            throw new FileNotFoundException($"Template file not found: {templatePath}. Make sure it is copied to the output folder.");
+            throw new FileNotFoundException($"Template file not found: {templatePath}.");
         }
 
         var dataForPython = new
         {
             form_data = formData,
-            output_pdf_path = permanentPdfPath,
+            output_pdf_path = tempPdfPath, // ⬅️ שולחים לפייתון את הנתיב הזמני
             template_path = templatePath,
             libre_office_path = libreOfficeExecutable
         };
         var jsonInput = JsonSerializer.Serialize(dataForPython, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         await RunPythonScript(pythonExecutable, pythonScriptPath, jsonInput);
-        Console.WriteLine("DEBUG: Python script finished. Starting file existence check.");
+        Console.WriteLine("DEBUG: Python script finished.");
 
-        // --- 3. בדיקת קיום והמתנה לקובץ (מניעת File Lock) ---
+        // בדיקת קיום והמתנה (על הנתיב הזמני)
         int maxAttempts = 5;
         int delayMs = 200;
         bool fileFound = false;
 
         for (int i = 0; i < maxAttempts; i++)
         {
-            if (File.Exists(permanentPdfPath))
+            if (File.Exists(tempPdfPath)) // ⬅️ בודקים בתיקייה הזמנית
             {
                 fileFound = true;
                 break;
@@ -181,56 +195,51 @@ public class FormService : IFormService
 
         if (!fileFound)
         {
-            throw new FileNotFoundException("PDF file was not created by the Python script. Check Python/soffice logs in the console.");
+            throw new FileNotFoundException("PDF file was not created by the Python script.");
         }
 
-        // --- 4. שמירת הקובץ ב-IFileStorageService (הכנה לענן) ---
+        // 1. קריאת הקובץ מהתיקייה הזמנית
+        byte[] pdfBytes = await File.ReadAllBytesAsync(tempPdfPath);
 
-        byte[] pdfBytes = await File.ReadAllBytesAsync(permanentPdfPath);
+        // 2. שמירה בתיקייה הקבועה (PermanentForms) דרך הסרוויס
+        // (זה ייצור את הקובץ במיקום שראית בצילום המסך)
         string finalPath = await _fileStorageService.SaveBytesAsync(
             pdfBytes,
             pdfFileName,
             PermanentFormsFolder
         );
 
+        // 3. מחיקת הקובץ מהתיקייה הזמנית בלבד
         try
         {
-            File.Delete(permanentPdfPath);
+            File.Delete(tempPdfPath); // ⬅️ מוחק מ-TempGeneration, לא מ-PermanentForms
             Console.WriteLine("DEBUG: Deleted temporary PDF file.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"WARNING: Could not delete temporary file {permanentPdfPath}. Error: {ex.Message}");
+            Console.WriteLine($"WARNING: Could not delete temp file. Error: {ex.Message}");
         }
 
-        // --- 5. שמירת רשומת ה-DB (Post Process) - התיקון כאן ---
-
+        // 4. שמירת רשומה ב-DB
         if (postProcessAction != null)
         {
-            // ⭐️⭐️⭐️ התיקון: יש להשתמש ב-ID הנכון שהפונקציה הראשית (ProcessAndGenerate...) חישבה
-
-            // הצהרת בריאות: ה-ID הנכון (שהוא ה-PK) כבר חושב במתודה הראשית
             if (formData is HealthDeclarationDto healthDto)
             {
-                // ❌ הבעיה: המשתנה childPK לא קיים בהיקף הזה.
-                // הפתרון: לשלוף את ה-ChildId מה-DTO כפי שהוא (שהוא המפתח הראשי ב-Lambda)
-                await postProcessAction(finalPath, healthDto.ChildDetails.ChildId); // ⬅️ שימוש ב-ChildDetails.ChildId
+                await postProcessAction(finalPath, healthDto.ChildDetails.ChildId);
             }
             else if (formData is DiscountRequestDto discountDto)
             {
-                // טיפול בהמרת ה-ID מ-string ל-int
                 if (int.TryParse(discountDto.StudentDetails.StudentId, out int childIdInt))
                 {
                     await postProcessAction(finalPath, childIdInt);
                 }
                 else
                 {
-                    throw new ArgumentException($"StudentId '{discountDto.StudentDetails.StudentId}' is not a valid integer for child ID conversion.");
+                    throw new ArgumentException($"Invalid StudentId: {discountDto.StudentDetails.StudentId}");
                 }
             }
         }
 
-        // --- 6. החזרת הקובץ לקונטרולר ---
         return pdfBytes;
     }
 

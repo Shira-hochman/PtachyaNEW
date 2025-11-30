@@ -20,8 +20,9 @@ public partial class Form
     // ⭐️ שדה חדש: נתיבי הקבצים המצורפים (CSV)
     public string? AttachmentPaths { get; set; }
 
-    // 🛑 השדה FileContent נמחק (כפי שביקשת)
-    // 🛑 אם הוא עדיין קיים, מחק אותו: public byte[]? FileContent { get; set; }
+    // ⭐️ שדה חדש: סטטוס הטופס (Pending / Approved / Rejected)
+    public string Status { get; set; } = "Pending";
+
 
     public string? ContentType { get; set; } = "application/pdf";
 

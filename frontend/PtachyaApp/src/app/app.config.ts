@@ -15,3 +15,4 @@ export const appConfig: ApplicationConfig = {
     ) // ⬅️ חובה לטובת תקשורת רשת
   ]
 };
+

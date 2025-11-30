@@ -1,6 +1,9 @@
 ﻿using Dal.Models;
 using Dal.Repositories.Interfaces;
+using Dto; // ודאי שקיים
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dal.Repositories;
@@ -16,21 +19,55 @@ public class FormRepository : IFormRepository
 
     public async Task AddAsync(Form entity)
     {
-        // שמירת ה-Entity לבסיס הנתונים
         _context.Forms.Add(entity);
         await _context.SaveChangesAsync();
     }
 
-    // ⭐️ מימוש: מציאת המפתח הראשי ChildId לפי IdNumber (תעודת הזהות)
     public async Task<int?> GetChildPkByIdNumberAsync(string idNumber)
     {
-        var child = await _context.Children
+        return await _context.Children
             .Where(c => c.IdNumber == idNumber)
-            .Select(c => (int?)c.ChildId) // ⬅️ מחזיר את ChildId (המפתח הראשי)
+            .Select(c => (int?)c.ChildId)
             .FirstOrDefaultAsync();
-
-        return child;
     }
 
+    public async Task ApproveFormAsync(int formId)
+    {
+        var form = await _context.Forms.FindAsync(formId);
+        if (form != null)
+        {
+            form.Status = "Approved";
+            await _context.SaveChangesAsync();
+        }
+    }
 
+    public async Task<List<Form>> GetPendingFormsAsync()
+    {
+        return await _context.Forms
+            .Include(f => f.Child)
+            .Where(f => f.Status == "Pending")
+            .OrderByDescending(f => f.SubmittedDate)
+            .ToListAsync();
+    }
+
+    public async Task<List<Form>> GetApprovedFormsAsync()
+    {
+        return await _context.Forms
+            .Include(f => f.Child)
+            .Where(f => f.Status == "Approved")
+            .OrderByDescending(f => f.SubmittedDate)
+            .Take(50)
+            .ToListAsync();
+    }
+
+    public async Task<DashboardStatsDto> GetDashboardStatsAsync()
+    {
+        return new DashboardStatsDto
+        {
+            TotalChildren = await _context.Children.CountAsync(),
+            ActiveGardens = await _context.Kindergartens.CountAsync(),
+            PendingForms = await _context.Forms.CountAsync(f => f.Status == "Pending"),
+            UnpaidPayments = await _context.Payments.CountAsync(p => p.Status != "Paid")
+        };
+    }
 }
