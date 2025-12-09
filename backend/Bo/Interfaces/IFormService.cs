@@ -1,4 +1,5 @@
-﻿using Dto;
+﻿using Dal.Models;
+using Dto;
 using System.Threading.Tasks;
 
 namespace Bo.Interfaces
@@ -9,5 +10,9 @@ namespace Bo.Interfaces
         Task<byte[]> ProcessAndGenerateHealthDeclarationAsync(HealthDeclarationDto declarationDto);
 
         Task<byte[]> ProcessAndGenerateDiscountRequestAsync(DiscountRequestDto requestDto, string uploadedPaths);
+        // ⭐️ הוספות חדשות שנדרשות על ידי הקונטרולר
+        Task ApproveFormAsync(int formId);
+        Task<List<Form>> GetPendingFormsAsync();
+        Task<List<Form>> GetApprovedFormsAsync();
     }
 }

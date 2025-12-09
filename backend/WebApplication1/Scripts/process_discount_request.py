@@ -13,6 +13,7 @@ from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Emu # נדרש לתיקון רוחב טבלאות
+from docx.enum.style import WD_STYLE_TYPE
 
 # הגדרות סביבה
 TEMP_DIR = os.path.join(os.path.expanduser('~'), 'ptachya_temp_forms')
@@ -79,7 +80,11 @@ def insert_signature(document, base64_data):
     # 1. יצירת טבלה נסתרת ליישור דו-צדדי
     sig_table = document.add_table(rows=1, cols=2)
     sig_table.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    sig_table.style = 'Table Grid'
+    try:
+        sig_table.style = 'Table Grid'
+    except (KeyError, ValueError):
+        # אם הסגנון לא קיים בתבנית, נשתמש ברירת המחדל ונמשיך הלאה בלי לקרוס
+        pass
     
     # הסרת גבולות הטבלה (כדי שלא יראו את הריבוע)
     try:

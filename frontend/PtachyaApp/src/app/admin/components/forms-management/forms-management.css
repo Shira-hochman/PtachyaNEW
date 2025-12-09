@@ -1,0 +1,75 @@
+.management-wrapper {
+    padding: 20px;
+    direction: rtl;
+}
+
+.forms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.form-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 20px;
+    border-right: 5px solid #ffc107; /* צהוב לממתין */
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.form-type {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.form-body h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.2rem;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.view-btn, .approve-btn {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.view-btn {
+    background: #e9ecef;
+    color: #333;
+}
+
+.approve-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+}
+
+.approve-btn:hover {
+    background: #218838;
+}
+
+.empty-state {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #28a745;
+    margin-top: 50px;
+}

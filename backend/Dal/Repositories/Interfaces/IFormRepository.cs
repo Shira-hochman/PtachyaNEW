@@ -1,4 +1,5 @@
 ﻿using Dal.Models;
+using Dto;
 using System.Threading.Tasks;
 
 namespace Dal.Repositories.Interfaces;
@@ -9,5 +10,10 @@ public interface IFormRepository
     Task AddAsync(Form entity);
     // ⭐️ הוספה: פונקציה למציאת המפתח הראשי הפנימי (PK) לפי תעודת זהות (IdNumber)
     Task<int?> GetChildPkByIdNumberAsync(string idNumber);
+    // ⭐️ הוספות חדשות לתמיכה בדשבורד וניהול טפסים
+    Task ApproveFormAsync(int formId);
+    Task<List<Form>> GetPendingFormsAsync();
+    Task<DashboardStatsDto> GetDashboardStatsAsync();
+    Task    <List<Form>> GetApprovedFormsAsync();
 
 }

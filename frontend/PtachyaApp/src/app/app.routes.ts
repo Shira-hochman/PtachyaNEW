@@ -8,6 +8,7 @@ import { NavbarComponent } from './admin/components/navbar/navbar';
 import { SidebarComponent } from './admin/components/sidebar/sidebar';
 import { DashboardComponent } from './admin/components/dashboard/dashboard';
 import { ChildrenManagementComponent } from './admin/components/children-management/children-management';
+import { FormsManagementComponent } from './admin/components/forms-management/forms-management';
 
 // ----------------------------------------------------------------------
 // 1. ייבוא קומפוננטות ניהול (Admin Modules)
@@ -77,6 +78,8 @@ export const routes: Routes = [
             
             // 3. עדכון נתונים
             { path: 'update-data', component: DataUpdateComponent },
+
+             { path: 'forms', component: FormsManagementComponent }, 
             
             // 4. נתיבים נוספים שנגדיר בהמשך
             // { path: 'gardens', component: GardensManagementComponent },

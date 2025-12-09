@@ -1,0 +1,68 @@
+<div class="management-wrapper">
+    
+    <!-- === חלק עליון: טפסים ממתינים (דחוף) === -->
+    <div class="header-section">
+        <h1>⏳ טפסים ממתינים לאישור ({{ pendingForms.length }})</h1>
+        <p>יש לאשר טפסים אלו על מנת שיכנסו לתיק הילד.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-message">טוען נתונים...</div>
+
+    <!-- הודעה אם אין טפסים ממתינים -->
+    <div *ngIf="!isLoading && pendingForms.length === 0" class="empty-state">
+        🎉 אין טפסים ממתינים! כל המשימות הושלמו.
+    </div>
+
+    <!-- רשימת הממתינים -->
+    <div class="forms-grid">
+        <div *ngFor="let form of pendingForms" class="form-card pending-card">
+            <div class="form-header">
+                <span class="form-type">{{ getFormTypeName(form.formType) }}</span>
+                <span class="form-date">{{ form.submittedDate | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            
+            <div class="form-body">
+                <h3>{{ form.childFirstName }} {{ form.childLastName }}</h3>
+                <p>ת.ז: {{ form.childIdNumber }}</p>
+                
+                <div class="actions">
+                    <a [href]="form.filePath" target="_blank" class="view-btn">
+                        👁️ צפה בקובץ
+                    </a>
+                    <button (click)="approveForm(form)" class="approve-btn">
+                        ✅ אשר טופס
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- מפריד ויזואלי -->
+    <hr class="section-divider" *ngIf="approvedForms.length > 0">
+
+    <!-- === חלק תחתון: היסטוריית טפסים שאושרו === -->
+    <div class="header-section approved-header" *ngIf="approvedForms.length > 0">
+        <h2>✅ היסטוריית טפסים שאושרו</h2>
+    </div>
+
+    <div class="forms-grid">
+        <div *ngFor="let form of approvedForms" class="form-card approved-card">
+            <div class="form-header">
+                <span class="form-type">{{ getFormTypeName(form.formType) }}</span>
+                <span class="form-date">{{ form.submittedDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+            
+            <div class="form-body">
+                <h3>{{ form.childFirstName }} {{ form.childLastName }}</h3>
+                <p class="status-tag">אושר</p>
+                
+                <div class="actions">
+                    <a [href]="form.filePath" target="_blank" class="view-btn full-width">
+                        📄 צפה בקובץ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

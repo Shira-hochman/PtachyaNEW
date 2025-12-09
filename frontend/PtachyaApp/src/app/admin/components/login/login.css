@@ -1,0 +1,198 @@
+/* טעינת הפונט */
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap');
+
+:host {
+  display: block;
+  font-family: 'Heebo', sans-serif;
+}
+
+/* --- רקע כללי --- */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa; /* אפור בהיר מאוד */
+  padding: 1rem;
+}
+
+/* --- כרטיס ההתחברות --- */
+.login-card {
+  background: white;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-top: 6px solid #cb1518; /* בורדו של פתחיה */
+  overflow: hidden;
+  animation: slideUp 0.5s ease-out;
+}
+
+/* --- כותרת --- */
+.card-header {
+  text-align: center;
+  padding: 2rem 1.5rem 0.5rem;
+}
+
+.logo-container {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.logo {
+  height: 60px;
+  object-fit: contain;
+}
+
+h2 {
+  color: #262990; /* כחול כהה של פתחיה */
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.subtitle {
+  color: #262990;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  opacity: 0.8;
+}
+
+/* --- גוף הטופס --- */
+.card-body {
+  padding: 1.5rem 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  color: #262990;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+input {
+  width: 100%;
+  padding: 0.85rem 1rem 0.85rem 2.5rem; /* ריווח לאייקון משמאל */
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  background-color: #fdfdfd;
+  box-sizing: border-box; 
+}
+
+/* פוקוס - אפקט בצבע הטורקיז המשני של פתחיה */
+input:focus {
+  outline: none;
+  border-color: #bbcb41; 
+  box-shadow: 0 0 0 3px rgba(187, 203, 65, 0.2);
+}
+
+.input-error {
+  border-color: #ef4444;
+  background-color: #fff5f5;
+}
+
+.icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* --- כפתור --- */
+.btn-login {
+  width: 100%;
+  background-color: #cb1518; /* בורדו */
+  color: white;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 50px; /* כפתור עגול מלא */
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, background-color 0.2s;
+  margin-top: 1rem;
+  box-shadow: 0 4px 6px rgba(173, 30, 39, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-login:hover:not(:disabled) {
+  background-color: #a81013;
+  transform: translateY(-1px);
+}
+
+.btn-login:disabled {
+  background-color: #e57373;
+  cursor: not-allowed;
+}
+
+/* --- הודעות --- */
+.message-container {
+  margin-top: 1rem;
+  text-align: center;
+  min-height: 1.5rem;
+}
+
+.error-msg {
+  color: #cb1518;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.success-msg {
+  color: #059669;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* --- פוטר --- */
+.card-footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-top: 1px solid #eee;
+}
+
+.card-footer p {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* --- אנימציות --- */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ספינר פשוט */
+.loader {
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top: 3px solid white;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
