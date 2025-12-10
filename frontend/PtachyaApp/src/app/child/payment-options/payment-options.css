@@ -1,0 +1,128 @@
+.options-wrapper {
+  min-height: 100vh;
+  background-color: #f4f7f6;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-header h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-header p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+/* Grid Layout */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 3rem;
+}
+
+/* Card Styling */
+.option-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.option-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-color: #3498db;
+}
+
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background-color: #eef2f7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: #3498db;
+}
+
+.option-card h3 {
+  font-size: 1.4rem;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.option-card p {
+  color: #7f8c8d;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  flex-grow: 1; /* דוחף את הכפתור למטה */
+}
+
+/* Buttons inside cards */
+.action-btn {
+  padding: 0.8rem 2rem;
+  border-radius: 25px;
+  border: none;
+  background-color: #ecf0f1;
+  color: #2c3e50;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.action-btn.primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.option-card:hover .action-btn {
+  background-color: #bdc3c7;
+}
+
+.option-card:hover .action-btn.primary {
+  background-color: #2980b9;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .options-wrapper {
+    padding: 1rem;
+  }
+  
+  .page-header h1 {
+    font-size: 2rem;
+  }
+}

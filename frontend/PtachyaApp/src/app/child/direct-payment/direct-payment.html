@@ -1,0 +1,76 @@
+<div class="payment-container" dir="rtl">
+  
+  <div class="payment-card">
+    <div class="header">
+      <h2>ביצוע תשלום</h2>
+      <p>סליקה מאובטחת SSL</p>
+    </div>
+
+    <form [formGroup]="paymentForm" class="credit-form" (ngSubmit)="processPayment()">
+      
+      <div class="amount-display">
+        <span>סה"כ לתשלום:</span>
+        <span class="price">₪{{ currentPrice | number:'1.2-2' }}</span>
+      </div>
+
+      <div class="form-group full-width">
+        <label>שם בעל הכרטיס</label>
+        <input type="text" formControlName="cardName" 
+               placeholder="השם כפי שמופיע על הכרטיס"
+               [class.is-invalid]="paymentForm.get('cardName')?.invalid && paymentForm.get('cardName')?.touched">
+        
+        <div class="error-msg" *ngIf="paymentForm.get('cardName')?.errors?.['required'] && paymentForm.get('cardName')?.touched">שדה חובה</div>
+        <div class="error-msg" *ngIf="paymentForm.get('cardName')?.errors?.['pattern'] && paymentForm.get('cardName')?.touched">יש להזין אותיות בלבד</div>
+      </div>
+
+      <div class="form-group full-width">
+        <label>מספר כרטיס</label>
+        <div class="input-with-icon">
+          <input type="text" formControlName="cardNumber" 
+                 placeholder="0000 0000 0000 0000"
+                 (input)="formatCardNumber($event)"
+                 maxlength="19"
+                 [class.is-invalid]="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched">
+          
+          <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        </div>
+        <div class="error-msg" *ngIf="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched">מספר כרטיס אינו תקין</div>
+      </div>
+
+      <div class="row-group">
+        <div class="form-group">
+          <label>תוקף (MM/YY)</label>
+          <input type="text" formControlName="expiry" 
+                 placeholder="MM/YY" maxlength="5"
+                 (input)="formatExpiry($event)"
+                 [class.is-invalid]="paymentForm.get('expiry')?.invalid && paymentForm.get('expiry')?.touched">
+          
+          <div class="error-msg" *ngIf="paymentForm.get('expiry')?.errors?.['pastDate'] && paymentForm.get('expiry')?.touched">כרטיס פג תוקף</div>
+          <div class="error-msg" *ngIf="paymentForm.get('expiry')?.errors?.['pattern'] && paymentForm.get('expiry')?.touched">פורמט שגוי</div>
+        </div>
+        
+        <div class="form-group">
+          <label>CVV (3 ספרות)</label>
+          <input type="text" formControlName="cvv" 
+                 placeholder="123" maxlength="4"
+                 [class.is-invalid]="paymentForm.get('cvv')?.invalid && paymentForm.get('cvv')?.touched">
+           <div class="error-msg" *ngIf="paymentForm.get('cvv')?.invalid && paymentForm.get('cvv')?.touched">קוד לא תקין</div>
+        </div>
+      </div>
+
+      <div class="form-group full-width">
+        <label>תעודת זהות בעל הכרטיס</label>
+        <input type="text" formControlName="ownerId" 
+               placeholder="תעודת זהות 9 ספרות" maxlength="9"
+               [class.is-invalid]="paymentForm.get('ownerId')?.invalid && paymentForm.get('ownerId')?.touched">
+        <div class="error-msg" *ngIf="paymentForm.get('ownerId')?.invalid && paymentForm.get('ownerId')?.touched">תעודת זהות אינה תקינה</div>
+      </div>
+
+      <button type="submit" class="pay-btn" [disabled]="paymentForm.invalid">
+        בצע תשלום על סך ₪{{ currentPrice | number:'1.2-2' }}
+      </button>
+      <button type="button" class="cancel-btn" (click)="goBack()">ביטול וחזרה</button>
+
+    </form>
+  </div>
+</div>

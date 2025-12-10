@@ -1,0 +1,40 @@
+<div class="options-wrapper" dir="rtl">
+  
+  <header class="page-header">
+    <h1>הסדרת תשלום</h1>
+    <p>אנא בחרו את אופן הסדרת התשלום עבור שנת הלימודים</p>
+  </header>
+
+  <div class="options-grid">
+    
+    <div class="option-card discount-card" (click)="navigateToDiscountForm()">
+      <div class="icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </div>
+      <h3>בקשת הנחה / הוראת קבע</h3>
+      <p>מילוי טופס לבחינת זכאות להנחה או הקמת הוראת קבע בנקאית</p>
+      <button class="action-btn">להגשת בקשה</button>
+    </div>
+
+    <div class="option-card credit-card" (click)="navigateToDirectPayment()">
+      <div class="icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+      </div>
+      <h3>תשלום מלא באשראי</h3>
+      <p>ביצוע תשלום מהיר ומאובטח בכרטיס אשראי</p>
+      <button class="action-btn primary">לתשלום כעת</button>
+    </div>
+
+  </div>
+
+  <button class="back-link" (click)="goBack()">חזרה למסך הראשי</button>
+</div>
