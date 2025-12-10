@@ -23,7 +23,8 @@ import { LoginComponent as ParentLoginComponent } from './child/components/login
 import { Main } from './child/components/main/main';
 import { HealthDeclarationComponent } from './child/components/health-declaration/health-declaration';
 import { PaymentForm } from './child/components/payment-form/payment-form'; 
-
+import { PaymentOptions } from './child/payment-options/payment-options';
+import { DirectPayment } from './child/direct-payment/direct-payment';
 // ----------------------------------------------------------------------
 // 3. ייבוא Guard
 // ----------------------------------------------------------------------
@@ -45,6 +46,11 @@ export const routes: Routes = [
         children: [
             // הוספת נתיב ראשי בתוך המעטפת אם Main אינו דף ספציפי
             { path: 'main', component: Main }, 
+            // ✅ הוספתי את הנתיב למסך בחירת אופן תשלום (המסך החדש)
+            { path: 'payment-options', component: PaymentOptions },
+
+            // ✅ הוספתי את הנתיב לתשלום ישיר באשראי (המסך החדש)
+            { path: 'direct-payment', component: DirectPayment },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }, 
             
             // טפסים ופעולות

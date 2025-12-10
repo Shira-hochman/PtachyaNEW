@@ -1,5 +1,12 @@
-<!-- payment-form.html: טופס בקשת הנחה - מעוצב ורספונסיבי -->
+@if (isLoading()) {
+  <div class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">הנתונים נשלחים למערכת...</div>
+    <p class="loading-subtext">נא להמתין, מחשב זכאות להנחה ומעביר לתשלום</p>
+  </div>
+}
 
+<div class="declaration-container">
 <div class="declaration-container">
   <header class="form-header">
     <h1 class="title">
@@ -10,7 +17,6 @@
 
   <form [formGroup]="discountRequestForm" (ngSubmit)="onSubmit()" dir="rtl" class="form-layout">
 
-    <!-- פרטי מגיש הבקשה -->
     <fieldset class="form-fieldset section-primary">
       <legend class="fieldset-legend">
         <i class="fas fa-user"></i> פרטי מגיש הבקשה
@@ -51,7 +57,6 @@
       </div>
     </fieldset>
 
-    <!-- פרטי הילד/ה שלמענו מוגשת הבקשה -->
     <fieldset formGroupName="studentDetails" class="form-fieldset section-secondary">
       <legend class="fieldset-legend">
         <i class="fas fa-child-reaching"></i> פרטי התלמיד/ה (שם/הגננת)
@@ -96,7 +101,6 @@
       </div>
     </fieldset>
 
-    <!-- ילדים נוספים בחזקת ההורה (FormArray) -->
     <fieldset class="form-fieldset section-tertiary">
       <legend class="fieldset-legend">
         <i class="fas fa-users"></i> ילדים נוספים עד גיל 18 בחזקתך
@@ -148,7 +152,6 @@
       </div>
     </fieldset>
 
-    <!-- סיבות לבקשת הנחה - בחירה מרובה -->
     <fieldset formGroupName="discountReasons" class="form-fieldset section-reasons">
       <legend class="fieldset-legend">
         <i class="fas fa-list-check"></i> בחר סיבות לבקשת הנחה (ניתן לבחור אחת או יותר) *
@@ -159,13 +162,20 @@
           <input type="checkbox" formControlName="lowIncome">
           הכנסות נמוכות
         </label>
+        
         <label class="checkbox-label" [class.checked]="discountReasons.get('otherChildSpecialEd')?.value">
           <input type="checkbox" formControlName="otherChildSpecialEd">
-          ילד נוסף במסגרת חינוך מיוחד אחרת (יש לצרף אישור לימודים מהמסגרת)
+          ילד נוסף במסגרת חינוך מיוחד אחרת (חובה לצרף אישור)
         </label>
+        
         <label class="checkbox-label" [class.checked]="discountReasons.get('socialWorkerRec')?.value">
           <input type="checkbox" formControlName="socialWorkerRec">
           המלצה מעובדת סוציאלית של הרשות המקומית
+        </label>
+
+        <label class="checkbox-label" [class.checked]="discountReasons.get('warOrReserves')?.value">
+          <input type="checkbox" formControlName="warOrReserves">
+          נפגעי מלחמה / משרתי מילואים (תוספת 10%)
         </label>
       </div>
       
@@ -174,7 +184,6 @@
       }
     </fieldset>
 
-    <!-- פרטי הכנסה (מוצג רק אם נבחר "הכנסות נמוכות") -->
     @if (discountReasons.get('lowIncome')?.value) {
       <fieldset formGroupName="lowIncomeDetails" class="form-fieldset section-income">
         <legend class="fieldset-legend">
@@ -191,7 +200,6 @@
               </tr>
             </thead>
             <tbody>
-              <!-- שורה 1: מעמד אישי -->
               <tr>
                 <th scope="row" class="row-header">מעמד אישי *</th>
                 <td class="data-cell">
@@ -211,7 +219,6 @@
                   </select>
                 </td>
               </tr>
-              <!-- שורה 2: הכנסה חודשית ממוצעת -->
               <tr>
                 <th scope="row" class="row-header">הכנסה חודשית ממוצעת (כולל מזונות) ₪ *</th>
                 <td class="data-cell">
@@ -221,7 +228,6 @@
                   <input type="number" formControlName="spouse2AvgMonthlyIncome" [class.is-invalid]="isInvalid('lowIncomeDetails.spouse2AvgMonthlyIncome')" class="control-large">
                 </td>
               </tr>
-              <!-- שורה 3: סה"כ ב-3 חודשים אחרונים -->
               <tr>
                 <th scope="row" class="row-header">סה"כ ב-3 חודשים אחרונים ₪ *</th>
                 <td class="data-cell">
@@ -235,13 +241,12 @@
           </table>
         </div>
 
-        <!-- העלאת מסמכים להכנסה -->
         <p class="document-requirement">
           <i class="fas fa-file-pdf"></i> דרישת מסמכים: יש לצרף 3 תלושי משכורת אחרונים של 2 בני הזוג (או דפי חשבון בנק).
         </p>
         <div class="form-group full-width upload-group">
           <input type="file" #lowIncomeFileInput class="hidden-file-input" 
-                (change)="onFileChange($event, 'lowIncomeDocsUploaded')">
+                 (change)="onFileChange($event, 'lowIncomeDocsUploaded')">
           
           <button type="button" class="upload-button" (click)="lowIncomeFileInput.click()">
             <span [innerHTML]="discountRequestForm.get('requiredDocuments.lowIncomeDocsUploaded')?.value ? 
@@ -256,11 +261,9 @@
             <div class="error-message">יש להעלות מסמכי הכנסה.</div>
           }
         </div>
-        
       </fieldset>
     }
 
-    <!-- דרישת אישור לימודים (מוצג רק אם נבחר "חינוך מיוחד אחר") -->
     @if (discountReasons.get('otherChildSpecialEd')?.value) {
       <fieldset class="form-fieldset section-docs-blue">
         <legend class="fieldset-legend">
@@ -271,7 +274,7 @@
         </p>
         <div class="form-group full-width upload-group">
           <input type="file" #specialEdFileInpur class="hidden-file-input" 
-                (change)="onFileChange($event, 'otherSpecialEdDocsUploaded')">
+                 (change)="onFileChange($event, 'otherSpecialEdDocsUploaded')">
 
           <button type="button" class="upload-button" (click)="specialEdFileInpur.click()">
             <span [innerHTML]="discountRequestForm.get('requiredDocuments.otherSpecialEdDocsUploaded')?.value ? 
@@ -289,7 +292,6 @@
       </fieldset>
     }
 
-    <!-- ⭐ דרישת אסמכתא מעובדת סוציאלית (מוצג רק אם נבחר) -->
     @if (discountReasons.get('socialWorkerRec')?.value) {
       <fieldset class="form-fieldset section-docs-orange">
         <legend class="fieldset-legend">
@@ -300,7 +302,7 @@
         </p>
         <div class="form-group full-width upload-group">
           <input type="file" #socialWorkerFileInput class="hidden-file-input" 
-                (change)="onFileChange($event, 'socialWorkerDocsUploaded')">
+                 (change)="onFileChange($event, 'socialWorkerDocsUploaded')">
 
           <button type="button" class="upload-button" (click)="socialWorkerFileInput.click()">
             <span [innerHTML]="discountRequestForm.get('requiredDocuments.socialWorkerDocsUploaded')?.value ? 
@@ -318,7 +320,6 @@
       </fieldset>
     }
 
-    <!-- נימוק לבקשת ההנחה -->
     <fieldset class="form-fieldset section-reasoning">
       <legend class="fieldset-legend">
         <i class="fas fa-pencil-alt"></i> נימוק לבקשת ההנחה *
@@ -334,7 +335,6 @@
       </div>
     </fieldset>
 
-    <!-- חתימת הורה -->
     <fieldset class="form-fieldset signature-container section-signature">
       <legend class="fieldset-legend">
         <i class="fas fa-signature"></i> חתימת הורה
@@ -376,7 +376,7 @@
       }
       
       <div class="actions">
-        <button type="submit" class="submit-button"><i class="fas fa-paper-plane"></i> שלח טופס</button>
+        <button type="submit" class="submit-button"><i class="fas fa-paper-plane"></i> שלח טופס ומעבר לתשלום</button>
         <button type="button" class="reset-button" (click)="onReset()"><i class="fas fa-sync-alt"></i> אפס טופס</button>
       </div>
     </div>
@@ -384,5 +384,4 @@
   </form>
 </div>
 
-<!-- קישור ל-Font Awesome לשימוש באיקונים -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

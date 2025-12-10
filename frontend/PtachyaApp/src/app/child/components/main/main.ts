@@ -33,9 +33,10 @@ export class Main implements OnInit {
   /**
    * ניווט לטופס התשלום
    */
-  onButton2Click(): void {
-    this.router.navigate(['/child/payment-form']);
-  }
+onButton2Click(): void {
+    // שינוי הנתיב לקומפוננטה החדשה שיצרנו
+    this.router.navigate(['/child/payment-options']);
+  }
   
   logout(): void {
       // כאן תוסיפי בעתיד לוגיקת התנתקות

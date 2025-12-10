@@ -4,6 +4,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormService } from '../../services/form.service'; // ⭐️ ייבוא FormService
 import { ChildAuthService } from '../../services/child-auth.service';
 import { Child } from '../../../../models/child';
+import { DiscountService } from '../../services/discount.service';
+import { Router } from '@angular/router'; // ✅ חובה לניווט
+import { finalize } from 'rxjs/operators';
 
 // ממשק פשוט לילד בחזקת ההורה (Child in Custody)
 interface ChildInCustody {
@@ -37,7 +40,7 @@ export class PaymentForm implements OnInit, AfterViewInit {
   submitted = signal(false);
   submissionMessage = signal<string | null>(null);
   date = signal<string | null>(null);
-
+isLoading = signal(false);
   // נכסי חתימה
   @ViewChild('parentSignatureCanvas') canvas!: ElementRef<HTMLCanvasElement>;
   public ctx!: CanvasRenderingContext2D;
@@ -58,7 +61,9 @@ export class PaymentForm implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private datePipe: DatePipe,
     private formService: FormService, // ⭐️ הזרקת השירות
-    private authService: ChildAuthService
+    private authService: ChildAuthService,
+    private router: Router, // ✅ הזרקת Router
+    private discountService: DiscountService // ✅ הזרקת DiscountService
   ) { }
 
   // מחזיר את קבוצת הסיבות לבקשת הנחה
@@ -133,16 +138,13 @@ ngOnInit(): void {
   // אתחול הטופס
   initForm(): void {
     this.discountRequestForm = this.fb.group({
-      // פרטי מגיש הבקשה
+      // ... שאר השדות
       declarantName: ['', Validators.required],
       declarantId: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
       maritalStatus: ['', Validators.required],
-
-      // ילדים בחזקת ההורה
-      childrenCount: [0, [Validators.required, Validators.min(0)]], // ברירת מחדל 0
-      childrenInCustody: this.fb.array([]), // מתחיל ריק וממולא על ידי updateChildrenInCustodyArray 
-
-      // פרטי התלמיד
+      childrenCount: [0, [Validators.required, Validators.min(0)]],
+      childrenInCustody: this.fb.array([]),
+      
       studentDetails: this.fb.group({
         studentName: ['', Validators.required],
         studentId: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
@@ -150,39 +152,32 @@ ngOnInit(): void {
         city: ['', Validators.required],
       }),
 
-      // סיבות להנחה: הוסר otherChildPtahiya
+      // ✅ עדכון: הוספת warOrReserves ל-FormGroup
       discountReasons: this.fb.group({
         lowIncome: [false],
         otherChildSpecialEd: [false],
         socialWorkerRec: [false],
-      }, { validators: atLeastOneReasonValidator }),
+        warOrReserves: [false], // ✅ השדה החדש
+      }, { validators: atLeastOneReasonValidator }), // וודאי שה-validator הזה מוגדר למעלה בקובץ
 
-      // פרטים נדרשים (קבוצות נשלטות ע"י לוגיקה מותנית)
+      // ... שאר הקבוצות (lowIncomeDetails, requiredDocuments וכו')
       lowIncomeDetails: this.fb.group({
-        spouse1Status: [''],
-        spouse1AvgMonthlyIncome: [null],
-        spouse1Total3Months: [null],
-        spouse2Status: [''],
-        spouse2AvgMonthlyIncome: [null],
-        spouse2Total3Months: [null],
+         // ... שדות ההכנסה
+         spouse1Status: [''], spouse1AvgMonthlyIncome: [null], spouse1Total3Months: [null],
+         spouse2Status: [''], spouse2AvgMonthlyIncome: [null], spouse2Total3Months: [null],
       }),
-
-      // מצב העלאת מסמכים (hidden fields)
       requiredDocuments: this.fb.group({
-        lowIncomeDocsUploaded: [''], // מחזיק את שם הקובץ (או ריק)
-        otherSpecialEdDocsUploaded: [''], // מחזיק את שם הקובץ (או ריק)
-        socialWorkerDocsUploaded: [''], // מחזיק את שם הקובץ (או ריק)
+        lowIncomeDocsUploaded: [''],
+        otherSpecialEdDocsUploaded: [''],
+        socialWorkerDocsUploaded: [''],
       }),
-
       reasoning: ['', Validators.required],
-      formDate: [this.date()], // תאריך אוטומטי
-      parentSignature: ['', Validators.required], // חתימה חובה
+      formDate: [this.date()],
+      parentSignature: ['', Validators.required],
     });
 
-    // עדכון ראשוני של מערך הילדים (מכיוון שמתחילים עם 0)
     this.updateChildrenInCustodyArray(0);
   }
-
   // לוגיקה מותנית לשדות
   setupConditionalLogic(): void {
     // 1. פרטי הכנסה והעלאת מסמכים נדרשים
@@ -387,7 +382,7 @@ populateForm(child: Child): void {
 }
   // שליחת הטופס
   // שליחת הטופס (המתודה המעודכנת)
-  onSubmit(): void {
+ onSubmit(): void {
     this.submitted.set(true);
     this.submissionMessage.set(null);
 
@@ -399,7 +394,10 @@ populateForm(child: Child): void {
       return;
     }
 
-    // 1. נתוני הטופס כ-JSON
+    // ✅ הפעלת הספינר
+    this.isLoading.set(true);
+
+    // הכנת הנתונים (אותו קוד בדיוק)
     const cleanChildren = this.childrenInCustody.controls
       .map(control => control.getRawValue())
       .filter(child => child.firstName || child.lastName || child.id);
@@ -409,46 +407,60 @@ populateForm(child: Child): void {
       childrenInCustody: cleanChildren,
     };
 
-    // ⭐️⭐️⭐️ 2. בניית FormData לשליחת JSON וקבצים ⭐️⭐️⭐️
     const formData = new FormData();
-
-    // הוספת נתוני הטופס (JSON) תחת השם 'data'
     formData.append('data', JSON.stringify(formJsonData));
+    
+    if (this.filesToUpload['lowIncomeDocsUploaded']) formData.append('lowIncomeFile', this.filesToUpload['lowIncomeDocsUploaded'] as File);
+    if (this.filesToUpload['otherSpecialEdDocsUploaded']) formData.append('specialEdFile', this.filesToUpload['otherSpecialEdDocsUploaded'] as File);
+    if (this.filesToUpload['socialWorkerDocsUploaded']) formData.append('socialWorkerFile', this.filesToUpload['socialWorkerDocsUploaded'] as File);
 
-    // הוספת הקבצים הבינאריים שנשמרו:
-    // חשוב: השמות ('lowIncomeFile', 'specialEdFile', 'socialWorkerFile') חייבים להתאים למה שהשרת מצפה!
-    if (this.filesToUpload['lowIncomeDocsUploaded']) {
-      formData.append('lowIncomeFile', this.filesToUpload['lowIncomeDocsUploaded'] as File);
-    }
-    if (this.filesToUpload['otherSpecialEdDocsUploaded']) {
-      formData.append('specialEdFile', this.filesToUpload['otherSpecialEdDocsUploaded'] as File);
-    }
-    if (this.filesToUpload['socialWorkerDocsUploaded']) {
-      formData.append('socialWorkerFile', this.filesToUpload['socialWorkerDocsUploaded'] as File);
-    }
-
-    // ⭐️⭐️⭐️ 3. קריאה לשירות עם FormData ⭐️⭐️⭐️
-    // (נדרש שינוי גם ב-FormService בצד הלקוח כדי שיקבל FormData)
-    this.formService.submitDiscountRequest(formData).subscribe({
+    // שליחה לשרת
+    this.formService.submitDiscountRequest(formData)
+      .pipe(
+        // ✅ finalize מבטיח שהקוד ירוץ גם בהצלחה וגם בכישלון
+        // במקרה של שגיאה - נכבה את הספינר.
+        // במקרה של הצלחה - נשאיר אותו דולק עד המעבר דף (כדי למנוע "קפיצה" ויזואלית)
+        finalize(() => {
+           // אנו לא מכבים כאן את isLoading בכוונה במקרה של הצלחה,
+           // כי אנחנו מיד מנווטים.
+           // נכבה אותו רק ב-error למטה.
+        })
+      )
+      .subscribe({
       next: (response: Blob) => {
-        // ... (לוגיקת הורדה קיימת) ...
+        
+        // לוגיקת הורדה...
         const url = window.URL.createObjectURL(response);
         const a = document.createElement('a');
         a.href = url;
         a.download = `Discount_Request_${formJsonData.studentDetails.studentId}.pdf`;
-
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         a.remove();
 
-        this.submissionMessage.set('✅ הטופס נשלח, נשמר והורד למחשבך.');
+        // עדכון השירות וחישוב מחיר
+        this.discountService.calculateAndSetPrice(formJsonData);
+
+        // עדכון טקסט ההודעה (למרות שהמשתמש אולי לא יראה אותה בגלל הספינר, זה טוב לדיבאג)
+        this.submissionMessage.set('✅ הטופס נקלט. מעביר לתשלום...');
+
+        // מעבר דף
+        setTimeout(() => {
+           // מכבים את הספינר רגע לפני המעבר (אופציונלי, הדפדפן ממילא ירענן)
+           this.isLoading.set(false); 
+           this.router.navigate(['/child/direct-payment']);
+        }, 1500);
       },
       error: (err) => {
-        // ... (טיפול בשגיאות קיים) ...
+        console.error('Error submitting form:', err);
+        // ✅ במקרה של שגיאה - חובה לכבות את הספינר כדי שהמשתמש יראה את הודעת השגיאה
+        this.isLoading.set(false);
+        this.submissionMessage.set('🔴 ארעה שגיאה בשליחת הטופס. נסה שנית מאוחר יותר.');
       }
     });
   }
+
   // איפוס הטופס
   onReset(): void {
     this.submitted.set(false);
