@@ -1,0 +1,204 @@
+/* ------------------ סגנונות מודל בסיסיים ------------------ */
+
+.modal-backdrop {
+    /* 1. רקע מסך מלא חצי שקוף */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* שחור שקוף */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* ודא שהמודל מעל הכל */
+    direction: rtl; /* יישור לימין */
+}
+
+.modal-content {
+    /* 2. המודל עצמו */
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 700px; /* רוחב מירבי סביר */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.3s ease-out; /* אנימציה קטנה לכניסה */
+    max-height: 80vh; /* גובה מירבי */
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ------------------ כותרת המודל ------------------ */
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-border); /* קו הפרדה כמו בטבלאות */
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    color: var(--color-primary); /* כותרת בצבע ראשי */
+    margin: 0;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text);
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    padding: 0; /* מוריד ריווח פנימי מיותר */
+    line-height: 1; /* מוודא גובה נכון */
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+/* ------------------ גוף המודל ותוכן ------------------ */
+
+.modal-body {
+    overflow-y: auto; /* מאפשר גלילה אם התוכן ארוך */
+    padding-top: 5px;
+}
+
+/* ------------------ מצבי טעינה ושגיאה ------------------ */
+
+.loading-spinner, .error-msg, .empty-state {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.loading-spinner {
+    color: var(--color-primary);
+    background-color: #e6f2ff; /* רקע כחול בהיר לטעינה */
+    font-weight: 600;
+}
+
+.error-msg {
+    color: var(--color-unpaid); /* אדום לשגיאה */
+    background-color: #f8d7da;
+    border: 1px solid var(--color-unpaid);
+}
+
+.empty-state {
+    color: #6c757d;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+}
+
+/* ------------------ טבלת הקבצים ------------------ */
+
+.files-table {
+    width: 100%;
+    border-collapse: separate; /* מאפשר border-radius */
+    border-spacing: 0;
+    margin-top: 15px;
+}
+
+.files-table thead tr {
+    background-color: var(--color-primary);
+    color: white;
+    text-align: right;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.files-table th:first-child {
+    border-top-right-radius: 8px;
+}
+
+.files-table th:last-child {
+    border-top-left-radius: 8px;
+}
+
+.files-table th, .files-table td {
+    padding: 12px 15px;
+    border: none; /* מסירים את הגבולות הפנימיים מהעיצוב הקודם */
+    border-bottom: 1px solid #eee; /* שומרים על קו הפרדה קל */
+}
+
+.files-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.files-table tbody tr:hover {
+    background-color: #e6f2ff; /* כחול בהיר בריחוף */
+}
+
+/* ------------------ תא שם הקובץ ------------------ */
+
+.files-table td:first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.file-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+
+/* ------------------ כפתור ההורדה ------------------ */
+
+.download-btn {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.download-btn:hover:not([disabled]) {
+    background-color: #218838;
+}
+
+.download-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* ------------------ רספונסיביות קלה למודל ------------------ */
+
+@media (max-width: 500px) {
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .files-table th, .files-table td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+
+    .download-btn {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+}

@@ -70,4 +70,11 @@ public class FormRepository : IFormRepository
             UnpaidPayments = await _context.Payments.CountAsync(p => p.Status != "Paid")
         };
     }
+    public async Task<List<Form>> GetFormsByChildIdAsync(int childId)
+    {
+        return await _context.Forms
+            .Where(f => f.ChildId == childId)
+            .OrderByDescending(f => f.SubmittedDate) // הכי חדש למעלה
+            .ToListAsync();
+    }
 }

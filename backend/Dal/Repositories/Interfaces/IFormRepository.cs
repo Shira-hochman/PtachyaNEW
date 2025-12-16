@@ -15,5 +15,6 @@ public interface IFormRepository
     Task<List<Form>> GetPendingFormsAsync();
     Task<DashboardStatsDto> GetDashboardStatsAsync();
     Task    <List<Form>> GetApprovedFormsAsync();
+    Task<List<Dal.Models.Form>> GetFormsByChildIdAsync(int childId);
 
 }

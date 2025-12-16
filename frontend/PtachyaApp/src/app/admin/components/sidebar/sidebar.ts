@@ -14,7 +14,7 @@ export class SidebarComponent {
   menuItems = [
     { label: 'לוח מחוונים', icon: 'home', link: '/admin/dashboard' },
     { label: 'ניהול ילדים', icon: 'users', link: '/admin/children' },
-    { label: 'ניהול גנים', icon: 'school', link: '/admin/gardens' },
+    { label: 'ניהול גנים', icon: 'school', link: '/admin/kindergartens/manage' },
     { label: 'ניהול טפסים', icon: 'file-text', link: '/admin/forms' },
     { label: 'ניהול תשלומים', icon: 'dollar-sign', link: '/admin/payments' },
     { label: 'עדכון נתונים (Excel)', icon: 'upload-cloud', link: '/admin/update-data' }

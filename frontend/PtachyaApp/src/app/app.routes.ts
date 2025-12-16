@@ -9,6 +9,8 @@ import { SidebarComponent } from './admin/components/sidebar/sidebar';
 import { DashboardComponent } from './admin/components/dashboard/dashboard';
 import { ChildrenManagementComponent } from './admin/components/children-management/children-management';
 import { FormsManagementComponent } from './admin/components/forms-management/forms-management';
+// ⭐️ ייבוא הקומפוננטה החדשה: ניהול גנים ⭐️
+import { KindergartenManagementComponent } from './admin/components/kindergarten-management/kindergarten-management.component'; // ודא נתיב נכון
 
 // ----------------------------------------------------------------------
 // 1. ייבוא קומפוננטות ניהול (Admin Modules)
@@ -32,70 +34,81 @@ import { authGuard } from './auth-guard';
 
 
 export const routes: Routes = [
-    // ------------------------------------------------------------------
-    // 🏠 נתיבים ראשיים (User/Parent Routes)
-    // ------------------------------------------------------------------
-    { path: '', redirectTo: 'login', pathMatch: 'full' },
-    { path: 'login', component: ParentLoginComponent },
-    
-    // נתיבים הדורשים התחברות של ההורה
-    { 
-        path: 'child', // נתיב מעטפת כללי לכל פעולות ההורה/ילד
-         // רכיב Main יכול לשמש כמעטפת פנימית
-        canActivate: [authGuard], 
-        children: [
-            // הוספת נתיב ראשי בתוך המעטפת אם Main אינו דף ספציפי
-            { path: 'main', component: Main }, 
-            // ✅ הוספתי את הנתיב למסך בחירת אופן תשלום (המסך החדש)
-            { path: 'payment-options', component: PaymentOptions },
+    // ------------------------------------------------------------------
+    // 🏠 נתיבים ראשיים (User/Parent Routes)
+    // ------------------------------------------------------------------
+    { path: '', redirectTo: 'login', pathMatch: 'full' },
+    { path: 'login', component: ParentLoginComponent },
+    
+    // נתיבים הדורשים התחברות של ההורה
+    { 
+        path: 'child', // נתיב מעטפת כללי לכל פעולות ההורה/ילד
+         // רכיב Main יכול לשמש כמעטפת פנימית
+        canActivate: [authGuard], 
+        children: [
+            // הוספת נתיב ראשי בתוך המעטפת אם Main אינו דף ספציפי
+            { path: 'main', component: Main }, 
+            // ✅ הוספתי את הנתיב למסך בחירת אופן תשלום (המסך החדש)
+            { path: 'payment-options', component: PaymentOptions },
 
-            // ✅ הוספתי את הנתיב לתשלום ישיר באשראי (המסך החדש)
-            { path: 'direct-payment', component: DirectPayment },
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }, 
-            
-            // טפסים ופעולות
-            { path: 'health-declaration', component: HealthDeclarationComponent },
-            { path: 'payment-form', component: PaymentForm },
-        ]
-    },
-    
-    // ------------------------------------------------------------------
-    // 🔑 נתיבי ניהול (Admin Routes)
-    // ------------------------------------------------------------------
-    { path: 'admin/login', component: AdminLoginComponent },
+            // ✅ הוספתי את הנתיב לתשלום ישיר באשראי (המסך החדש)
+            { path: 'direct-payment', component: DirectPayment },
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }, 
+            
+            // טפסים ופעולות
+            { path: 'health-declaration', component: HealthDeclarationComponent },
+            { path: 'payment-form', component: PaymentForm },
+        ]
+    },
+    
+    // ------------------------------------------------------------------
+    // 🔑 נתיבי ניהול (Admin Routes)
+    // ------------------------------------------------------------------
+    { path: 'admin/login', component: AdminLoginComponent },
 
-    { 
-        path: 'admin', 
-        component: AdminLayoutComponent, // ⬅️ המעטפת הניהולית החדשה שלנו
-        // 💡 ניתן להוסיף Guard ייעודי למנהל כאן
-        canActivate: [authGuard], 
-        children: [
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-            
-            // 1. לוח מחוונים
-            { path: 'dashboard', component: DashboardComponent },
-            
-            // 2. ניהול ילדים
+    { 
+        path: 'admin', 
+        component: AdminLayoutComponent, // ⬅️ המעטפת הניהולית החדשה שלנו
+        // 💡 ניתן להוסיף Guard ייעודי למנהל כאן
+        canActivate: [authGuard], 
+        children: [
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+            
+            // 1. לוח מחוונים
+            { path: 'dashboard', component: DashboardComponent },
+            
+            // 2. ניהול ילדים
+            { 
+                path: 'children', 
+                component: ChildrenManagementComponent // ⬅️ ניהול הילדים המשודרג
+                // הנתיב הישן 'children-data' כבר לא קיים, הוא בתוך המעטפת החדשה 
+            },
+            
+            // ⭐️ 3. נתיב חדש לניהול הגנים ⭐️
             { 
-                path: 'children', 
-                component: ChildrenManagementComponent // ⬅️ ניהול הילדים המשודרג
-                // הנתיב הישן 'children-data' כבר לא קיים, הוא בתוך המעטפת החדשה 
+                path: 'kindergartens/manage', 
+                component: KindergartenManagementComponent 
             },
-            
-            // 3. עדכון נתונים
-            { path: 'update-data', component: DataUpdateComponent },
+            // ⭐️ נתיב נוסף להוספת/עריכת גן ספציפי (בהתאם ל-HTML) ⭐️
+            { 
+                path: 'kindergartens/add', 
+                component: DataUpdateComponent // או קומפוננטת הוספת גן ייעודית
+            },
+            { 
+                path: 'kindergartens/edit/:id', 
+                component: DataUpdateComponent // או קומפוננטת עריכת גן ייעודית
+            },
 
-             { path: 'forms', component: FormsManagementComponent }, 
-            
-            // 4. נתיבים נוספים שנגדיר בהמשך
-            // { path: 'gardens', component: GardensManagementComponent },
-            // { path: 'forms', component: FormsManagementComponent },
-            // { path: 'payments', component: PaymentsManagementComponent },
-        ]
-    },
+            // 4. עדכון נתונים
+            { path: 'update-data', component: DataUpdateComponent },
 
-    // ------------------------------------------------------------------
-    // 🛑 נתיב שגיאה (404)
-    // ------------------------------------------------------------------
-    { path: '**', redirectTo: '' }
+            { path: 'forms', component: FormsManagementComponent }, 
+            
+        ]
+    },
+
+    // ------------------------------------------------------------------
+    // 🛑 נתיב שגיאה (404)
+    // ------------------------------------------------------------------
+    { path: '**', redirectTo: '' }
 ];

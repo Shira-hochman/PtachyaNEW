@@ -3,19 +3,35 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http'; 
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ChildDataService, ChildDto } from '../../services/child-data.service';
-// import { EditChildModalComponent } from '../edit-child-modal/edit-child-modal.component'; // ⬅️ ייבוא המודל לעריכה
+import { ChildDataService } from '../../services/child-data.service'; 
+
+// ⭐️ ייבוא המודל החדש שיצרנו (ודאי שהנתיב תואם למבנה התיקיות שלך)
+import { ChildFilesModalComponent } from '../ChildFilesModalComponent/child-files-modal.component';
+
+// הגדרת המבנה
+export interface ChildUi {
+  childId: number;
+  firstName: string;
+  lastName: string;
+  idNumber: string; // שדה חובה למודל הקבצים
+  birthDate: Date;
+  kindergartenId: string;
+  email: string;
+  formLink: string;
+  paymentId?: number;
+}
 
 @Component({
   selector: 'app-children-management', 
   standalone: true, 
-  imports: [CommonModule, HttpClientModule, FormsModule, RouterLink], // ⬅️ הוספת המודל
+  // ⭐️ הוספנו את ChildFilesModalComponent לרשימת ה-imports
+  imports: [CommonModule, HttpClientModule, FormsModule, RouterLink, ChildFilesModalComponent],
   templateUrl: './children-management.html', 
   styleUrl: './children-management.css'
 })
 export class ChildrenManagementComponent implements OnInit {
   
-  children: ChildDto[] | null = null; 
+  children: ChildUi[] | null = null; 
   isLoading: boolean = false;
   errorMessage: string | null = null;
   
@@ -23,10 +39,16 @@ export class ChildrenManagementComponent implements OnInit {
   searchTerm: string = '';
   selectedKindergartenId: number | null = null;
   kindergartens: any[] = [{ id: 1, name: 'גן אלון' }, { id: 2, name: 'גן ברוש' }]; 
-  
-  // ⭐️ משתנים לניהול המודל
-  isModalOpen: boolean = false;
-  childToEdit: ChildDto | null = null; 
+
+  // משתנים לפייג'ינג
+  currentPage: number = 1;
+  pageSize: number = 10;
+  totalItems: number = 0;
+  totalPages: number = 0;
+
+  // ⭐️ משתנים חדשים לניהול המודל (Pop-up)
+  selectedChildForDocs: ChildUi | null = null; // הילד שנבחר להצגת מסמכים
+  isDocsModalOpen: boolean = false;            // האם המודל פתוח?
 
   constructor(private childDataService: ChildDataService) { }
 
@@ -34,76 +56,58 @@ export class ChildrenManagementComponent implements OnInit {
     this.loadChildren(); 
   }
 
-  /**
-   * טוען ומסנן את רשימת הילדים (צד לקוח לצורך הדגמה)
-   */
   loadChildren(): void {
     this.isLoading = true;
     this.errorMessage = null;
-    this.children = null; 
     
-    this.childDataService.getAllChildren().subscribe({
-        next: (data: ChildDto[]) => {
-            let filteredData = data;
-            
-            // סינון לפי טקסט
-            if (this.searchTerm) {
-                const term = this.searchTerm.toLowerCase();
-                filteredData = filteredData.filter(child => 
-                    child.firstName.toLowerCase().includes(term) ||
-                    child.lastName.toLowerCase().includes(term) ||
-                    child.idNumber.includes(term)
-                );
-            }
-            // סינון לפי גן (מניעת שגיאת סוג)
-            if (this.selectedKindergartenId !== null) {
-                const selectedId = Number(this.selectedKindergartenId);
-                filteredData = filteredData.filter(child => Number(child.kindergartenId) === selectedId);
-            }
-            
-            this.children = filteredData;
-            this.isLoading = false;
-            this.errorMessage = filteredData.length === 0 ? 'לא נמצאו ילדים תואמים לחיפוש.' : null;
-        },
-        error: (err: any) => {
-            console.error('Failed to load children:', err);
-            this.errorMessage = 'שגיאה בטעינת הנתונים.';
-            this.isLoading = false;
+    this.childDataService.getChildrenPaged(this.currentPage, this.pageSize).subscribe({
+      next: (res: any) => {
+        this.children = res.items; 
+        
+        this.totalItems = res.totalCount; 
+        this.totalPages = Math.ceil(this.totalItems / this.pageSize); 
+        this.isLoading = false;
+        
+        if (!this.children || this.children.length === 0) {
+             this.errorMessage = 'לא נמצאו נתונים.';
         }
+      },
+      error: (err: any) => {
+        console.error('Error loading children:', err);
+        this.errorMessage = 'שגיאה בטעינת הנתונים.';
+        this.isLoading = false;
+      }
     });
   }
 
-  /**
-   * פותח את חלון עריכת הילד הנבחר
-   */
-  editChild(childId: number): void {
-    const selectedChild = this.children?.find(c => c.childId === childId);
-    if (selectedChild) {
-      this.childToEdit = selectedChild;
-      this.isModalOpen = true; // פתיחת המודל
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadChildren();
     }
   }
 
-  /**
-   * מטפל באירוע שמירת הילד מהמודל
-   */
-  handleChildUpdate(updatedChild: ChildDto): void {
-    // עדכון רשימת הילדים הנוכחית ב-UI (לצורך רענון מיידי)
-    if (this.children) {
-      const index = this.children.findIndex(c => c.childId === updatedChild.childId);
-      if (index > -1) {
-        this.children[index] = updatedChild; 
-      }
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadChildren();
     }
-    this.isModalOpen = false; 
-    this.childToEdit = null;
   }
-  
-  /**
-   * סוגר את המודל (ביטול או שמירה)
-   */
-  handleModalClose(): void {
-    this.isModalOpen = false;
-    this.childToEdit = null;
+
+  editChild(childId: number): void {
+    console.log('Edit child:', childId);
+    // לוגיקת פתיחת מודל עריכה... (אם תרצי להוסיף בעתיד)
+  }
+
+  // ⭐️ פונקציה לפתיחת מודל המסמכים
+  openDocsModal(child: ChildUi): void {
+    this.selectedChildForDocs = child;
+    this.isDocsModalOpen = true;
+  }
+
+  // ⭐️ פונקציה לסגירת מודל המסמכים
+  closeDocsModal(): void {
+    this.isDocsModalOpen = false;
+    this.selectedChildForDocs = null;
   }
 }

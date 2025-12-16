@@ -273,5 +273,50 @@ public class FormService : IFormService
                 throw new Exception($"Python script failed (Exit Code {process.ExitCode}). Details: {fullError}");
             }
         }
+
+    }
+    // בתוך FormService.cs
+    // בתוך FormService.cs
+    public async Task<List<ChildFormDto>> GetFormsByIdNumberAsync(string idNumber)
+    {
+        // א. המרת תעודת זהות (String) למזהה פנימי (Int)
+        int? childPk = await _formRepository.GetChildPkByIdNumberAsync(idNumber);
+
+        if (!childPk.HasValue)
+        {
+            throw new ArgumentException($"לא נמצא ילד עם תעודת זהות {idNumber}");
+        }
+
+        // ב. שליפת הטפסים לפי המזהה הפנימי
+        var forms = await _formRepository.GetFormsByChildIdAsync(childPk.Value);
+
+        // ג. קבלת כתובת הבסיס של השרת (בשביל הלינק)
+        string baseUrl = _configuration["AppSettings:BaseUrl"] ?? "https://localhost:7222/";
+
+        return forms
+            // ⭐️⭐️⭐️ הוספת הסינון כאן: ודא שיש נתיב קובץ (FilePath) ⭐️⭐️⭐️
+            .Where(f => !string.IsNullOrEmpty(f.FilePath))
+            .Select(f =>
+            {
+                // קביעת שם הקובץ הנקי
+                string fileName = Path.GetFileName(f.FilePath);
+
+                // זיהוי התיקייה
+                string container = "PermanentForms";
+
+                // יצירת הלינק להורדה
+                string directDownloadLink = $"{baseUrl}api/Form/Download?container={container}&fileName={fileName}";
+
+                return new ChildFormDto
+                {
+                    FormId = f.FormId,
+                    FormType = f.FormType,
+                    // ⭐️ fileName כאן הוא ה-Path.GetFileName מ-f.FilePath,
+                    // לכן אם f.FilePath קיים, גם fileName יהיה קיים.
+                    FileName = fileName,
+                    DownloadUrl = directDownloadLink,
+                    UploadDate = f.SubmittedDate ?? DateTime.MinValue
+                };
+            }).ToList();
     }
 }

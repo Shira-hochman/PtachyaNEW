@@ -11,6 +11,7 @@ namespace Bo.Interfaces
         Task RemoveChildAsync(ChildDto dto);
         Task<string> VerifyChildIdentityAsync(string idNumber, DateTime birthDate);
         Task<ChildDto?> GetChildDetailsByIdAndBirthDateAsync(string idNumber, DateTime birthDate);
+        Task<PagedResult<ChildDto>> GetChildrenPagedAsync(int page, int pageSize);
     }
 
 }

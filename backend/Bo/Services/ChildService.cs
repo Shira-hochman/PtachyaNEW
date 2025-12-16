@@ -97,5 +97,10 @@ namespace Bo.Services
             // הנחה: קיים ממיר (Converter) כלשהו (כמו ModelsConverters.ToDto)
             return ChildConverter.ToChildDto(childEntity);
         }
+        public async Task<PagedResult<ChildDto>> GetChildrenPagedAsync(int page, int pageSize)
+        {
+            // קריאה לרפוזיטורי לקבלת התוצאה המדופדפת
+            return await _repo.GetPagedAsync(page, pageSize);
+        }
     }
 }

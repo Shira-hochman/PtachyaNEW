@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using System.Collections.Generic;
 
+// ⭐️ הוספת [Authorize] ברמת הקלאס - דורש טוקן תקף לכל Endpoint ⭐️
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 [EnableCors("AllowSpecificOrigin")]
@@ -158,5 +160,61 @@ public class FormController : ControllerBase
             ChildLastName = f.Child?.lastName ?? "",
             ChildIdNumber = f.Child?.IdNumber ?? ""
         };
+    }
+
+    // 1. פונקציה לשליפת קבצים לפי תעודת זהות של הילד
+    [HttpGet("by-id-number/{idNumber}")]
+    public async Task<IActionResult> GetFormsByIdNumber(string idNumber)
+    {
+        try
+        {
+            // קורא לסרביס שיודע לתרגם ת"ז לרשימת קבצים
+            var forms = await _formService.GetFormsByIdNumberAsync(idNumber);
+
+            if (forms == null || !forms.Any())
+            {
+                return Ok(new List<ChildFormDto>()); // מחזיר רשימה ריקה אם אין
+            }
+            return Ok(forms);
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(ex.Message); // אם הילד לא נמצא
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"שגיאה: {ex.Message}");
+        }
+    }
+
+    // 2. פונקציה להורדת הקובץ (בלחיצה)
+    [HttpGet("Download")]
+    public async Task<IActionResult> DownloadFile([FromQuery] string container, [FromQuery] string fileName)
+    {
+        if (string.IsNullOrEmpty(container) || string.IsNullOrEmpty(fileName))
+            return BadRequest("חסרים פרטים להורדה.");
+
+        try
+        {
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var cleanFileName = Path.GetFileName(fileName);
+            var fullPath = Path.Combine(baseDirectory, container, cleanFileName);
+
+            if (!System.IO.File.Exists(fullPath)) return NotFound("הקובץ לא נמצא בשרת.");
+
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+
+            // קביעת סוג הקובץ
+            string contentType = "application/octet-stream";
+            if (fileName.EndsWith(".pdf")) contentType = "application/pdf";
+            else if (fileName.EndsWith(".jpg")) contentType = "image/jpeg";
+            else if (fileName.EndsWith(".png")) contentType = "image/png";
+
+            return File(fileBytes, contentType, cleanFileName);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "שגיאה בהורדת הקובץ.");
+        }
     }
 }

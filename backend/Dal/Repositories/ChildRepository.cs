@@ -48,5 +48,29 @@ namespace Ptachya.DAL.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+        // הוסף לממשק IChildRepository את החתימה:
+        // Task<PagedResult<ChildDto>> GetPagedAsync(int page, int pageSize);
+
+        // מימוש ב-ChildRepository:
+        public async Task<PagedResult<ChildDto>> GetPagedAsync(int page, int pageSize)
+        {
+            var query = _context.Children.Include(c => c.Forms); // טעינת טפסים (נרחיב בהמשך)
+
+            var total = await query.CountAsync();
+
+            var entities = await query
+                .OrderBy(c => c.ChildId) // חייב מיון בשביל דפדוף
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var dtos = entities.Select(ChildConverter.ToChildDto).ToList();
+
+            return new PagedResult<ChildDto>
+            {
+                Items = dtos,
+                TotalCount = total
+            };
+        }
     }
 }

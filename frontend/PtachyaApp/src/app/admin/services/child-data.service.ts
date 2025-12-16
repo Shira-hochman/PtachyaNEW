@@ -16,6 +16,10 @@ export interface ChildDto {
   email: string;
   paymentId: number;
 }
+export interface PagedChildResult {
+  items: ChildDto[];
+  totalCount: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -34,4 +38,12 @@ export class ChildDataService {
     // מצפה לרשימה של ChildDto בפורמט JSON
     return this.http.get<ChildDto[]>(this.apiUrl);
   }
+  // עדכן את הממשק או הוסף חדש
+
+
+// בתוך המחלקה:
+getChildrenPaged(page: number, pageSize: number): Observable<PagedChildResult> {
+  // שים לב לשינוי הנתיב ל-paged והוספת הפרמטרים
+  return this.http.get<PagedChildResult>(`${this.apiUrl}/paged?page=${page}&pageSize=${pageSize}`);
+}
 }

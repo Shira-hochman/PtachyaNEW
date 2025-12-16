@@ -1,0 +1,49 @@
+<div class="modal-backdrop" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <h3>מסמכים עבור: {{ childName }}</h3>
+      <button class="close-btn" (click)="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      
+      <div *ngIf="isLoading" class="loading-spinner">
+        טוען מסמכים...
+      </div>
+
+      <div *ngIf="errorMessage" class="error-msg">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="!isLoading && !errorMessage && files.length === 0" class="empty-state">
+        לא נמצאו מסמכים לילד זה.
+      </div>
+
+      <table *ngIf="files.length > 0" class="files-table">
+        <thead>
+          <tr>
+            <th>שם הקובץ</th>
+            <th>תאריך העלאה</th>
+            <th>פעולה</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let file of files">
+            <td>
+              <span class="file-icon">📄</span>
+              {{ file.fileName || 'מסמך ללא שם' }}
+            </td>
+            <td>{{ file.uploadDate | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <button class="download-btn" (click)="downloadFile(file.downloadUrl)" [disabled]="!file.fileName">
+                📥 הורד
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+</div>

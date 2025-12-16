@@ -1,0 +1,181 @@
+/* ------------------ משתנים גלובליים (כדאי שיהיו בקובץ גלובלי) ------------------ */
+
+:root {
+    --color-primary: #007bff; /* כחול בסיסי */
+    --color-accent: #28a745; /* ירוק-כחלחל */
+    --color-text: #333;
+    --color-bg-light: #f8f9fa;
+    --color-border: #dee2e6;
+    --color-shadow: rgba(0, 0, 0, 0.05);
+    --color-paid: #28a745; 
+    --color-unpaid: #dc3545; /* אדום לממתין/שגיאה */
+    --color-delete: #dc3545; /* אדום למחיקה */
+}
+
+.management-wrapper {
+    padding: 20px;
+    direction: rtl;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--color-bg-light);
+}
+
+/* ------------------ כותרת ופקדים ------------------ */
+.header-section h1 {
+    font-size: 2rem;
+    color: var(--color-text);
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #6c757d;
+    margin-bottom: 25px;
+}
+
+.controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px var(--color-shadow);
+    align-items: center;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border: none;
+}
+
+.primary-add-btn {
+    background-color: var(--color-accent);
+    color: white;
+    margin-right: auto; /* דוחף את הכפתור לצד הנגדי */
+}
+
+.primary-add-btn:hover {
+    background-color: #218838;
+}
+
+
+/* ------------------ טבלאות וסטטוס ------------------ */
+
+.table-card {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px var(--color-shadow);
+}
+
+.table-card h2 {
+    font-size: 1.3rem;
+    color: var(--color-text);
+    margin-bottom: 15px;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; 
+}
+
+thead {
+    background-color: var(--color-primary);
+    color: white;
+    text-align: right;
+    font-size: 1.05rem; 
+    font-weight: 700; 
+}
+
+th, td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tbody tr:hover {
+    background-color: #e6f2ff;
+}
+
+
+/* ------------------ עמודת פעולות ------------------ */
+.actions-cell {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.action-btn {
+    padding: 6px 10px;
+    margin-right: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid transparent;
+}
+
+.edit-btn {
+    background-color: #ffc107;
+    color: #333;
+    border-color: #ff9800;
+}
+.edit-btn:hover {
+    background-color: #e0a800;
+    color: #333;
+}
+
+.delete-btn {
+    background-color: #f8d7da;
+    color: var(--color-delete);
+    border-color: var(--color-delete);
+    margin-right: 10px;
+}
+.delete-btn:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* ------------------ הודעות סטטוס ------------------ */
+
+.status-message {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.loading {
+    background-color: #e6f2ff;
+    color: var(--color-primary);
+}
+
+.error {
+    background-color: #f8d7da;
+    color: var(--color-unpaid);
+    border: 1px solid var(--color-unpaid);
+}
+
+.info {
+    background-color: #f0f0f0;
+    color: #6c757d;
+}

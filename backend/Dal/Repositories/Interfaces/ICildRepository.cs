@@ -14,5 +14,6 @@ namespace Dal.Repositories.Interfaces
 
         Task UpdateAsync(Child child);
         Task DeleteAsync(int childId);
+        Task<PagedResult<ChildDto>> GetPagedAsync(int page, int pageSize);
     }
 }
