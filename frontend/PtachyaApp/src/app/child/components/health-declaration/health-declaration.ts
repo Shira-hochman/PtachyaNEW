@@ -174,38 +174,30 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
       },
     });
   }
+onSubmit(): void {
+    this.submitted = true;
+    if (this.healthDeclarationForm.invalid) {
+        alert('נא למלא את כל השדות הנדרשים כראוי, כולל חתימת הורה 1.');
+        return;
+    }
 
-  onSubmit(): void {
-      this.submitted = true;
-      if (this.healthDeclarationForm.invalid) {
-          alert('נא למלא את כל השדות הנדרשים כראוי, כולל חתימת הורה 1.');
-          return;
-      }
+    const formData = this.healthDeclarationForm.getRawValue();
 
-      const formData = this.healthDeclarationForm.getRawValue();
-
-      // קריאה לשירות ושמירת הקובץ
-      this.formService.submitHealthDeclaration(formData).subscribe({
-          next: (response: Blob) => {
-              // ⭐️⭐️⭐️ תיקון קריטי: שינוי הסיומת ל-PDF ⭐️⭐️⭐️
-              const url = window.URL.createObjectURL(response);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `Health_Declaration_${formData.childDetails.childId}.pdf`; 
-              
-              document.body.appendChild(a);
-              a.click();
-              window.URL.revokeObjectURL(url);
-              a.remove();
-              
-              alert('הטופס נשלח, נשמר והורד למחשבך.');
-          },
-          error: (err) => {
-              console.error('שגיאה בשליחת הטופס או יצירת הקובץ:', err);
-              alert('שגיאה בשליחת הטופס. אנא נסה שנית.');
-          }
-      });
-  }
+    this.formService.submitHealthDeclaration(formData).subscribe({
+        next: (response) => {
+            // ⭐️ השינוי כאן: כבר לא מקבלים Blob ולא מורידים קובץ
+            alert('הטופס נשלח בהצלחה! העתק נשלח למייל שלכם.');
+            
+            // אופציונלי: איפוס הטופס או ניתוב לדף אחר
+            this.onReset();
+            // this.router.navigate(['/success-page']);
+        },
+        error: (err) => {
+            console.error('שגיאה בשליחת הטופס:', err);
+            alert('חלה שגיאה בשליחת הטופס. אנא נסו שוב מאוחר יותר.');
+        }
+    });
+}
   
   onReset(): void {
     this.submitted = false;

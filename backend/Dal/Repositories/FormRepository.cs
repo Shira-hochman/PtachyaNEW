@@ -77,4 +77,12 @@ public class FormRepository : IFormRepository
             .OrderByDescending(f => f.SubmittedDate) // הכי חדש למעלה
             .ToListAsync();
     }
+    public async Task<string> GetChildEmailByIdAsync(int childId)
+    {
+        // אנחנו ניגשים לטבלת הילדים ושולפים רק את שדה המייל לפי ה-PK
+        return await _context.Children
+            .Where(c => c.ChildId == childId) // וודאי שזה שם השדה של ה-ID ב-DB
+            .Select(c => c.Email)            // וודאי שזה שם שדה המייל ב-DB
+            .FirstOrDefaultAsync();
+    }
 }

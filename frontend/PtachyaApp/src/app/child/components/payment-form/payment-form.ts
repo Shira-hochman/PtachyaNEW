@@ -46,11 +46,12 @@ isLoading = signal(false);
   public ctx!: CanvasRenderingContext2D;
   private isDrawing = false;
 
-  filesToUpload: { [key: string]: File | null } = {
-    lowIncomeDocsUploaded: null,
-    otherSpecialEdDocsUploaded: null,
-    socialWorkerDocsUploaded: null,
-  };
+// שנה את המשתנה הקיים לזה:
+filesToUpload: { [key: string]: File[] } = {
+  lowIncomeDocsUploaded: [],
+  otherSpecialEdDocsUploaded: [],
+  socialWorkerDocsUploaded: [],
+};
 
   // נתוני בחירה
   maritalStatuses = ['נשוא/ה', 'הורה יחידני', 'גרוש/ה'];
@@ -316,13 +317,23 @@ ngOnInit(): void {
     this.discountRequestForm.get('parentSignature')?.markAsDirty();
   }
 
-  // לוגיקת Canvas - חישוב מיקום
+ // לוגיקת Canvas - חישוב מיקום מתוקן
   private getCanvasPosition(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): { x: number, y: number } {
     const rect = canvas.getBoundingClientRect();
-    const clientX = (event as MouseEvent).clientX !== undefined ? (event as MouseEvent).clientX : (event as TouchEvent).touches[0].clientX;
-    const clientY = (event as MouseEvent).clientY !== undefined ? (event as MouseEvent).clientY : (event as TouchEvent).touches[0].clientY;
+    
+    // זיהוי האם מדובר במגע (Touch) או בעכבר (Mouse)
+    let clientX: number;
+    let clientY: number;
 
-    // קנה מידה להתאמת רזולוציית ה-Canvas לגודל ה-DOM
+    if (event instanceof TouchEvent) {
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else {
+      clientX = (event as MouseEvent).clientX;
+      clientY = (event as MouseEvent).clientY;
+    }
+
+    // חישוב המיקום ביחס לקנבס כולל התאמה לרזולוציה (Scale)
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
@@ -334,30 +345,30 @@ ngOnInit(): void {
 
   // מטפל בבחירת קובץ אמיתית
   // מטפל בבחירת קובץ אמיתית
-  onFileChange(event: Event, controlName: string): void {
-    const input = event.target as HTMLInputElement;
-    const control = this.discountRequestForm.get(`requiredDocuments.${controlName}`);
+ onFileChange(event: Event, controlName: string): void {
+  const input = event.target as HTMLInputElement;
+  const control = this.discountRequestForm.get(`requiredDocuments.${controlName}`);
 
-    if (control) {
-      if (input.files && input.files.length > 0) {
-        const file = input.files[0];
-        // ⭐️⭐️⭐️ שמירת אובייקט הקובץ ⭐️⭐️⭐️
-        this.filesToUpload[controlName] = file;
-
-        // שמירת שם הקובץ רק לצורך תצוגה
-        control.setValue(file.name);
-        this.submissionMessage.set(`✅ קובץ "${file.name}" נבחר בהצלחה.`);
-      } else {
-        // ⭐️⭐️⭐️ איפוס אובייקט הקובץ ⭐️⭐️⭐️
-        this.filesToUpload[controlName] = null;
-        control.setValue('');
-        this.submissionMessage.set(null);
-      }
-      control.markAsDirty();
-      control.markAsTouched();
-      control.updateValueAndValidity();
+  if (control && input.files) {
+    const files = Array.from(input.files); // הופך את רשימת הקבצים למערך
+    if (files.length > 0) {
+      this.filesToUpload[controlName] = files;
+      // מעדכנים את ה-FormControl בטקסט כדי שה-Validator ידע שיש תוכן
+      control.setValue(`${files.length} קבצים נבחרו`);
+      this.submissionMessage.set(`✅ ${files.length} קבצים נבחרו.`);
+    } else {
+      this.filesToUpload[controlName] = [];
+      control.setValue('');
     }
+    control.markAsDirty();
+    control.updateValueAndValidity();
   }
+}
+
+// הוסף את פונקציית העזר הזו מתחתיה לצורך הצגת השמות ב-HTML
+getSelectedFileNames(controlName: string): string[] {
+  return this.filesToUpload[controlName] ? this.filesToUpload[controlName].map(f => f.name) : [];
+}
 
   // PaymentForm.ts
 
@@ -383,53 +394,57 @@ populateForm(child: Child): void {
   // שליחת הטופס
   // שליחת הטופס (המתודה המעודכנת)
  onSubmit(): void {
-    this.submitted.set(true);
-    this.submissionMessage.set(null);
+  this.submitted.set(true);
+  this.submissionMessage.set(null);
 
-    this.discountRequestForm.markAllAsTouched();
+  this.discountRequestForm.markAllAsTouched();
 
-    if (this.discountRequestForm.invalid) {
-      console.error('Form is invalid:', this.discountRequestForm.errors);
-      this.submissionMessage.set('🔴 שגיאה בשליחה: נא תקן את כל השגיאות המסומנות בטופס.');
-      return;
+  if (this.discountRequestForm.invalid) {
+    console.error('Form is invalid:', this.discountRequestForm.errors);
+    this.submissionMessage.set('🔴 שגיאה בשליחה: נא תקן את כל השגיאות המסומנות בטופס.');
+    return;
+  }
+
+  // ✅ הפעלת הספינר
+  this.isLoading.set(true);
+
+  // הכנת הנתונים (ניקוי ילדים ריקים)
+  const cleanChildren = this.childrenInCustody.controls
+    .map(control => control.getRawValue())
+    .filter(child => child.firstName || child.lastName || child.id);
+
+  const formJsonData = {
+    ...this.discountRequestForm.getRawValue(),
+    childrenInCustody: cleanChildren,
+  };
+
+  // --- שלב הכנת ה-FormData ---
+  const formData = new FormData();
+  
+  // הוספת נתוני הטופס כ-JSON
+  formData.append('data', JSON.stringify(formJsonData));
+  
+  // לולאה שעוברת על כל הקטגוריות ב-filesToUpload ומוסיפה את כל הקבצים
+  Object.keys(this.filesToUpload).forEach(key => {
+    const fileArray = this.filesToUpload[key];
+    if (fileArray && fileArray.length > 0) {
+      fileArray.forEach(file => {
+        // השרת יקבל את הקבצים תחת המפתח המקורי (למשל lowIncomeDocsUploaded)
+        formData.append(key, file, file.name);
+      });
     }
+  });
 
-    // ✅ הפעלת הספינר
-    this.isLoading.set(true);
-
-    // הכנת הנתונים (אותו קוד בדיוק)
-    const cleanChildren = this.childrenInCustody.controls
-      .map(control => control.getRawValue())
-      .filter(child => child.firstName || child.lastName || child.id);
-
-    const formJsonData = {
-      ...this.discountRequestForm.getRawValue(),
-      childrenInCustody: cleanChildren,
-    };
-
-    const formData = new FormData();
-    formData.append('data', JSON.stringify(formJsonData));
-    
-    if (this.filesToUpload['lowIncomeDocsUploaded']) formData.append('lowIncomeFile', this.filesToUpload['lowIncomeDocsUploaded'] as File);
-    if (this.filesToUpload['otherSpecialEdDocsUploaded']) formData.append('specialEdFile', this.filesToUpload['otherSpecialEdDocsUploaded'] as File);
-    if (this.filesToUpload['socialWorkerDocsUploaded']) formData.append('socialWorkerFile', this.filesToUpload['socialWorkerDocsUploaded'] as File);
-
-    // שליחה לשרת
-    this.formService.submitDiscountRequest(formData)
-      .pipe(
-        // ✅ finalize מבטיח שהקוד ירוץ גם בהצלחה וגם בכישלון
-        // במקרה של שגיאה - נכבה את הספינר.
-        // במקרה של הצלחה - נשאיר אותו דולק עד המעבר דף (כדי למנוע "קפיצה" ויזואלית)
-        finalize(() => {
-           // אנו לא מכבים כאן את isLoading בכוונה במקרה של הצלחה,
-           // כי אנחנו מיד מנווטים.
-           // נכבה אותו רק ב-error למטה.
-        })
-      )
-      .subscribe({
+  // שליחה לשרת
+  this.formService.submitDiscountRequest(formData)
+    .pipe(
+      finalize(() => {
+        // כאן ניתן להוסיף לוגיקה שתרוץ בכל מקרה
+      })
+    )
+    .subscribe({
       next: (response: Blob) => {
-        
-        // לוגיקת הורדה...
+        // לוגיקת הורדת ה-PDF
         const url = window.URL.createObjectURL(response);
         const a = document.createElement('a');
         a.href = url;
@@ -442,23 +457,21 @@ populateForm(child: Child): void {
         // עדכון השירות וחישוב מחיר
         this.discountService.calculateAndSetPrice(formJsonData);
 
-        // עדכון טקסט ההודעה (למרות שהמשתמש אולי לא יראה אותה בגלל הספינר, זה טוב לדיבאג)
         this.submissionMessage.set('✅ הטופס נקלט. מעביר לתשלום...');
 
-        // מעבר דף
+        // מעבר דף אחרי השהייה קלה
         setTimeout(() => {
-           // מכבים את הספינר רגע לפני המעבר (אופציונלי, הדפדפן ממילא ירענן)
-           this.isLoading.set(false); 
-           this.router.navigate(['/child/direct-payment']);
+          this.isLoading.set(false); 
+          this.router.navigate(['/child/direct-payment']);
         }, 1500);
       },
       error: (err) => {
         console.error('Error submitting form:', err);
-        // ✅ במקרה של שגיאה - חובה לכבות את הספינר כדי שהמשתמש יראה את הודעת השגיאה
         this.isLoading.set(false);
         this.submissionMessage.set('🔴 ארעה שגיאה בשליחת הטופס. נסה שנית מאוחר יותר.');
       }
     });
+
   }
 
   // איפוס הטופס

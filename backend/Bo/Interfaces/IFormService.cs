@@ -14,7 +14,6 @@ namespace Bo.Interfaces
         Task ApproveFormAsync(int formId);
         Task<List<Form>> GetPendingFormsAsync();
         Task<List<Form>> GetApprovedFormsAsync();
-    
         Task<List<ChildFormDto>> GetFormsByIdNumberAsync(string idNumber);
     }
 }

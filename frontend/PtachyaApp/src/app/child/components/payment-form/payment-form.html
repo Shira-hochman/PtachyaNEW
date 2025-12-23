@@ -7,7 +7,6 @@
 }
 
 <div class="declaration-container">
-<div class="declaration-container">
   <header class="form-header">
     <h1 class="title">
       <i class="fas fa-percent"></i> בקשה לקבלת הנחה - הצהרת הורה
@@ -246,13 +245,20 @@
         </p>
         <div class="form-group full-width upload-group">
           <input type="file" #lowIncomeFileInput class="hidden-file-input" 
+                 multiple
                  (change)="onFileChange($event, 'lowIncomeDocsUploaded')">
-          
+  
           <button type="button" class="upload-button" (click)="lowIncomeFileInput.click()">
             <span [innerHTML]="discountRequestForm.get('requiredDocuments.lowIncomeDocsUploaded')?.value ? 
               ('✅ ' + (discountRequestForm.get('requiredDocuments.lowIncomeDocsUploaded')?.value || 'הועלה בהצלחה')) : 
               '📎 לחץ להעלאת קבצים'"></span>
           </button>
+
+          <div class="selected-files-list" style="margin-top: 5px; font-size: 0.9em; color: #2e7d32;">
+            @for (fileName of getSelectedFileNames('lowIncomeDocsUploaded'); track fileName) {
+              <div>✅ {{ fileName }}</div>
+            }
+          </div>
           
           <label class="upload-label">העלאת מסמכי הכנסה *</label>
           
@@ -274,6 +280,7 @@
         </p>
         <div class="form-group full-width upload-group">
           <input type="file" #specialEdFileInpur class="hidden-file-input" 
+                 multiple
                  (change)="onFileChange($event, 'otherSpecialEdDocsUploaded')">
 
           <button type="button" class="upload-button" (click)="specialEdFileInpur.click()">
@@ -281,6 +288,12 @@
               ('✅ ' + (discountRequestForm.get('requiredDocuments.otherSpecialEdDocsUploaded')?.value || 'הועלה בהצלחה')) : 
               '📎 לחץ להעלאת קבצים'"></span>
           </button>
+
+          <div class="selected-files-list" style="margin-top: 5px; font-size: 0.9em; color: #2e7d32;">
+            @for (fileName of getSelectedFileNames('otherSpecialEdDocsUploaded'); track fileName) {
+              <div>✅ {{ fileName }}</div>
+            }
+          </div>
           
           <label class="upload-label">העלאת אישור לימודים *</label>
           
@@ -302,6 +315,7 @@
         </p>
         <div class="form-group full-width upload-group">
           <input type="file" #socialWorkerFileInput class="hidden-file-input" 
+                 multiple
                  (change)="onFileChange($event, 'socialWorkerDocsUploaded')">
 
           <button type="button" class="upload-button" (click)="socialWorkerFileInput.click()">
@@ -309,6 +323,12 @@
               ('✅ ' + (discountRequestForm.get('requiredDocuments.socialWorkerDocsUploaded')?.value || 'הועלה בהצלחה')) : 
               '📎 לחץ להעלאת קבצים'"></span>
           </button>
+
+          <div class="selected-files-list" style="margin-top: 5px; font-size: 0.9em; color: #2e7d32;">
+            @for (fileName of getSelectedFileNames('socialWorkerDocsUploaded'); track fileName) {
+              <div>✅ {{ fileName }}</div>
+            }
+          </div>
 
           <label class="upload-label">העלאת אסמכתא *</label>
 
@@ -327,8 +347,8 @@
       <div class="form-group full-width">
         <label for="reasoning" class="sr-only">נימוק</label>
         <textarea id="reasoning" formControlName="reasoning" rows="4" class="control-large"
-              placeholder="יש לכתוב בכתב ברור את הנימוק לבקשת ההנחה..."
-              [class.is-invalid]="isInvalid('reasoning')"></textarea>
+                 placeholder="יש לכתוב בכתב ברור את הנימוק לבקשת ההנחה..."
+                 [class.is-invalid]="isInvalid('reasoning')"></textarea>
         @if (isInvalid('reasoning')) {
           <div class="error-message">נימוק נדרש.</div>
         }

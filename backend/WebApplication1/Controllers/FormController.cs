@@ -1,17 +1,11 @@
-﻿using Dto;
+﻿using Bo.Interfaces;
+using Dal.Models;
+using Dto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Bo.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using System.Linq;
-using Microsoft.AspNetCore.Http;
 using System.Text.Json;
-using System.Collections.Generic;
 
-// ⭐️ הוספת [Authorize] ברמת הקלאס - דורש טוקן תקף לכל Endpoint ⭐️
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
@@ -29,32 +23,33 @@ public class FormController : ControllerBase
     }
 
     // =================================================================
-    // 🟢 אזור הורים (שליחת טפסים) - מורשה ל-Parent בלבד
+    // 🟢 אזור הורים - שליחה למייל ול-DB (בלי הורדה)
     // =================================================================
 
     [HttpPost("submit-health-declaration")]
     [Authorize(Roles = "Parent")]
     public async Task<IActionResult> SubmitHealthDeclaration([FromBody] HealthDeclarationDto declarationDto)
     {
+        // אימות שההורה לא שולח עבור ילד אחר
         var authenticatedChildIdNumber = User.Claims.FirstOrDefault(c => c.Type == "ChildIdNumber")?.Value;
-
         if (authenticatedChildIdNumber != declarationDto.ChildDetails.ChildId.ToString())
         {
             return StatusCode(403, "אינך מורשה לשלוח טופס זה עבור ילד זה.");
         }
+
         try
         {
-            byte[] fileBytes = await _formService.ProcessAndGenerateHealthDeclarationAsync(declarationDto);
-            string newFileName = $"Health_Declaration_{declarationDto.ChildDetails.ChildId}.pdf";
-            return File(fileBytes, "application/pdf", newFileName);
+            // הסרביס מייצר PDF, שומר ב-DB ושולח מייל להורה
+            await _formService.ProcessAndGenerateHealthDeclarationAsync(declarationDto);
+
+            // מחזירים Ok בלבד - המייל כבר נשלח מה-Service
+            return Ok(new { message = "הטופס נשלח בהצלחה למייל שלכם ונשמר במערכת." });
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Controller Error: {ex.Message}");
-            return StatusCode(500, ex.Message);
+            return StatusCode(500, $"שגיאה בשליחת הטופס: {ex.Message}");
         }
     }
-
     [HttpPost("submit-discount-request")]
     [Authorize(Roles = "Parent")]
     public async Task<IActionResult> SubmitDiscountRequest([FromForm] DiscountRequestSubmissionDto formSubmission)
@@ -66,76 +61,51 @@ public class FormController : ControllerBase
                 formSubmission.Data,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             )!;
-            if (requestDto == null) return BadRequest("Invalid form data structure.");
         }
-        catch (Exception)
-        {
-            return BadRequest("Failed to parse form data.");
-        }
+        catch (Exception) { return BadRequest("Failed to parse form data."); }
 
         var authenticatedChildIdNumber = User.Claims.FirstOrDefault(c => c.Type == "ChildIdNumber")?.Value;
         if (authenticatedChildIdNumber != requestDto.StudentDetails.StudentId.ToString())
         {
-            return StatusCode(403, "אינך מורשה לשלוח טופס הנחה עבור תלמיד זה.");
+            return StatusCode(403, "אינך מורשה לשלוח טופס עבור תלמיד זה.");
         }
-
-        // שמירת קבצים מצורפים
-        string allSavedPaths = await CombineAndSaveFiles(formSubmission.GetAttachments());
 
         try
         {
-            byte[] fileBytes = await _formService.ProcessAndGenerateDiscountRequestAsync(requestDto, allSavedPaths);
-            string newFileName = $"Discount_Request_{requestDto.StudentDetails.StudentId}_{DateTime.Now:yyyyMMdd}.pdf";
-            return File(fileBytes, "application/pdf", newFileName);
+            // ⭐️ שינוי: ה-GetAttachments כעת מחזיר את כל הקבצים מכל הרשימות (הכנסה, חינוך מיוחד, עו"ס)
+            // המתודה CombineAndSaveFiles כבר יודעת לרוץ בלולאה על הרשימה ולשמור את כולם.
+            string allSavedPaths = await CombineAndSaveFiles(formSubmission.GetAttachments());
+
+            await _formService.ProcessAndGenerateDiscountRequestAsync(requestDto, allSavedPaths);
+
+            return Ok(new { message = "בקשת ההנחה נשלחה בהצלחה." });
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Controller Error (Discount): {ex.Message}");
-            return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            return StatusCode(500, $"שגיאה: {ex.Message}");
         }
     }
 
-    // פונקציית עזר לשמירת קבצים
-    private async Task<string> CombineAndSaveFiles(List<IFormFile> files)
-    {
-        var savedPaths = new List<string>();
-        foreach (var file in files)
-        {
-            if (file.Length > 0)
-            {
-                string path = await _fileStorageService.SaveFileAsync(file, AttachmentsFolder);
-                savedPaths.Add(path);
-            }
-        }
-        return string.Join(",", savedPaths);
-    }
-
     // =================================================================
-    // 🔵 אזור מנהלים (ניהול טפסים) - מורשה ל-Admin בלבד
+    // 🔵 אזור הנהלה - נשאר ללא שינוי כדי לא לפגוע בתהליך הקיים
     // =================================================================
 
-    // 1. קבלת טפסים ממתינים
     [HttpGet("pending")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetPendingForms()
     {
         var formsEntities = await _formService.GetPendingFormsAsync();
-        // המרה ל-DTO שטוח כדי למנוע מעגליות JSON
-        var formsDto = formsEntities.Select(MapToDto).ToList();
-        return Ok(formsDto);
+        return Ok(formsEntities.Select(MapToDto).ToList());
     }
 
-    // 2. קבלת היסטוריית טפסים שאושרו (הפונקציה שהייתה חסרה לתצוגה התחתונה!)
     [HttpGet("approved")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetApprovedForms()
     {
         var formsEntities = await _formService.GetApprovedFormsAsync();
-        var formsDto = formsEntities.Select(MapToDto).ToList();
-        return Ok(formsDto);
+        return Ok(formsEntities.Select(MapToDto).ToList());
     }
 
-    // 3. אישור טופס (הפונקציה שהייתה חסרה וגרמה לשגיאה!)
     [HttpPut("approve/{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ApproveForm(int id)
@@ -144,7 +114,38 @@ public class FormController : ControllerBase
         return Ok(new { message = "הטופס אושר בהצלחה" });
     }
 
-    // פונקציית עזר למיפוי (כדי לא לשכפל קוד)
+    [HttpGet("by-id-number/{idNumber}")]
+    public async Task<IActionResult> GetFormsByIdNumber(string idNumber)
+    {
+        var forms = await _formService.GetFormsByIdNumberAsync(idNumber);
+        return Ok(forms ?? new List<ChildFormDto>());
+    }
+
+    [HttpGet("Download")]
+    public async Task<IActionResult> DownloadFile([FromQuery] string container, [FromQuery] string fileName)
+    {
+        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        var fullPath = Path.Combine(baseDirectory, container, Path.GetFileName(fileName));
+
+        if (!System.IO.File.Exists(fullPath)) return NotFound("הקובץ לא נמצא.");
+
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+        string contentType = fileName.EndsWith(".pdf") ? "application/pdf" : "application/octet-stream";
+
+        return File(fileBytes, contentType, fileName);
+    }
+
+    // פונקציות עזר פנימיות
+    private async Task<string> CombineAndSaveFiles(List<IFormFile> files)
+    {
+        var savedPaths = new List<string>();
+        foreach (var file in files)
+        {
+            if (file.Length > 0) savedPaths.Add(await _fileStorageService.SaveFileAsync(file, AttachmentsFolder));
+        }
+        return string.Join(",", savedPaths);
+    }
+
     private FormManageDto MapToDto(Dal.Models.Form f)
     {
         return new FormManageDto
@@ -154,67 +155,9 @@ public class FormController : ControllerBase
             Status = f.Status,
             SubmittedDate = f.SubmittedDate,
             FilePath = f.FilePath,
-
-            // שליפת פרטי הילד בצורה בטוחה (Null check)
             ChildFirstName = f.Child?.FirstName ?? "לא ידוע",
             ChildLastName = f.Child?.lastName ?? "",
             ChildIdNumber = f.Child?.IdNumber ?? ""
         };
-    }
-
-    // 1. פונקציה לשליפת קבצים לפי תעודת זהות של הילד
-    [HttpGet("by-id-number/{idNumber}")]
-    public async Task<IActionResult> GetFormsByIdNumber(string idNumber)
-    {
-        try
-        {
-            // קורא לסרביס שיודע לתרגם ת"ז לרשימת קבצים
-            var forms = await _formService.GetFormsByIdNumberAsync(idNumber);
-
-            if (forms == null || !forms.Any())
-            {
-                return Ok(new List<ChildFormDto>()); // מחזיר רשימה ריקה אם אין
-            }
-            return Ok(forms);
-        }
-        catch (ArgumentException ex)
-        {
-            return NotFound(ex.Message); // אם הילד לא נמצא
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"שגיאה: {ex.Message}");
-        }
-    }
-
-    // 2. פונקציה להורדת הקובץ (בלחיצה)
-    [HttpGet("Download")]
-    public async Task<IActionResult> DownloadFile([FromQuery] string container, [FromQuery] string fileName)
-    {
-        if (string.IsNullOrEmpty(container) || string.IsNullOrEmpty(fileName))
-            return BadRequest("חסרים פרטים להורדה.");
-
-        try
-        {
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var cleanFileName = Path.GetFileName(fileName);
-            var fullPath = Path.Combine(baseDirectory, container, cleanFileName);
-
-            if (!System.IO.File.Exists(fullPath)) return NotFound("הקובץ לא נמצא בשרת.");
-
-            var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
-
-            // קביעת סוג הקובץ
-            string contentType = "application/octet-stream";
-            if (fileName.EndsWith(".pdf")) contentType = "application/pdf";
-            else if (fileName.EndsWith(".jpg")) contentType = "image/jpeg";
-            else if (fileName.EndsWith(".png")) contentType = "image/png";
-
-            return File(fileBytes, contentType, cleanFileName);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "שגיאה בהורדת הקובץ.");
-        }
     }
 }

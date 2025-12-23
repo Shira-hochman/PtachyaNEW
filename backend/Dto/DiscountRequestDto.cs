@@ -74,26 +74,24 @@ namespace Dto
     }
     public class DiscountRequestSubmissionDto
     {
-        // ⭐️ הנתונים הראשיים של הטופס שנשלחו כ-JSON string תחת השם 'data'
-        // חשוב: השם "data" כאן חייב להתאים ל-formData.append('data', ...) באנגולר
         [FromForm(Name = "data")]
         public string Data { get; set; } = null!;
 
-        // ⭐️ הקבצים המצורפים (חייבים להתאים לשמות ששלחנו: lowIncomeFile וכו')
-        public IFormFile? LowIncomeFile { get; set; }
-        public IFormFile? SpecialEdFile { get; set; }
-        public IFormFile? SocialWorkerFile { get; set; }
+        // שינוי לרשימות כדי לקלוט מספר קבצים לכל קטגוריה
+        public List<IFormFile>? LowIncomeDocsUploaded { get; set; }
+        public List<IFormFile>? OtherSpecialEdDocsUploaded { get; set; }
+        public List<IFormFile>? SocialWorkerDocsUploaded { get; set; }
 
-        // מתודת עזר פשוטה לאיסוף הקבצים
         public List<IFormFile> GetAttachments()
         {
             var files = new List<IFormFile>();
-            // ⭐️ שימוש בבדיקה מפורשת של null לפני ההוספה ⭐️
-            if (LowIncomeFile != null) files.Add(LowIncomeFile);
-            if (SpecialEdFile != null) files.Add(SpecialEdFile);
-            if (SocialWorkerFile != null) files.Add(SocialWorkerFile);
+
+            // הוספת כל הקבצים מכל הרשימות לרשימה אחת עבור הטיפול ב-Controller
+            if (LowIncomeDocsUploaded != null) files.AddRange(LowIncomeDocsUploaded);
+            if (OtherSpecialEdDocsUploaded != null) files.AddRange(OtherSpecialEdDocsUploaded);
+            if (SocialWorkerDocsUploaded != null) files.AddRange(SocialWorkerDocsUploaded);
+
             return files;
         }
-
     }
 }
