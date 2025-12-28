@@ -397,82 +397,59 @@ populateForm(child: Child): void {
   this.submitted.set(true);
   this.submissionMessage.set(null);
 
-  this.discountRequestForm.markAllAsTouched();
-
   if (this.discountRequestForm.invalid) {
-    console.error('Form is invalid:', this.discountRequestForm.errors);
     this.submissionMessage.set('🔴 שגיאה בשליחה: נא תקן את כל השגיאות המסומנות בטופס.');
     return;
   }
 
-  // ✅ הפעלת הספינר
   this.isLoading.set(true);
 
-  // הכנת הנתונים (ניקוי ילדים ריקים)
-  const cleanChildren = this.childrenInCustody.controls
-    .map(control => control.getRawValue())
-    .filter(child => child.firstName || child.lastName || child.id);
+  // ניקוי ילדים ריקים מהמערך
+  const rawData = this.discountRequestForm.getRawValue();
+  rawData.childrenInCustody = rawData.childrenInCustody.filter((c: any) => c.firstName || c.id);
 
-  const formJsonData = {
-    ...this.discountRequestForm.getRawValue(),
-    childrenInCustody: cleanChildren,
-  };
-
-  // --- שלב הכנת ה-FormData ---
   const formData = new FormData();
   
-  // הוספת נתוני הטופס כ-JSON
-  formData.append('data', JSON.stringify(formJsonData));
+  // הוספת נתוני הטופס כ-JSON תחת המפתח 'data' (כפי שמוגדר אצלך)
+  formData.append('data', JSON.stringify(rawData));
   
-  // לולאה שעוברת על כל הקטגוריות ב-filesToUpload ומוסיפה את כל הקבצים
+  // הוספת הקבצים
   Object.keys(this.filesToUpload).forEach(key => {
-    const fileArray = this.filesToUpload[key];
-    if (fileArray && fileArray.length > 0) {
-      fileArray.forEach(file => {
-        // השרת יקבל את הקבצים תחת המפתח המקורי (למשל lowIncomeDocsUploaded)
-        formData.append(key, file, file.name);
-      });
-    }
+    this.filesToUpload[key].forEach(file => {
+      formData.append(key, file, file.name);
+    });
   });
 
-  // שליחה לשרת
   this.formService.submitDiscountRequest(formData)
     .pipe(
-      finalize(() => {
-        // כאן ניתן להוסיף לוגיקה שתרוץ בכל מקרה
-      })
+      finalize(() => this.isLoading.set(false)) // מבטיח שהספינר יכבה גם בשגיאה וגם בהצלחה
     )
     .subscribe({
       next: (response: Blob) => {
-        // לוגיקת הורדת ה-PDF
-        const url = window.URL.createObjectURL(response);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Discount_Request_${formJsonData.studentDetails.studentId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-
-        // עדכון השירות וחישוב מחיר
-        this.discountService.calculateAndSetPrice(formJsonData);
-
-        this.submissionMessage.set('✅ הטופס נקלט. מעביר לתשלום...');
-
-        // מעבר דף אחרי השהייה קלה
+        this.downloadPdf(response, rawData.studentDetails.studentId);
+        this.discountService.calculateAndSetPrice(rawData);
+        this.submissionMessage.set('✅ הטופס נשלח בהצלחה והעתק נשלח למייל שלך.'); // עדכון הודעה למשתמש
+        
         setTimeout(() => {
-          this.isLoading.set(false); 
           this.router.navigate(['/child/direct-payment']);
-        }, 1500);
+        }, 2000);
       },
       error: (err) => {
-        console.error('Error submitting form:', err);
-        this.isLoading.set(false);
-        this.submissionMessage.set('🔴 ארעה שגיאה בשליחת הטופס. נסה שנית מאוחר יותר.');
+        console.error('Submission error:', err);
+        this.submissionMessage.set('🔴 תקלה בתקשורת עם השרת. אנא נסה שוב.');
       }
     });
+}
 
-  }
+// פונקציית עזר להורדה (לשמור על הקוד נקי)
+private downloadPdf(blob: Blob, id: string) {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Discount_Request_${id}.pdf`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
 
   // איפוס הטופס
   onReset(): void {

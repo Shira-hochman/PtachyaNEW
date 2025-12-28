@@ -216,17 +216,29 @@ data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAeAB4AAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFB
 
     <div class="signature-wrapper">
         <div class="sig-col" style="text-align: right;">
-            <span class="bold">שם ההורה:</span>
-            <span class="fill-line" style="min-width: 150px;">{{ParentName}}</span>
+            <div>
+                <span class="bold">שם הורה 1:</span>
+                <span class="fill-line" style="min-width: 150px;">{{ParentName}}</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <span class="bold">חתימה:</span>
+                <span class="fill-line" style="min-width: 150px; display: inline-block; vertical-align: bottom;">
+                    {{SignatureImageTag}}
+                </span>
+            </div>
         </div>
 
         <div class="sig-col" style="text-align: left;">
-            <span class="bold">חתימה:</span>
-            <span class="fill-line" style="min-width: 150px; display: inline-block; vertical-align: bottom;">
-                {{SignatureImageTag}}
-            </span>
+            <div>
+                <span class="bold">שם הורה 2:</span>
+                <span class="fill-line" style="min-width: 150px;">{{Parent2Name}}</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <span class="bold">חתימה:</span>
+                <span class="fill-line" style="min-width: 150px; display: inline-block; vertical-align: bottom;">
+                    {{Signature2ImageTag}}
+                </span>
+            </div>
         </div>
     </div>
-
-</body>
 </html>

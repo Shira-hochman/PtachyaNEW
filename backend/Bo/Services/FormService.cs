@@ -54,9 +54,13 @@ public class FormService : IFormService
         string htmlContent = await LoadTemplateAsync(HealthTemplateHtml);
 
         // הכנת חתימה
-        string signatureHtml = ConvertSignatureToHtml(declarationDto.Parent1.Signature);
+        // 1. הכנת החתימות (המרה ל-HTML)
+        string signature1Html = ConvertSignatureToHtml(declarationDto.Parent1.Signature);
+        string signature2Html = !string.IsNullOrEmpty(declarationDto.Parent2.Signature)
+                                ? ConvertSignatureToHtml(declarationDto.Parent2.Signature)
+                                : "";
 
-        // החלפת נתונים
+        // 2. החלפת הנתונים ב-htmlContent
         htmlContent = htmlContent
             .Replace("{{FormDate}}", declarationDto.FormDate.ToString("dd/MM/yyyy"))
             .Replace("{{StudentName}}", $"{declarationDto.ChildDetails.ChildFirstName} {declarationDto.ChildDetails.ChildLastName}")
@@ -71,9 +75,14 @@ public class FormService : IFormService
             .Replace("{{FacilityPhone}}", declarationDto.FacilityDetails.FacilityPhone)
             .Replace("{{FacilityAddress}}", declarationDto.FacilityDetails.FacilityAddress)
             .Replace("{{ParticipationAmount}}", declarationDto.MonthlySelfParticipation.ToString())
-            .Replace("{{ParentName}}", declarationDto.Parent1.Name)
-            .Replace("{{SignatureImageTag}}", signatureHtml);
 
+            // נתוני הורה 1
+            .Replace("{{ParentName}}", declarationDto.Parent1.Name)
+            .Replace("{{SignatureImageTag}}", signature1Html)
+
+            // נתוני הורה 2 (החדשים)
+            .Replace("{{Parent2Name}}", declarationDto.Parent2.Name ?? "___________")
+            .Replace("{{Signature2ImageTag}}", signature2Html);
         // יצירה ושמירה
         byte[] pdfBytes = await GeneratePdfFromHtmlAsync(htmlContent);
         await SaveFormRecordAsync(childPK, "HEALTH_DECLARATION", pdfBytes);
@@ -91,8 +100,12 @@ public class FormService : IFormService
     // ---------------------------------------------------------
     // 🔵 טופס 2: בקשת הנחה
     // ---------------------------------------------------------
+    // ---------------------------------------------------------
+    // 🔵 טופס 2: בקשת הנחה - הפונקציה המלאה עם שליחת מייל
+    // ---------------------------------------------------------
     public async Task<byte[]> ProcessAndGenerateDiscountRequestAsync(DiscountRequestDto requestDto, string uploadedPaths)
     {
+        // 1. זיהוי הילד במערכת ושליפת המייל של ההורה
         string idNumber = requestDto.StudentDetails.StudentId;
         int? actualChildPK = await _formRepository.GetChildPkByIdNumberAsync(idNumber);
 
@@ -101,6 +114,10 @@ public class FormService : IFormService
 
         int childPK = actualChildPK.Value;
 
+        // שליפת המייל מה-DB לצורך השליחה בסוף התהליך
+        string parentEmail = await _formRepository.GetChildEmailByIdAsync(childPK);
+
+        // 2. טעינת תבנית ה-HTML והכנת הנתונים
         string htmlContent = await LoadTemplateAsync(DiscountTemplateHtml);
         string signatureHtml = ConvertSignatureToHtml(requestDto.ParentSignature);
         string childrenRows = GenerateChildrenTableRows(requestDto.ChildrenInCustody);
@@ -112,6 +129,7 @@ public class FormService : IFormService
         var income = requestDto.LowIncomeDetails;
         var student = requestDto.StudentDetails;
 
+        // 3. החלפת התגיות בתוכן האמיתי
         htmlContent = htmlContent
             .Replace("{{StudentName}}", student.StudentName)
             .Replace("{{StudentId}}", student.StudentId)
@@ -140,8 +158,25 @@ public class FormService : IFormService
             .Replace("{{FormDate}}", requestDto.FormDate.ToString("dd/MM/yyyy"))
             .Replace("{{SignatureImageTag}}", signatureHtml);
 
+        // 4. יצירת קובץ ה-PDF ושמירתו בשרת/בסיס הנתונים
         byte[] pdfBytes = await GeneratePdfFromHtmlAsync(htmlContent);
         await SaveFormRecordAsync(childPK, "DISCOUNT_REQUEST", pdfBytes, uploadedPaths);
+
+        // 5. ⭐️ שליחת המייל האוטומטי להורה ⭐️
+        if (!string.IsNullOrEmpty(parentEmail))
+        {
+            try
+            {
+                string childFullName = student.StudentName;
+                // שים לב: הוספנו כאן את הפרמטר "בקשת הנחה" כדי שהמייל יהיה ברור
+                await SendPdfByEmailAsync(parentEmail, childFullName, pdfBytes, "בקשת הנחה");
+            }
+            catch (Exception ex)
+            {
+                // כתיבת שגיאה ללוג בלבד כדי שהתהליך הראשי לא ייעצר אם המייל נכשל
+                Console.WriteLine($"שגיאה בשליחת מייל עבור בקשת הנחה: {ex.Message}");
+            }
+        }
 
         return pdfBytes;
     }
@@ -171,6 +206,13 @@ public class FormService : IFormService
 
     private async Task<byte[]> GeneratePdfFromHtmlAsync(string htmlContent)
     {
+        string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", "image1.jpeg");
+        if (File.Exists(imagePath))
+        {
+            byte[] imageArray = File.ReadAllBytes(imagePath);
+            string base64Image = Convert.ToBase64String(imageArray);
+            htmlContent = htmlContent.Replace("url('image1.jpeg')", $"url('data:image/jpeg;base64,{base64Image}')");
+        }
         string chromePath = @"C:\Program Files\Google\Chrome\Application\chrome.exe";
         if (!File.Exists(chromePath)) chromePath = @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe";
 
@@ -261,41 +303,61 @@ public class FormService : IFormService
     // ---------------------------------------------------------
     // 📧 פונקציית שליחת מייל
     // ---------------------------------------------------------
-    private async Task SendPdfByEmailAsync(string parentEmail, string childName, byte[] pdfBytes)
+    // ---------------------------------------------------------
+    // 📧 פונקציית שליחת מייל גנרית התומכת בכל סוגי הטפסים
+    // ---------------------------------------------------------
+    private async Task SendPdfByEmailAsync(string parentEmail, string childName, byte[] pdfBytes, string formTypeName = "הצהרת בריאות")
     {
         try
         {
+            // הגדרות חשבון השולח
             string senderEmail = "syrhhwkmn17@gmail.com";
-            string senderPassword = "icwxylkjdkstkown"; // כאן יש לשים את קוד ה-16 תווים מ-Google
+            string senderPassword = "icwxylkjdkstkown"; // קוד האפליקציה (16 תווים) מ-Google
 
-            var smtpClient = new SmtpClient("smtp.gmail.com")
+            // הגדרת השרת של Gmail
+            using var smtpClient = new SmtpClient("smtp.gmail.com")
             {
                 Port = 587,
                 Credentials = new NetworkCredential(senderEmail, senderPassword),
                 EnableSsl = true,
             };
 
+            // יצירת הודעת המייל
             var mailMessage = new MailMessage
             {
                 From = new MailAddress(senderEmail, "מערכת ניהול טפסים"),
-                Subject = $"הצהרת בריאות חתומה - {childName}",
-                Body = $"שלום רב,\nמצורפת בזאת הצהרת הבריאות עבור {childName}.\nבברכה.",
+                Subject = $"{formTypeName} חתומה - {childName}",
+                Body = $"שלום רב,\n\nמצורפת בזאת {formTypeName} עבור {childName}.\n\nבברכה,\nמערכת ניהול טפסים",
                 IsBodyHtml = false,
             };
 
+            // הוספת הנמען
             mailMessage.To.Add(parentEmail);
 
+            // טיפול בקובץ המצורף (PDF) מתוך הזיכרון
             using (var ms = new MemoryStream(pdfBytes))
             {
-                var attachment = new Attachment(ms, $"Health_Declaration_{childName}.pdf", "application/pdf");
+                // יצירת שם קובץ תקין (החלפת רווחים בקו תחתון)
+                string safeFileName = formTypeName.Replace(" ", "_");
+                var attachment = new Attachment(ms, $"{safeFileName}_{childName}.pdf", "application/pdf");
+
                 mailMessage.Attachments.Add(attachment);
+
+                // שליחת המייל בפועל
                 await smtpClient.SendMailAsync(mailMessage);
             }
+
+            Console.WriteLine($"המייל נשלח בהצלחה לכתובת: {parentEmail}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"שגיאה בשליחת המייל: {ex.Message}");
-            // לא נזרוק שגיאה כדי לא לעצור את כל התהליך אם רק המייל נכשל
+            // רישום השגיאה ללוג - לא נרצה להפיל את כל השרת אם שליחת המייל נכשלה
+            Console.WriteLine($"שגיאה בשליחת המייל ({formTypeName}): {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"פירוט נוסף: {ex.InnerException.Message}");
+            }
         }
     }
+
 }

@@ -101,56 +101,49 @@
     </fieldset>
 
     <fieldset class="form-fieldset section-tertiary">
-      <legend class="fieldset-legend">
-        <i class="fas fa-users"></i> ילדים נוספים עד גיל 18 בחזקתך
-      </legend>
-      
-      <div class="form-grid children-count-grid">
-        <div class="form-group full-width">
-          <label for="childrenCount">מספר הילדים עד גיל 18 אשר בחזקתי *</label>
-          <input id="childrenCount" type="number" formControlName="childrenCount" class="control-large"
-                 (change)="updateChildrenInCustodyArray(discountRequestForm.get('childrenCount')?.value)"
-                 [class.is-invalid]="isInvalid('childrenCount')">
-          @if (isInvalid('childrenCount')) {
-            <div class="error-message">נדרש מספר תקין (0 ומעלה).</div>
-          }
-        </div>
-      </div>
-      
-      <div class="children-list-wrapper">
-        <h4 class="children-list-title">פרטי הילדים הנוספים:</h4>
-        <div formArrayName="childrenInCustody" class="children-array-container">
-          @for (child of childrenInCustody.controls; track i; let i = $index) {
-            <div [formGroupName]="i" class="child-row">
-              <span class="child-index">ילד {{ i + 1 }}</span>
-              <div class="form-grid child-details-grid">
-                <div class="form-group">
-                  <label>שם פרטי</label>
-                  <input type="text" formControlName="firstName" class="control-large">
-                </div>
-                <div class="form-group">
-                  <label>שם משפחה</label>
-                  <input type="text" formControlName="lastName" class="control-large">
-                </div>
-                <div class="form-group">
-                  <label>מס' זהות</label>
-                  <input type="text" formControlName="id" class="control-large"
-                         [class.is-invalid]="child.get('id')?.invalid && submitted()">
-                  @if (child.get('id')?.invalid && submitted()) {
-                    <div class="error-message">מס' ת"ז תקין (9 ספרות) נדרש.</div>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-        
-        @if (childrenInCustody.controls.length > (discountRequestForm.get('childrenCount')?.value || 0) && submitted()) {
-            <div class="error-message list-error mt-2">יש למלא פרטים עבור כל מספר הילדים שהצהרת עליו.</div>
-        }
-      </div>
-    </fieldset>
+  <legend class="fieldset-legend">
+    <i class="fas fa-users"></i> ילדים נוספים עד גיל 18 בחזקתך
+  </legend>
+  
+  <div class="form-group children-count-header">
+    <label for="childrenCount">מספר הילדים עד גיל 18 אשר בחזקתי:</label>
+    <input id="childrenCount" type="number" formControlName="childrenCount" 
+           class="control-small" 
+           (change)="updateChildrenInCustodyArray(discountRequestForm.get('childrenCount')?.value)">
+  </div>
 
+  @if (childrenInCustody.length > 0) {
+    <div class="table-wrapper">
+      <table class="luxury-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>שם פרטי</th>
+            <th>שם משפחה</th>
+            <th>מספר זהות</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="childrenInCustody">
+          @for (child of childrenInCustody.controls; track i; let i = $index) {
+            <tr [formGroupName]="i">
+              <td class="col-index">{{ i + 1 }}</td>
+              <td><input type="text" formControlName="firstName" placeholder="שם פרטי"></td>
+              <td><input type="text" formControlName="lastName" placeholder="שם משפחה"></td>
+              <td>
+                <input type="text" formControlName="id" placeholder="9 ספרות"
+                       [class.is-invalid]="child.get('id')?.invalid && submitted()">
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (childrenInCustody.controls.length > (discountRequestForm.get('childrenCount')?.value || 0) && submitted()) {
+    <div class="error-message">יש למלא פרטים עבור כל מספר הילדים שהצהרת עליו.</div>
+  }
+</fieldset>
     <fieldset formGroupName="discountReasons" class="form-fieldset section-reasons">
       <legend class="fieldset-legend">
         <i class="fas fa-list-check"></i> בחר סיבות לבקשת הנחה (ניתן לבחור אחת או יותר) *
