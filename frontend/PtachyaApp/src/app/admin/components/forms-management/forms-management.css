@@ -1,75 +1,135 @@
-.management-wrapper {
-    padding: 20px;
-    direction: rtl;
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap');
+
+:host {
+    --primary-color: #1e3a8a;
+    --bg-color: #f8fafc;
+    --border-color: #e2e8f0;
+    --sidebar-width: 260px;
+    --text-main: #0f172a;
 }
 
+.management-container {
+    background-color: var(--bg-color);
+    min-height: 100vh;
+    padding: 4.5rem 3rem 1.5rem 3rem;
+    margin-right: var(--sidebar-width); /* תיקון חפיפה */
+    direction: rtl;
+    font-family: 'Heebo', sans-serif;
+    transition: margin-right 0.3s ease;
+}
+
+/* Toolbar */
+::ng-deep .custom-toolbar {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 0 2rem 0 !important;
+}
+
+.main-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.breadcrumb-simple {
+    color: #64748b;
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+/* Tabs Styling */
+::ng-deep .custom-tabview .p-tabview-nav {
+    background: transparent !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+::ng-deep .custom-tabview .p-tabview-panels {
+    background: transparent !important;
+    padding: 2rem 0 !important;
+}
+
+/* Grid & Cards */
 .forms-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
 }
 
-.form-card {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    padding: 20px;
-    border-right: 5px solid #ffc107; /* צהוב לממתין */
+.modern-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.form-header {
+.modern-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.modern-card.pending { border-top: 4px solid #ffb547; }
+.modern-card.approved { border-top: 4px solid #10b981; }
+
+.card-top {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 0.9rem;
-    color: #666;
+    align-items: center;
+    margin-bottom: 1.25rem;
 }
 
-.form-type {
-    font-weight: bold;
-    color: #007bff;
+.date-text, .date-sub {
+    font-size: 0.8rem;
+    color: #64748b;
 }
 
-.form-body h3 {
-    margin: 0 0 5px 0;
+.card-body h3 {
+    margin: 0;
     font-size: 1.2rem;
+    color: var(--text-main);
 }
 
-.actions {
+.id-sub {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 5px 0 0 0;
+}
+
+.card-footer {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 1.5rem;
 }
 
-.view-btn, .approve-btn {
+.card-footer button, .card-footer a {
     flex: 1;
-    padding: 10px;
-    text-align: center;
-    border-radius: 5px;
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 0.9rem;
 }
 
-.view-btn {
-    background: #e9ecef;
-    color: #333;
-}
-
-.approve-btn {
-    background: #28a745;
-    color: white;
-    border: none;
-}
-
-.approve-btn:hover {
-    background: #218838;
-}
-
+/* Empty States & Loaders */
 .empty-state {
     text-align: center;
-    font-size: 1.5rem;
-    color: #28a745;
-    margin-top: 50px;
+    padding: 5rem;
+    color: #10b981;
+}
+
+.empty-state i { font-size: 4rem; margin-bottom: 1rem; }
+
+.loader-overlay {
+    text-align: center;
+    padding: 10rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .management-container { margin-right: 80px; padding: 2rem; }
+}
+
+@media (max-width: 768px) {
+    .management-container { margin-right: 0; padding: 1rem; }
+    .forms-grid { grid-template-columns: 1fr; }
 }

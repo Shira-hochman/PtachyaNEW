@@ -1,61 +1,80 @@
-// src/app/components/kindergarten-management/kindergarten-management.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import {GardenDataService ,KindergartenDto } from '../../services/garden-data.service';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
+// שירותים ודגמים
+import { GardenDataService, KindergartenDto } from '../../services/garden-data.service';
+
+// רכיבי PrimeNG
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { ToolbarModule } from 'primeng/toolbar';
+import { InputTextModule } from 'primeng/inputtext';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TooltipModule } from 'primeng/tooltip';
+import { RippleModule } from 'primeng/ripple';
+
 @Component({
-  selector: 'app-kindergarten-management',
-  standalone: true,
-  imports: [CommonModule, RouterLink, HttpClientModule, FormsModule],
-  templateUrl: './kindergarten-management.html', 
-  styleUrl: './kindergarten-management.css' 
+  selector: 'app-kindergarten-management',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    RouterLink, 
+    HttpClientModule, 
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    ToolbarModule,
+    InputTextModule,
+    ProgressSpinnerModule,
+    TooltipModule,
+    RippleModule
+  ],
+  templateUrl: './kindergarten-management.html', 
+  styleUrl: './kindergarten-management.css' 
 })
 export class KindergartenManagementComponent implements OnInit {
-  kindergartens: KindergartenDto[] | null = null;
-  isLoading: boolean = false;
-  errorMessage: string | null = null;
+  kindergartens: KindergartenDto[] | null = null;
+  isLoading: boolean = false;
+  errorMessage: string | null = null;
 
-  constructor(private kgService: GardenDataService) { }
+  constructor(private kgService: GardenDataService) { }
 
-  ngOnInit(): void {
-    this.loadKindergartens();
-  }
+  ngOnInit(): void {
+    this.loadKindergartens();
+  }
 
-  loadKindergartens(): void {
-    this.isLoading = true;
-    this.errorMessage = null;
+  loadKindergartens(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
 
-    // ⭐️ תיקון: קורא ל-getAllGardens() במקום getAllKindergartens() ⭐️
-    this.kgService.getAllGardens().subscribe({
-      next: (data) => {
-        this.kindergartens = data;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading kindergartens:', err);
-        // שגיאת 401 תיקלט כאן אם אין הרשאה/טוקן
-        this.errorMessage = 'שגיאה בטעינת הגנים. ודא שיש לך הרשאות מנהל.'; 
-        this.isLoading = false;
-      }
-    });
-  }
+    this.kgService.getAllGardens().subscribe({
+      next: (data) => {
+        this.kindergartens = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading kindergartens:', err);
+        this.errorMessage = 'שגיאה בטעינת נתוני הגנים. וודא שיש לך הרשאות מתאימות.'; 
+        this.isLoading = false;
+      }
+    });
+  }
 
-  // ⭐️ פונקציית מחיקה (לוגיקה בסיסית) ⭐️
   deleteKindergarten(id: number): void {
-    if (confirm(`האם אתה בטוח שברצונך למחוק את גן ID: ${id}?`)) {
+    if (confirm(`האם אתה בטוח שברצונך למחוק את גן מספר ${id}?`)) {
       this.kgService.deleteGarden(id).subscribe({
         next: () => {
-          // הסר מהרשימה המקומית ללא טעינה מחדש של כל הנתונים
-          this.kindergartens = this.kindergartens!.filter(k => k.kindergartenId !== id);
-          alert('הגן נמחק בהצלחה.');
+          if (this.kindergartens) {
+            this.kindergartens = this.kindergartens.filter(k => k.kindergartenId !== id);
+          }
+          alert('הגן נמחק בהצלחה מהמערכת.');
         },
         error: (err) => {
           console.error('Error deleting kindergarten:', err);
-          alert('שגיאה במחיקת הגן. ודא שיש לך הרשאות.');
+          alert('פעולת המחיקה נכשלה. ייתכן והגן מקושר לנתונים אחרים.');
         }
       });
     }

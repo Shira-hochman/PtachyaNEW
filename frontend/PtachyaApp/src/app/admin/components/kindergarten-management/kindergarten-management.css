@@ -1,181 +1,113 @@
-/* ------------------ משתנים גלובליים (כדאי שיהיו בקובץ גלובלי) ------------------ */
-
-:root {
-    --color-primary: #007bff; /* כחול בסיסי */
-    --color-accent: #28a745; /* ירוק-כחלחל */
-    --color-text: #333;
-    --color-bg-light: #f8f9fa;
-    --color-border: #dee2e6;
-    --color-shadow: rgba(0, 0, 0, 0.05);
-    --color-paid: #28a745; 
-    --color-unpaid: #dc3545; /* אדום לממתין/שגיאה */
-    --color-delete: #dc3545; /* אדום למחיקה */
+:host {
+    --primary-color: #1e3a8a;
+    --secondary-color: #64748b;
+    --bg-color: #f8fafc;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --sidebar-width: 260px;
 }
 
-.management-wrapper {
-    padding: 20px;
+.management-container {
+    background-color: var(--bg-color);
+    min-height: 100vh;
+  padding: 4.5rem 3rem 1.5rem 3rem;
+    margin-right: var(--sidebar-width);
     direction: rtl;
-    font-family: 'Arial', sans-serif;
-    background-color: var(--color-bg-light);
+    font-family: 'Heebo', sans-serif;
+    box-sizing: border-box;
 }
 
-/* ------------------ כותרת ופקדים ------------------ */
-.header-section h1 {
-    font-size: 2rem;
-    color: var(--color-text);
-    margin-bottom: 5px;
+/* Toolbar Styling */
+::ng-deep .custom-toolbar {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 0 1.5rem 0 !important;
 }
 
-.subtitle {
-    color: #6c757d;
-    margin-bottom: 25px;
+.main-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
 }
 
-.controls-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 30px;
-    background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px var(--color-shadow);
-    align-items: center;
-}
-
-.action-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border: none;
-}
-
-.primary-add-btn {
-    background-color: var(--color-accent);
-    color: white;
-    margin-right: auto; /* דוחף את הכפתור לצד הנגדי */
-}
-
-.primary-add-btn:hover {
-    background-color: #218838;
-}
-
-
-/* ------------------ טבלאות וסטטוס ------------------ */
-
-.table-card {
-    background-color: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px var(--color-shadow);
-}
-
-.table-card h2 {
-    font-size: 1.3rem;
-    color: var(--color-text);
-    margin-bottom: 15px;
-}
-
-.table-scroll {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px; 
-}
-
-thead {
-    background-color: var(--color-primary);
-    color: white;
-    text-align: right;
-    font-size: 1.05rem; 
-    font-weight: 700; 
-}
-
-th, td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-}
-
-tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-tbody tr:hover {
-    background-color: #e6f2ff;
-}
-
-
-/* ------------------ עמודת פעולות ------------------ */
-.actions-cell {
-    white-space: nowrap;
-    text-align: center;
-}
-
-.action-btn {
-    padding: 6px 10px;
-    margin-right: 5px;
-    border-radius: 4px;
-    cursor: pointer;
+.breadcrumb-simple {
+    color: var(--secondary-color);
     font-size: 0.85rem;
-    transition: background-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    border: 1px solid transparent;
 }
 
-.edit-btn {
-    background-color: #ffc107;
-    color: #333;
-    border-color: #ff9800;
-}
-.edit-btn:hover {
-    background-color: #e0a800;
-    color: #333;
-}
-
-.delete-btn {
-    background-color: #f8d7da;
-    color: var(--color-delete);
-    border-color: var(--color-delete);
-    margin-right: 10px;
-}
-.delete-btn:hover {
-    background-color: #dc3545;
-    color: white;
+/* Content Card */
+.content-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+    position: relative;
 }
 
-/* ------------------ הודעות סטטוס ------------------ */
+/* Table Design */
+::ng-deep .custom-table .p-datatable-thead > tr > th {
+    background: #f9fafb !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 1rem !important;
+}
 
-.status-message {
-    padding: 15px;
-    margin-bottom: 20px;
+::ng-deep .custom-table .p-datatable-tbody > tr > td {
+    padding: 1rem !important;
+}
+
+.text-bold { font-weight: 700; color: var(--text-main); }
+.text-secondary { color: var(--secondary-color); font-size: 0.9rem; }
+
+/* Badges */
+.id-badge {
+    background: #f1f5f9;
+    color: var(--primary-color);
+    padding: 4px 8px;
     border-radius: 6px;
-    font-weight: 600;
+    font-weight: bold;
+}
+
+.code-tag {
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+/* Actions */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* Statuses */
+.loading-overlay {
     text-align: center;
+    padding: 4rem;
 }
 
-.loading {
-    background-color: #e6f2ff;
-    color: var(--color-primary);
+.error-banner {
+    background: #fef2f2;
+    color: #b91c1c;
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
 }
 
-.error {
-    background-color: #f8d7da;
-    color: var(--color-unpaid);
-    border: 1px solid var(--color-unpaid);
+.empty-msg {
+    text-align: center;
+    padding: 3rem !important;
+    color: var(--secondary-color);
 }
 
-.info {
-    background-color: #f0f0f0;
-    color: #6c757d;
+/* Responsive */
+@media (max-width: 992px) {
+    .management-container { margin-right: 0; padding: 1rem; }
 }

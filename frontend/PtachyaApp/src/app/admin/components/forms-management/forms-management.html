@@ -1,68 +1,74 @@
-<div class="management-wrapper">
-    
-    <!-- === חלק עליון: טפסים ממתינים (דחוף) === -->
-    <div class="header-section">
-        <h1>⏳ טפסים ממתינים לאישור ({{ pendingForms.length }})</h1>
-        <p>יש לאשר טפסים אלו על מנת שיכנסו לתיק הילד.</p>
-    </div>
-
-    <div *ngIf="isLoading" class="loading-message">טוען נתונים...</div>
-
-    <!-- הודעה אם אין טפסים ממתינים -->
-    <div *ngIf="!isLoading && pendingForms.length === 0" class="empty-state">
-        🎉 אין טפסים ממתינים! כל המשימות הושלמו.
-    </div>
-
-    <!-- רשימת הממתינים -->
-    <div class="forms-grid">
-        <div *ngFor="let form of pendingForms" class="form-card pending-card">
-            <div class="form-header">
-                <span class="form-type">{{ getFormTypeName(form.formType) }}</span>
-                <span class="form-date">{{ form.submittedDate | date:'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-            
-            <div class="form-body">
-                <h3>{{ form.childFirstName }} {{ form.childLastName }}</h3>
-                <p>ת.ז: {{ form.childIdNumber }}</p>
-                
-                <div class="actions">
-                    <a [href]="form.filePath" target="_blank" class="view-btn">
-                        👁️ צפה בקובץ
-                    </a>
-                    <button (click)="approveForm(form)" class="approve-btn">
-                        ✅ אשר טופס
-                    </button>
-                </div>
+<div class="management-container">
+    <p-toolbar styleClass="custom-toolbar">
+        <div class="p-toolbar-group-start">
+            <div class="header-titles">
+                <h1 class="main-title">📋 ניהול טפסים ומסמכים</h1>
+                <nav class="breadcrumb-simple">מערכת פתחיה > ניהול > אישור טפסים</nav>
             </div>
         </div>
-    </div>
-
-    <!-- מפריד ויזואלי -->
-    <hr class="section-divider" *ngIf="approvedForms.length > 0">
-
-    <!-- === חלק תחתון: היסטוריית טפסים שאושרו === -->
-    <div class="header-section approved-header" *ngIf="approvedForms.length > 0">
-        <h2>✅ היסטוריית טפסים שאושרו</h2>
-    </div>
-
-    <div class="forms-grid">
-        <div *ngFor="let form of approvedForms" class="form-card approved-card">
-            <div class="form-header">
-                <span class="form-type">{{ getFormTypeName(form.formType) }}</span>
-                <span class="form-date">{{ form.submittedDate | date:'dd/MM/yyyy' }}</span>
-            </div>
-            
-            <div class="form-body">
-                <h3>{{ form.childFirstName }} {{ form.childLastName }}</h3>
-                <p class="status-tag">אושר</p>
-                
-                <div class="actions">
-                    <a [href]="form.filePath" target="_blank" class="view-btn full-width">
-                        📄 צפה בקובץ
-                    </a>
-                </div>
-            </div>
+        <div class="p-toolbar-group-end">
+            <p-tag severity="info" [value]="pendingForms.length + ' טפסים ממתינים'" icon="pi pi-bell"></p-tag>
         </div>
+    </p-toolbar>
+
+    <div *ngIf="isLoading" class="loader-overlay">
+        <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+        <p>מעבד נתונים מהמערכת...</p>
     </div>
 
+    <p-tabs value="0" *ngIf="!isLoading">
+        <p-tablist>
+            <p-tab value="0">
+                <i class="pi pi-clock mr-2"></i>
+                ממתינים לאישור ({{ pendingForms.length }})
+            </p-tab>
+            <p-tab value="1">
+                <i class="pi pi-history mr-2"></i>
+                היסטוריית מאושרים
+            </p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+            <p-tabpanel value="0">
+                <div class="forms-grid">
+                    <div *ngFor="let form of pendingForms" class="modern-card pending">
+                        <div class="card-top">
+                            <p-tag [severity]="getSeverity(form.status)" [value]="getFormTypeName(form.formType)"></p-tag>
+                            <span class="date-text">{{ form.submittedDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                        </div>
+                        <div class="card-body">
+                            <h3>{{ form.childFirstName }} {{ form.childLastName }}</h3>
+                            <p class="id-sub">ת.ז: {{ form.childIdNumber }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <a [href]="form.filePath" target="_blank" pButton icon="pi pi-eye" label="צפייה" class="p-button-outlined p-button-sm"></a>
+                            <button pButton icon="pi pi-check" label="אישור" class="p-button-success p-button-sm" (click)="approveForm(form)"></button>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="pendingForms.length === 0" class="empty-state">
+                    <i class="pi pi-check-circle"></i>
+                    <p>כל הטפסים אושרו בהצלחה!</p>
+                </div>
+            </p-tabpanel>
+
+            <p-tabpanel value="1">
+                <div class="forms-grid">
+                    <div *ngFor="let form of approvedForms" class="modern-card approved">
+                        <div class="card-top">
+                            <span class="type-text">{{ getFormTypeName(form.formType) }}</span>
+                            <p-tag severity="success" value="אושר" icon="pi pi-check-circle"></p-tag>
+                        </div>
+                        <div class="card-body">
+                            <h3>{{ form.childFirstName }} {{ form.childLastName }}</h3>
+                            <span class="date-sub">בוצע ב: {{ form.submittedDate | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                        <div class="card-footer">
+                            <a [href]="form.filePath" target="_blank" pButton icon="pi pi-file-pdf" label="פתח קובץ" class="p-button-secondary p-button-sm w-full"></a>
+                        </div>
+                    </div>
+                </div>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
 </div>
