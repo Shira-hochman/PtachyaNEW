@@ -46,7 +46,7 @@ export class ChildrenManagementComponent implements OnInit {
   children: Child[] = [];
   isLoading: boolean = false;
   errorMessage: string | null = null;
-
+isAttachmentsMode: boolean = false;
   searchTerm: string = '';
   selectedKindergartenId: number | null = null;
   kindergartens: any[] = [
@@ -116,13 +116,22 @@ export class ChildrenManagementComponent implements OnInit {
     console.log('Edit child:', childId);
   }
 
-  openDocsModal(child: Child): void {
+ openDocsModal(child: Child): void {
     this.selectedChildForDocs = child;
     this.isDocsModalOpen = true;
-  }
+    this.isAttachmentsMode = false; // מצב טפסים רגיל
+}
 
-  closeDocsModal(): void {
+// הפונקציה שהייתה חסרה וגרמה לשגיאה:
+openAttachmentsModal(child: Child): void {
+    this.selectedChildForDocs = child;
+    this.isDocsModalOpen = true;
+    this.isAttachmentsMode = true; // מצב נספחים
+}
+
+closeDocsModal(): void {
     this.isDocsModalOpen = false;
     this.selectedChildForDocs = null;
-  }
+    this.isAttachmentsMode = false;
+}
 }

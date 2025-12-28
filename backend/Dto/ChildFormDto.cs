@@ -9,5 +9,6 @@ namespace Dto
         public string FileName { get; set; } // שם הקובץ לתצוגה
         public string DownloadUrl { get; set; } // הלינק המלא להורדה
         public DateTime UploadDate { get; set; }
+        public List<string> AttachmentUrls { get; set; } = new List<string>();
     }
 }

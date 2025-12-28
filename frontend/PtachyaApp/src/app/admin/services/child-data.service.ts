@@ -5,7 +5,8 @@ import { Observable } from 'rxjs';
 // 🚨 מבנה ChildDto מעודכן עם כל השדות שציינת
 export interface ChildDto {
   childId: number; 
-  kindergartenId: string;
+  kindergartenId: number; // שיניתי ל-number כי זה ID
+  kindergartenName: string;
   idNumber: string;
   birthDate: Date; // או string, תלוי איך ה-C# שולח
   firstName: string;

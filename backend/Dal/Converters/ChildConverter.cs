@@ -21,7 +21,8 @@ namespace Dal_Repository.ModelsConverters
                 FirstName=child.FirstName,
                 SchoolYear = child.SchoolYear,
                 Phone = child.Phone,
-                Email = child.Email
+                Email = child.Email,
+                KindergartenName = child.Kindergarten?.Name
             };
         }
 

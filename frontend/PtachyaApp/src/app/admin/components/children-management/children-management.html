@@ -54,7 +54,9 @@
                     <td class="text-semibold">{{ child.firstName }} {{ child.lastName }}</td>
                     <td>{{ child.idNumber }}</td>
                     <td class="text-secondary">{{ child.birthDate | date:'dd/MM/yyyy' }}</td>
-                    <td><span class="kindergarten-tag">{{ child.kindergartenId }}</span></td>
+                    <td>
+                        <span class="kindergarten-tag">{{ child.kindergartenName }}</span>
+                    </td>
                     <td>
                         <p-tag [severity]="child.paymentId ? 'success' : 'warn'"
                             [value]="child.paymentId ? 'מוסדר' : 'ממתין לטיפול'" styleClass="status-tag">
@@ -72,8 +74,14 @@
                                 class="p-button-rounded p-button-text p-button-info action-icon"
                                 (click)="editChild(child.childId)" pTooltip="עריכה">
                             </button>
+
+                            <button pButton icon="pi pi-images"
+                                class="p-button-rounded p-button-text p-button-warning action-icon"
+                                (click)="openAttachmentsModal(child)" pTooltip="מסמכים נוספים (נספחים)">
+                            </button>
                         </div>
                     </td>
+
                 </tr>
             </ng-template>
         </p-table>
@@ -93,6 +101,7 @@
     <!-- קומפוננטת טפסים -->
     <app-child-files-modal *ngIf="isDocsModalOpen && selectedChildForDocs"
         [childIdNumber]="selectedChildForDocs.idNumber"
-        [childName]="selectedChildForDocs.firstName + ' ' + selectedChildForDocs.lastName" (close)="closeDocsModal()">
+        [childName]="selectedChildForDocs.firstName + ' ' + selectedChildForDocs.lastName"
+        [showAttachmentsOnly]="isAttachmentsMode" (close)="closeDocsModal()">
     </app-child-files-modal>
 </div>

@@ -24,13 +24,12 @@ import { FormDataService, ChildFormDto } from '../../services/form-data.service'
 export class ChildFilesModalComponent implements OnInit {
   @Input() childIdNumber!: string;
   @Input() childName!: string;
+  @Input() showAttachmentsOnly: boolean = false; 
   @Output() close = new EventEmitter<void>();
 
-  files: ChildFormDto[] = [];
+  files: any[] = []; 
   isLoading: boolean = false;
   errorMessage: string | null = null;
-  
-  // הגדרה ל-true מיד, כדי למנוע מצב שהדיאלוג נשאר סגור
   isVisible: boolean = true; 
 
   constructor(private formDataService: FormDataService) {}
@@ -42,30 +41,52 @@ export class ChildFilesModalComponent implements OnInit {
   }
 
   loadFiles() {
-    this.isLoading = true;
-    this.files = [];
-    this.errorMessage = null;
+  this.isLoading = true;
+  this.files = [];
+  this.errorMessage = null;
 
-    this.formDataService.getFormsByIdNumber(this.childIdNumber).subscribe({
-      next: (data) => {
+  this.formDataService.getFormsByIdNumber(this.childIdNumber).subscribe({
+    next: (data: ChildFormDto[]) => {
+      if (this.showAttachmentsOnly) {
+        const allAttachments: any[] = [];
+        data.forEach((form: ChildFormDto) => {
+          if (form.attachmentUrls && form.attachmentUrls.length > 0) {
+            form.attachmentUrls.forEach((url: string, index: number) => {
+              allAttachments.push({
+                fileName: `נספח ${index + 1} - ${this.translateFormType(form.formType)}`,
+                uploadDate: form.uploadDate,
+                downloadUrl: url
+              });
+            });
+          }
+        });
+        this.files = allAttachments;
+      } else {
         this.files = data;
-        this.isLoading = false;
-        if (!this.files || this.files.length === 0) {
-          this.errorMessage = 'לא נמצאו טפסים עבור הילד.';
-        }
-      },
-      error: (err) => {
-        console.error('Error fetching files:', err);
-        this.errorMessage = 'שגיאה בטעינת הטפסים.';
-        this.isLoading = false;
       }
-    });
+
+      this.isLoading = false;
+      // הסרנו מכאן את ה-if שקובע errorMessage
+    },
+    error: (err: any) => {
+      this.errorMessage = 'שגיאה בתקשורת עם השרת.'; // כאן נשאיר שגיאה אמיתית
+      this.isLoading = false;
+    }
+  });
+}
+
+  translateFormType(type: string): string {
+    const types: { [key: string]: string } = {
+      'HEALTH_DECLARATION': 'הצהרת בריאות',
+      'DISCOUNT_REQUEST': 'בקשת הנחה'
+    };
+    return types[type] || type;
   }
 
   downloadFile(url: string) {
     if (!url) return;
     this.formDataService.downloadFileByUrl(url).subscribe({
-      next: (blob) => {
+      next: (blob: Blob) => {
         const fileUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = fileUrl;
@@ -81,7 +102,6 @@ export class ChildFilesModalComponent implements OnInit {
 
   closeModal() {
     this.isVisible = false;
-    // נתינת זמן לאנימציית הסגירה לפני השמדת הקומפוננטה
     setTimeout(() => {
       this.close.emit();
     }, 100);
