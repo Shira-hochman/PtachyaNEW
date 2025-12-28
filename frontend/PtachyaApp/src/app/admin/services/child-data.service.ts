@@ -42,8 +42,26 @@ export class ChildDataService {
 
 
 // בתוך המחלקה:
-getChildrenPaged(page: number, pageSize: number): Observable<PagedChildResult> {
-  // שים לב לשינוי הנתיב ל-paged והוספת הפרמטרים
-  return this.http.get<PagedChildResult>(`${this.apiUrl}/paged?page=${page}&pageSize=${pageSize}`);
+getChildrenPaged(
+  page: number,
+  pageSize: number,
+  searchTerm?: string,
+  kindergartenId?: number | null
+) {
+  const params: any = {
+    page,
+    pageSize
+  };
+
+  if (searchTerm) {
+    params.searchTerm = searchTerm;
+  }
+
+  if (kindergartenId !== null && kindergartenId !== undefined) {
+    params.kindergartenId = kindergartenId;
+  }
+
+  return this.http.get<any>(`${this.apiUrl}/paged`, { params });
 }
+
 }

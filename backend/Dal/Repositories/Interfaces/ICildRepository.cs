@@ -14,6 +14,12 @@ namespace Dal.Repositories.Interfaces
 
         Task UpdateAsync(Child child);
         Task DeleteAsync(int childId);
-        Task<PagedResult<ChildDto>> GetPagedAsync(int page, int pageSize);
+        Task<PagedResult<ChildDto>> GetPagedAsync(
+    int page,
+    int pageSize,
+    string? searchTerm,
+    int? kindergartenId
+);
+
     }
 }

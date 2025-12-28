@@ -1,97 +1,156 @@
-/* ------------------ גלובלי ------------------ */
-:host {
-    display: block;
-    direction: rtl;
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');
+
+.modern-navbar {
+    /* הבטחת פריסה מלאה */
+    width: 100%;
+    position: fixed; /* מקובע למעלה */
+    top: 0;
+    left: 0;
+    right: 0;
+    
+    direction: rtl !important; 
+    background: rgba(255, 255, 255, 0.98); /* אטימות גבוהה יותר למניעת שקיפות יתר */
+    backdrop-filter: blur(10px);
+    height: 70px;
+    display: flex;
+    align-items: center;
+    z-index: 1100; /* מעל ה-Sidebar */
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    padding: 0 2rem;
+    box-sizing: border-box;
+    font-family: 'Heebo', sans-serif;
 }
 
-/* ------------------ פס הניווט הראשי ------------------ */
-.admin-navbar {
-    /* גוונים בהשראת אתר פתחיה (כחול כהה/אפור בהיר) */
-    background-color: #ffffff; 
-    border-bottom: 3px solid #007bff; /* קו כחול הדגשה למטה */
-    color: #333;
-    padding: 10px 30px;
+.nav-container {
+    width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 50; /* ודא שהוא מעל התוכן */
-    height: 60px; /* גובה קבוע */
-}
-
-/* ------------------ לוגו וכותרת המערכת ------------------ */
-.logo-section {
-    display: flex;
     align-items: center;
     gap: 15px;
 }
 
-.petachya-logo {
-    height: 40px; /* גודל לוגו */
+/* --- Brand Section --- */
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex-shrink: 0; /* מונע מהלוגו להתכווץ */
+}
+
+.main-logo {
+    height: 50px; /* גודל מאוזן יותר */
     width: auto;
-    object-fit: contain;
+    transition: height 0.3s ease;
 }
 
-.system-title {
-    font-size: 1.2rem;
+.brand-divider {
+    height: 25px;
+    width: 1px;
+    background: #e2e8f0;
+}
+
+.app-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap; /* מונע מהשם לרדת שורה */
+}
+
+.app-name .highlight {
+    color: #3b82f6;
+}
+
+/* --- User Actions Section --- */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-shrink: 1;
+}
+
+.user-profile-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.text-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* יישור לימין ב-RTL */
+}
+
+.user-role {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.user-name {
+    font-size: 0.9rem;
     font-weight: 600;
-    color: #555;
+    color: #334155;
+    direction: rtl; 
 }
 
-/* ------------------ פרטי משתמש ופעולות ------------------ */
-.user-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+::ng-deep .custom-avatar {
+    background-color: #eff6ff !important;
+    color: #3b82f6 !important;
+    font-weight: 700 !important;
+    border: 2px solid #dbeafe;
 }
 
-.manager-name {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #007bff; /* שם המנהל בכחול */
+.logout-modern-btn {
+    font-weight: 600 !important;
+    white-space: nowrap;
 }
 
-.logout-btn {
-    background-color: #dc3545; /* אדום/אזהרה ליציאה */
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 500;
-    transition: background-color 0.2s;
+/* --- 📱 חוקי רספונסיביות קריטיים --- */
+
+/* טאבלטים ומסכים בינוניים */
+@media (max-width: 1024px) {
+    .nav-actions { gap: 1rem; }
+    .nav-brand { gap: 0.8rem; }
 }
 
-.logout-btn:hover {
-    background-color: #c82333;
-}
-
-.logout-btn svg {
-    stroke: white;
-}
-
-/* ------------------ רספונסיביות ------------------ */
-
+/* מובייל - מתחת ל-768px */
 @media (max-width: 768px) {
-    .admin-navbar {
-        padding: 10px 15px;
+    .brand-divider, .user-role, .app-name {
+        display: none !important; /* החבאת אלמנטים פחות דחופים */
+    }
+
+    .modern-navbar {
+        padding: 0 1rem; /* צמצום שוליים */
+    }
+
+    .main-logo {
+        height: 40px; /* הקטנת לוגו */
+    }
+}
+
+/* מובייל צר מאוד - מתחת ל-480px (כדי למנוע חיתוך של כפתור היציאה) */
+@media (max-width: 480px) {
+    .user-name {
+        display: none !important; /* במצב הכי צר, נשאיר רק את האווטאר */
+    }
+
+    .nav-container {
+        gap: 8px;
+    }
+
+    /* הפיכת כפתור היציאה לאייקון בלבד כדי לחסוך מקום */
+    ::ng-deep .logout-modern-btn .p-button-label {
+        display: none;
     }
     
-    .system-title {
-        display: none; /* הסתרת כותרת המערכת במסכים קטנים */
-    }
-
-    .manager-name {
-        font-size: 0.9rem;
-    }
-
-    .logout-btn {
-        padding: 6px 10px;
-        font-size: 0.9rem;
+    ::ng-deep .logout-modern-btn {
+        width: 35px;
+        height: 35px;
+        padding: 0 !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }

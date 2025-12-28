@@ -1,37 +1,39 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router'; 
-import { LoginService } from '../../services/login'; // ⬅️ 1. ייבוא ה-LoginService
+import { LoginService } from '../../services/login';
+
+// PrimeNG 20 Imports
+import { AvatarModule } from 'primeng/avatar';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AvatarModule, ButtonModule, TooltipModule],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
 export class NavbarComponent implements OnInit {
   
-  // 💡 זה יקבל את השם מהלוגין סרוויס
-  managerName: string = 'טוען...'; 
-  
-  // ⬅️ 2. הזרקת LoginService
+  managerName: string = ''; 
+  userInitial: string = 'U'; // אות ראשונה לאווטאר
+
   constructor(private router: Router, private loginService: LoginService) { } 
 
   ngOnInit() {
-    // ⭐️ 3. קריאה לשליפת שם המשתמש (במקום הסימולציה)
     const username = this.loginService.getCurrentUsername();
     
     if (username) {
-        this.managerName = `שלום, ${username}`;
+        this.managerName = username;
+        this.userInitial = username.charAt(0).toUpperCase();
     } else {
-        // אם לא נמצא משתמש מחובר, נציג שם ברירת מחדל
         this.managerName = 'מנהל אורח';
     }
   }
 
   logout(): void {
-    // ⭐️ 4. שימוש ב-LoginService ליציאה
     this.loginService.logout();
   }
 }

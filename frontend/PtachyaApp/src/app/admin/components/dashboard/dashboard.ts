@@ -1,12 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http'; // חובה לייבא
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+
+// PrimeNG 20 Modules
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { SkeletonModule } from 'primeng/skeleton';
+import { RippleModule } from 'primeng/ripple';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true, 
-  imports: [CommonModule, RouterLink], 
+  imports: [
+    CommonModule, 
+    RouterLink, 
+    HttpClientModule, // וודאי שזה כאן אם את מבצעת קריאות HTTP
+    CardModule, 
+    ButtonModule, 
+    SkeletonModule, 
+    RippleModule,
+    TooltipModule
+  ], 
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -20,7 +36,7 @@ export class DashboardComponent implements OnInit {
   };
   
   isLoading: boolean = true;
-  private apiUrl = 'https://localhost:7222/api/Dashboard/stats'; // הכתובת שיצרנו
+  private apiUrl = 'https://localhost:7222/api/Dashboard/stats';
 
   constructor(private http: HttpClient) { }
 
@@ -29,9 +45,10 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboardStats() {
+    this.isLoading = true;
     this.http.get<any>(this.apiUrl).subscribe({
       next: (data) => {
-        this.stats = data; // הנתונים האמיתיים מהשרת!
+        this.stats = data;
         this.isLoading = false;
       },
       error: (err) => {

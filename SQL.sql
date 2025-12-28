@@ -83,3 +83,11 @@ GO
 
 
 INSERT INTO [Users] (Username, PasswordHash) VALUES ('michal', '214356271');
+
+
+use ptachiya
+-- עדכון כתובת המייל עבור ילד ספציפי לפי תעודת הזהות שלו
+UPDATE Children
+SET Email = 'michalstern9949@gmail.com' -- שימי כאן את המייל האישי שלך לבדיקה
+WHERE IdNumber = '857952477'; -- שימי כאן את תעודת הזהות של הילד שאיתו את בודקת
+select*from Children

@@ -1,84 +1,101 @@
-<div class="dashboard-wrapper">
-    <div class="dashboard-header">
-        <h1>לוח מחוונים - מערכת ניהול</h1>
-        <p>סקירה כללית ופעולות דחופות.</p>
-    </div>
-
-    <div *ngIf="isLoading" class="loading-message">
-        טוען נתונים סטטיסטיים...
-    </div>
-
-    <div *ngIf="!isLoading" class="dashboard-grid">
-        <!-- כרטיסיית 1: ילדים רשומים (צביעה בכחול) -->
-        <div class="stat-card info-card total-children">
-            <div class="card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <div class="card-details">
-                <span class="card-label">סה"כ ילדים רשומים</span>
-                <span class="card-value">{{ stats.totalChildren }}</span>
-            </div>
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <div class="header-content">
+            <h1 class="main-title">מרכז שליטה ובקרה</h1>
+            <p class="sub-title">סקירה מערכתית מקיפה - מוסדות פתחיה</p>
         </div>
-
-        <!-- כרטיסיית 2: גנים פעילים (צביעה בירוק) -->
-        <div class="stat-card info-card active-gardens">
-            <div class="card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v6"/><path d="M19 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4l2 3h4l2-3h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2z"/></svg>
-            </div>
-            <div class="card-details">
-                <span class="card-label">גנים פעילים במערכת</span>
-                <span class="card-value">{{ stats.activeGardens }}</span>
-            </div>
-        </div>
-        
-        <!-- כרטיסיית 3: טפסים ממתינים (דחוף - צהוב) -->
-        <div class="stat-card alert pending-forms">
-            <div class="card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="15" y1="15" x2="9" y2="15"/></svg>
-            </div>
-            <div class="card-details">
-                <span class="card-label">טפסים ממתינים לאישור</span>
-                <span class="card-value">{{ stats.pendingForms }}</span>
-            </div>
-            <button class="action-link" routerLink="/admin/forms">צפה בטפסים →</button>
-        </div>
-
-        <!-- כרטיסיית 4: תשלומים שלא בוצעו (דחוף - אדום/כתום) -->
-        <div class="stat-card alert unpaid-payments">
-            <div class="card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </div>
-            <div class="card-details">
-                <span class="card-label">תשלומים שלא הושלמו</span>
-                <span class="card-value">{{ stats.unpaidPayments }}</span>
-            </div>
-            <button class="action-link" routerLink="/admin/payments">טפל בתשלומים →</button>
-        </div>
-    </div>
-    
-    <!-- איזור פעולות מהירות (בצד ימין/למטה) -->
-    <div class="action-section">
-        <h2>פעולות ניהול מהירות</h2>
-        <div class="quick-actions-grid">
-            <button class="action-button secondary-btn" routerLink="/admin/children">
-                <span class="action-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 19.22H5C4.45 19.22 4 18.77 4 18.22V5.78C4 5.23 4.45 4.78 5 4.78H14L20 10.78V18.22C20 18.77 19.55 19.22 19 19.22H17V19.22Z"/><path d="M14 4.78V10.78H20"/><line x1="12" y1="14" x2="12" y2="18"/></svg>
-                </span>
-                ניהול פרטי ילדים
-            </button>
-            
-            <button class="action-button secondary-btn" routerLink="/admin/update-data">
-                <span class="action-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                </span>
-                עדכון נתונים מ-Excel
-            </button>
-            
-            <button class="action-button secondary-btn" [routerLink]="['/admin/kindergartens/manage']">
-                <span class="action-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M12 18v2"/></svg>
-                </span>
-                הוספה וניהול גנים
+        <div class="header-actions">
+            <button pButton icon="pi pi-refresh" label="עדכון נתונים" (click)="loadDashboardStats()"
+                class="p-button-outlined p-button-secondary refresh-btn" [loading]="isLoading">
             </button>
         </div>
+    </header>
+
+    <div class="stats-grid">
+        <div class="depth-card stat-blue">
+            <div class="card-inner">
+                <i class="pi pi-users icon-bg"></i>
+                <div class="card-info">
+                    <span class="label">רישום ילדים כולל</span>
+                    <h2 class="value" *ngIf="!isLoading">{{ stats.totalChildren }}</h2>
+                    <p-skeleton *ngIf="isLoading" width="60%" height="3rem"></p-skeleton>
+                </div>
+                <div class="card-trend up">
+                    <i class="pi pi-arrow-up-right"></i>
+                    <span>2.4% עלייה מהחודש שעבר</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="depth-card stat-green">
+            <div class="card-inner">
+                <i class="pi pi-building icon-bg"></i>
+                <div class="card-info">
+                    <span class="label">גנים ומוסדות פעילים</span>
+                    <h2 class="value" *ngIf="!isLoading">{{ stats.activeGardens }}</h2>
+                    <p-skeleton *ngIf="isLoading" width="60%" height="3rem"></p-skeleton>
+                </div>
+                <div class="card-status">פריסה עירונית מלאה</div>
+            </div>
+        </div>
+
+        <div class="depth-card stat-orange">
+            <div class="card-inner">
+                <i class="pi pi-file-edit icon-bg"></i>
+                <div class="card-info">
+                    <span class="label">טפסים הממתינים לסקירה</span>
+                    <h2 class="value" *ngIf="!isLoading">{{ stats.pendingForms }}</h2>
+                    <p-skeleton *ngIf="isLoading" width="60%" height="3rem"></p-skeleton>
+                </div>
+                <button pButton label="מעבר לטיפול בטפסים" class="p-button-warning p-button-text p-button-sm action-btn"
+                    routerLink="/admin/forms"></button>
+            </div>
+        </div>
+
+        <div class="depth-card stat-red">
+            <div class="card-inner">
+                <i class="pi pi-credit-card icon-bg"></i>
+                <div class="card-info">
+                    <span class="label">יתרת חובות לטיפול</span>
+                    <h2 class="value" *ngIf="!isLoading">{{ stats.unpaidPayments }}</h2>
+                    <p-skeleton *ngIf="isLoading" width="60%" height="3rem"></p-skeleton>
+                </div>
+                <button pButton label='צפייה בדו"ח גבייה' class="p-button-danger p-button-text p-button-sm action-btn"
+                    routerLink="/admin/payments">
+                </button>
+            </div>
+        </div>
     </div>
+
+    <section class="quick-access-section">
+        <h3 class="section-title">פעולות ניהול נבחרות</h3>
+        <div class="action-tiles">
+            <div class="tile-item blue-tile" pRipple routerLink="/admin/children">
+                <div class="tile-icon"><i class="pi pi-user-plus"></i></div>
+                <div class="tile-text">
+                    <strong>ניהול מאגר ילדים</strong>
+                    <span>עדכון פרטים, הוספה וסינון</span>
+                </div>
+                <i class="pi pi-chevron-left arrow-link"></i>
+            </div>
+
+            <div class="tile-item green-tile" pRipple routerLink="/admin/update-data">
+                <div class="tile-icon"><i class="pi pi-file-excel"></i></div>
+                <div class="tile-text">
+                    <strong>ממשק ייבוא נתונים</strong>
+                    <span>סנכרון קבצי Excel למערכת</span>
+                </div>
+                <i class="pi pi-chevron-left arrow-link"></i>
+            </div>
+
+            <div class="tile-item purple-tile" pRipple routerLink="/admin/kindergartens/manage">
+                <div class="tile-icon"><i class="pi pi-map"></i></div>
+                <div class="tile-text">
+                    <strong>מרכז ניהול גנים</strong>
+                    <span>ניהול פריסה ומיקומי מוסדות</span>
+                </div>
+                <i class="pi pi-chevron-left arrow-link"></i>
+            </div>
+        </div>
+    </section>
+</div>

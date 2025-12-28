@@ -65,18 +65,23 @@ namespace Ptachya.API.Controllers
             });
         }
         [HttpGet("paged")]
-        public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetPaged(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? searchTerm = null,
+    [FromQuery] int? kindergartenId = null
+)
         {
-            var result = await _service.GetChildrenPagedAsync(page, pageSize);
+            var result = await _service.GetChildrenPagedAsync(
+                page,
+                pageSize,
+                searchTerm,
+                kindergartenId
+            );
+
             return Ok(result);
         }
 
-        // ⚠️ דרוש קלאס חדש עבור ה-request body
-        public class VerificationRequest
-        {
-            public string IdNumber { get; set; }
-            public DateTime BirthDate { get; set; }
-        }
 
     }
 }

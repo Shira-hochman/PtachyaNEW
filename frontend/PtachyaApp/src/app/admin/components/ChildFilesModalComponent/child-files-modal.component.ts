@@ -1,79 +1,89 @@
-// src/app/.../child-files-modal.component.ts
-
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormDataService, ChildFormDto } from '../../services/form-data.service'; // ודאי נתיב
+import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MessageModule } from 'primeng/message';
+import { FormDataService, ChildFormDto } from '../../services/form-data.service';
 
 @Component({
-  selector: 'app-child-files-modal',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './child-files-modal.component.html',
-  styleUrls: ['./child-files-modal.component.css']
+  selector: 'app-child-files-modal',
+  standalone: true,
+  imports: [
+    CommonModule,
+    DialogModule,
+    TableModule,
+    ButtonModule,
+    ProgressSpinnerModule,
+    MessageModule
+  ],
+  templateUrl: './child-files-modal.component.html',
+  styleUrls: ['./child-files-modal.component.css']
 })
 export class ChildFilesModalComponent implements OnInit {
-  @Input() childIdNumber!: string; // מקבל את הת"ז מהאבא
-  @Input() childName!: string;     // מקבל את השם לתצוגה
-  @Output() close = new EventEmitter<void>(); // משדר לאבא לסגור את המודל
+  @Input() childIdNumber!: string;
+  @Input() childName!: string;
+  @Output() close = new EventEmitter<void>();
 
-  files: ChildFormDto[] = [];
-  isLoading: boolean = false;
-  errorMessage: string | null = null;
+  files: ChildFormDto[] = [];
+  isLoading: boolean = false;
+  errorMessage: string | null = null;
+  
+  // הגדרה ל-true מיד, כדי למנוע מצב שהדיאלוג נשאר סגור
+  isVisible: boolean = true; 
 
-  constructor(private formDataService: FormDataService) {}
+  constructor(private formDataService: FormDataService) {}
 
-  ngOnInit(): void {
-    if (this.childIdNumber) {
-      this.loadFiles();
-    }
-  }
+  ngOnInit(): void {
+    if (this.childIdNumber) {
+      this.loadFiles();
+    }
+  }
 
-  loadFiles() {
-    this.isLoading = true;
-    this.formDataService.getFormsByIdNumber(this.childIdNumber).subscribe({
-      next: (data) => {
-        this.files = data;
-        this.isLoading = false;
-        this.errorMessage = null; // ניקוי שגיאות ישנות
-      },
-      error: (err) => {
-        console.error('Error fetching files:', err);
-        this.errorMessage = 'שגיאה בטעינת הקבצים. נסה שוב מאוחר יותר.';
-        this.isLoading = false;
-      }
-    });
-  }
-
-  // ⭐️⭐️⭐️ פונקציית הורדה מעודכנת להשתמש ב-HttpClient ⭐️⭐️⭐️
-  downloadFile(url: string) {
-    if (!url) return;
+  loadFiles() {
+    this.isLoading = true;
+    this.files = [];
     this.errorMessage = null;
-    
-    this.formDataService.downloadFileByUrl(url).subscribe({
-        next: (blob) => {
-            // יצירת לינק זמני מהנתונים הבינאריים
-            const fileUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = fileUrl;
-            
-            // מנסה לחלץ שם קובץ מה-URL לשם ההורדה (למשל: filename=...)
-            const fileNameMatch = url.match(/fileName=([^&]+)/i);
-            link.download = fileNameMatch ? decodeURIComponent(fileNameMatch[1]) : 'document.pdf';
 
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(fileUrl); // שחרור הזיכרון
-        },
-        error: (err) => {
-            console.error('Error during secure file download:', err);
-            // אם יש 401, זה ייתפס כאן.
-            this.errorMessage = 'שגיאה בהורדת הקובץ. ודא שאתה מחובר.';
+    this.formDataService.getFormsByIdNumber(this.childIdNumber).subscribe({
+      next: (data) => {
+        this.files = data;
+        this.isLoading = false;
+        if (!this.files || this.files.length === 0) {
+          this.errorMessage = 'לא נמצאו טפסים עבור הילד.';
         }
+      },
+      error: (err) => {
+        console.error('Error fetching files:', err);
+        this.errorMessage = 'שגיאה בטעינת הטפסים.';
+        this.isLoading = false;
+      }
     });
-  }
+  }
 
-  closeModal() {
-    this.close.emit();
-  }
+  downloadFile(url: string) {
+    if (!url) return;
+    this.formDataService.downloadFileByUrl(url).subscribe({
+      next: (blob) => {
+        const fileUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        const fileNameMatch = url.match(/fileName=([^&]+)/i);
+        link.download = fileNameMatch ? decodeURIComponent(fileNameMatch[1]) : 'document.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(fileUrl);
+      }
+    });
+  }
+
+  closeModal() {
+    this.isVisible = false;
+    // נתינת זמן לאנימציית הסגירה לפני השמדת הקומפוננטה
+    setTimeout(() => {
+      this.close.emit();
+    }, 100);
+  }
 }

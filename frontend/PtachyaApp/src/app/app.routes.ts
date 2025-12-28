@@ -25,8 +25,8 @@ import { LoginComponent as ParentLoginComponent } from './child/components/login
 import { Main } from './child/components/main/main';
 import { HealthDeclarationComponent } from './child/components/health-declaration/health-declaration';
 import { PaymentForm } from './child/components/payment-form/payment-form'; 
-import { PaymentOptions } from './child/payment-options/payment-options';
-import { DirectPayment } from './child/direct-payment/direct-payment';
+import { PaymentOptions } from './child/components/payment-options/payment-options';
+import { DirectPayment } from './child/components/direct-payment/direct-payment';
 // ----------------------------------------------------------------------
 // 3. ייבוא Guard
 // ----------------------------------------------------------------------
