@@ -1,10 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule, DatePipe } from '@angular/common'; // הוספת DatePipe
+import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router'; 
 import { ChildAuthService } from '../../services/child-auth.service';
-import { FormService } from '../../services/form.service'; // ⭐️ ייבוא FormService
+import { FormService } from '../../services/form.service'; 
 import { Child } from '../../../../models/child'; 
+import { finalize } from 'rxjs/operators'; // נדרש לכיבוי ה-Loading בצורה בטוחה
 
 @Component({
   selector: 'app-health-declaration',
@@ -12,12 +13,15 @@ import { Child } from '../../../../models/child';
   styleUrls: ['./health-declaration.css'],
   standalone: true, 
   imports: [CommonModule, ReactiveFormsModule],
-  providers: [DatePipe] // נדרש אם משתמשים ב-DatePipe ב-TS
+  providers: [DatePipe]
 })
 export class HealthDeclarationComponent implements OnInit, AfterViewInit {
     
   healthDeclarationForm!: FormGroup;
   submitted = false;
+  
+  // ⭐️ Signal לניהול מצב הטעינה (העיגול המסתובב)
+  isLoading = signal(false);
 
   @ViewChild('parent1SignatureCanvas') canvas1!: ElementRef<HTMLCanvasElement>;
   @ViewChild('parent2SignatureCanvas') canvas2!: ElementRef<HTMLCanvasElement>;
@@ -30,8 +34,8 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private authService: ChildAuthService, 
     private router: Router,
-    private formService: FormService, // ⭐️ הזרקת FormService
-    private datePipe: DatePipe // הזרקת DatePipe
+    private formService: FormService, 
+    private datePipe: DatePipe 
   ) {}
 
   get f() {
@@ -60,7 +64,6 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
     }
   }
   
-  // ⭐️ לוגיקת Canvas (setup, start, draw, stop, clear, position)
   private setupCanvas(ctx: CanvasRenderingContext2D): void {
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
@@ -86,7 +89,7 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
     this.isDrawing = false;
     
     const canvas = parent === 1 ? this.canvas1.nativeElement : this.canvas2.nativeElement;
-    const dataUrl = canvas.toDataURL('image/png'); // שמירה כ-Base64
+    const dataUrl = canvas.toDataURL('image/png');
     
     if (parent === 1) {
       this.healthDeclarationForm.get('parent1.signature')?.setValue(dataUrl); 
@@ -109,17 +112,22 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
 
   private getCanvasPosition(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): { x: number, y: number } {
     const rect = canvas.getBoundingClientRect();
-    const clientX = (event as MouseEvent).clientX || (event as TouchEvent).touches[0].clientX;
-    const clientY = (event as MouseEvent).clientY || (event as TouchEvent).touches[0].clientY;
+    let clientX: number;
+    let clientY: number;
+
+    if (event instanceof TouchEvent) {
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else {
+      clientX = (event as MouseEvent).clientX;
+      clientY = (event as MouseEvent).clientY;
+    }
     
     return {
       x: clientX - rect.left,
       y: clientY - rect.top
     };
   }
-  
-  // ⭐️ סוף לוגיקת Canvas
-
 
   initForm(): void {
     this.healthDeclarationForm = this.fb.group({
@@ -131,7 +139,6 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
             childAddress: ['', Validators.required],
         }),
         
-        // נשלח כ-ISO string, ה-C# ידע לפרסר ל-DateTime
         formDate: [this.datePipe.transform(new Date(), 'yyyy-MM-dd'), Validators.required], 
         programProvider: ['', Validators.required],
         programFramework: ['', Validators.required],
@@ -150,22 +157,21 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
         parent1: this.fb.group({
             name: ['', Validators.required], 
             phone: ['', [Validators.required, Validators.pattern('^[0-9]{9,10}$')]], 
-            signature: ['', Validators.required], // שדה חתימה חובה
+            signature: ['', Validators.required], 
         }),
         parent2: this.fb.group({
             name: [''], 
             phone: [''],
-            signature: [''], // שדה חתימה אופציונלי
+            signature: [''], 
         }),
     });
   }
 
- populateForm(child: Child): void {
-    // ⭐️ במקום לפצל את השם המלא, אנו משתמשים בשדות החדשים: firstName ו-lastName
+  populateForm(child: Child): void {
     this.healthDeclarationForm.patchValue({
       childDetails: {
-        childFirstName: child.firstName, // שימוש ישיר בשם פרטי
-        childLastName: child.lastName,   // שימוש ישיר בשם משפחה
+        childFirstName: child.firstName,
+        childLastName: child.lastName,
         childId: child.idNumber,
         childDob: child.birthDate.substring(0, 10),
       },
@@ -174,30 +180,36 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
       },
     });
   }
-onSubmit(): void {
+
+  // ⭐️ המתודה המעודכנת עם ניהול מצב הטעינה
+  onSubmit(): void {
     this.submitted = true;
     if (this.healthDeclarationForm.invalid) {
         alert('נא למלא את כל השדות הנדרשים כראוי, כולל חתימת הורה 1.');
         return;
     }
 
+    // הפעלת האנימציה
+    this.isLoading.set(true);
+
     const formData = this.healthDeclarationForm.getRawValue();
 
-    this.formService.submitHealthDeclaration(formData).subscribe({
+    this.formService.submitHealthDeclaration(formData)
+      .pipe(
+        // כיבוי האנימציה בסיום (הצלחה או שגיאה)
+        finalize(() => this.isLoading.set(false))
+      )
+      .subscribe({
         next: (response) => {
-            // ⭐️ השינוי כאן: כבר לא מקבלים Blob ולא מורידים קובץ
             alert('הטופס נשלח בהצלחה! העתק נשלח למייל שלכם.');
-            
-            // אופציונלי: איפוס הטופס או ניתוב לדף אחר
             this.onReset();
-            // this.router.navigate(['/success-page']);
         },
         error: (err) => {
             console.error('שגיאה בשליחת הטופס:', err);
             alert('חלה שגיאה בשליחת הטופס. אנא נסו שוב מאוחר יותר.');
         }
-    });
-}
+      });
+  }
   
   onReset(): void {
     this.submitted = false;
@@ -207,5 +219,8 @@ onSubmit(): void {
       noOtherProgramDeclaration: false,
       formDate: this.datePipe.transform(new Date(), 'yyyy-MM-dd') 
     });
+    // ניקוי הקנבסים
+    this.clearSignature(1);
+    this.clearSignature(2);
   }
 }

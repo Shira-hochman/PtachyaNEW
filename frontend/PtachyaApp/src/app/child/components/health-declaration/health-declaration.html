@@ -1,4 +1,13 @@
 <!-- health-declaration.html: טופס הצהרת בריאות מעוצב ורספונסיבי -->
+@if (isLoading()) {
+  <div class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">מעבד נתונים...</div>
+    <p class="loading-subtext">נא להמתין, המידע נשמר ומאובטח במערכת</p>
+  </div>
+}
+
+<div class="declaration-container">
 
 <div class="declaration-container">
   <header class="form-header">
