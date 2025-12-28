@@ -27,8 +27,7 @@ import { HealthDeclarationComponent } from './child/components/health-declaratio
 import { PaymentForm } from './child/components/payment-form/payment-form'; 
 import { PaymentOptions } from './child/components/payment-options/payment-options';
 import { DirectPayment } from './child/components/direct-payment/direct-payment';
-// ----------------------------------------------------------------------
-// 3. ייבוא Guard
+import{Navbar}from './child/components/navbar/navbar';
 // ----------------------------------------------------------------------
 import { authGuard } from './auth-guard'; 
 
@@ -42,7 +41,8 @@ export const routes: Routes = [
     
     // נתיבים הדורשים התחברות של ההורה
     { 
-        path: 'child', // נתיב מעטפת כללי לכל פעולות ההורה/ילד
+        path: 'child',
+             component: Navbar, // נתיב מעטפת כללי לכל פעולות ההורה/ילד
          // רכיב Main יכול לשמש כמעטפת פנימית
         canActivate: [authGuard], 
         children: [
