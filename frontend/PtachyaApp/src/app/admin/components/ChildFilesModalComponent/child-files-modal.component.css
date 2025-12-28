@@ -2,19 +2,16 @@
 
 .modal-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(15, 23, 42, 0.4); /* שקיפות מעט יותר קלה */
-    backdrop-filter: blur(2px); /* טשטוש עדין מאוד כפי שביקשת */
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 4000;
     direction: rtl;
     font-family: 'Heebo', sans-serif;
-    padding: 1rem;
 }
 
 .modal-content {
@@ -22,7 +19,7 @@
     border-radius: 24px;
     width: 100%;
     max-width: 750px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     animation: modalSlideUp 0.3s ease-out;
     max-height: 90vh;
     display: flex;
@@ -44,20 +41,51 @@
     border-bottom: 1px solid #e2e8f0;
 }
 
-.header-info { display: flex; align-items: center; gap: 10px; }
-.header-icon { color: #3b82f6; font-size: 1.2rem; }
-.modal-header h3 { font-size: 1.25rem; color: #0f172a; margin: 0; font-weight: 800; }
-
 .modal-body {
     overflow-y: auto;
     padding: 1.5rem 2rem;
+    flex: 1;
 }
 
-/* טבלה מעוצבת */
-.table-responsive-wrapper { overflow-x: auto; }
+/* --- עיצוב הודעות מותאם אישית (במקום p-message הבאג בא) --- */
+.custom-msg {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+}
+
+.msg-info {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.msg-error {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.custom-msg i {
+    font-size: 1.2rem;
+}
+
+/* --- טבלה --- */
+.table-responsive-wrapper {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
 .files-table { width: 100%; border-collapse: collapse; }
 .files-table th { 
-    padding: 12px; 
+    padding: 12px 15px; 
     text-align: right; 
     background: #f1f5f9; 
     color: #475569; 
@@ -65,40 +93,32 @@
     border-bottom: 2px solid #e2e8f0;
 }
 
-.files-table td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; }
-.file-cell { display: flex; align-items: center; gap: 10px; }
-.file-icon-styled { color: #ef4444; font-size: 1.1rem; }
-.file-name-text { font-weight: 600; color: #1e293b; font-size: 0.95rem; }
-.date-cell { color: #64748b; font-size: 0.85rem; }
+.files-table td { padding: 14px 15px; border-bottom: 1px solid #f1f5f9; }
 
-/* כפתור הורדה מודרני */
+.file-cell { display: flex; align-items: center; gap: 10px; }
+.file-icon-styled { color: #ef4444; font-size: 1.2rem; }
+.file-name-text { font-weight: 600; color: #1e293b; }
+
 .download-btn {
     background: #ffffff;
     color: #10b981;
     border: 1.5px solid #10b981;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 8px;
-    font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.2s;
+    transition: 0.2s;
 }
 
-.download-btn:hover:not([disabled]) { background: #10b981; color: #fff; }
+.download-btn:hover:not([disabled]) {
+    background: #10b981;
+    color: white;
+}
 
-/* --- 📱 חוקי רספונסיביות --- */
-@media (max-width: 640px) {
-    .modal-header { padding: 1rem; }
-    .modal-header h3 { font-size: 1.1rem; }
-    .modal-body { padding: 1rem; }
-    
-    /* החבאת טקסט בכפתור במובייל לחיסכון במקום */
-    .btn-text { display: none; }
-    .download-btn { padding: 8px; border-radius: 50%; }
-    
-    .files-table th:nth-child(2), 
-    .files-table td:nth-child(2) { display: none; } /* החבאת תאריך במובייל צר */
+.loading-container {
+    padding: 3rem;
+    text-align: center;
 }

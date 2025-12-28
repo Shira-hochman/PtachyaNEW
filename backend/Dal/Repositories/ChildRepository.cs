@@ -20,7 +20,11 @@ namespace Ptachya.DAL.Repositories
 
         public async Task<List<ChildDto>> GetAllAsync()
         {
-            var entities = await _context.Children.ToListAsync();
+            // הוסיפי Include גם כאן כדי למנוע בעיות בעתיד
+            var entities = await _context.Children
+                .Include(c => c.Kindergarten)
+                .ToListAsync();
+
             return entities.Select(ChildConverter.ToChildDto).ToList();
         }
 
@@ -59,7 +63,8 @@ namespace Ptachya.DAL.Repositories
      int? kindergartenId
  )
         {
-            IQueryable<Child> query = _context.Children;
+            IQueryable<Child> query = _context.Children.Include(c => c.Kindergarten);
+           
 
             // 🔍 חיפוש חופשי
             if (!string.IsNullOrWhiteSpace(searchTerm))

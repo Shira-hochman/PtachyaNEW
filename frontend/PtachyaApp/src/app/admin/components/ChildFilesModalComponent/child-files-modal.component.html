@@ -3,8 +3,11 @@
     
     <div class="modal-header">
       <div class="header-info">
-        <i class="pi pi-folder-open header-icon"></i>
-        <h3>ניהול טפסים: {{ childName }}</h3>
+        <i [class]="showAttachmentsOnly ? 'pi pi-images header-icon' : 'pi pi-folder-open header-icon'"></i>
+        <h3>
+          {{ showAttachmentsOnly ? 'מסמכים ונספחים נוספים' : 'ניהול טפסים' }}: 
+          {{ childName }}
+        </h3>
       </div>
       <button pButton icon="pi pi-times" 
               class="p-button-rounded p-button-text p-button-secondary close-btn" 
@@ -18,12 +21,15 @@
         <p>טוען נתונים...</p>
       </div>
 
-      <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" styleClass="w-full mb-3"></p-message>
-      <p-message *ngIf="!isLoading && !errorMessage && files.length === 0" 
-                 severity="info" 
-                 text="לא נמצאו טפסים לילד זה." 
-                 styleClass="w-full">
-      </p-message>
+      <div *ngIf="errorMessage" class="custom-msg msg-error">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+      
+      <div *ngIf="!isLoading && !errorMessage && files.length === 0" class="custom-msg msg-info">
+        <i class="pi pi-info-circle"></i>
+        <span>{{ showAttachmentsOnly ? 'לא הועלו נספחים עבור ילד זה.' : 'לא נמצאו טפסים חתומים.' }}</span>
+      </div>
 
       <div class="table-responsive-wrapper" *ngIf="files.length > 0 && !isLoading">
         <table class="files-table">
@@ -38,13 +44,13 @@
             <tr *ngFor="let file of files">
               <td>
                 <div class="file-cell">
-                  <i class="pi pi-file-pdf file-icon-styled"></i>
+                  <i [class]="file.downloadUrl?.includes('.pdf') ? 'pi pi-file-pdf file-icon-styled' : 'pi pi-image file-icon-styled'"></i>
                   <span class="file-name-text">{{ file.fileName || 'מסמך ללא שם' }}</span>
                 </div>
               </td>
               <td class="date-cell">{{ file.uploadDate | date:'dd/MM/yyyy' }}</td>
               <td class="text-center">
-                <button class="download-btn" (click)="downloadFile(file.downloadUrl)" [disabled]="!file.fileName">
+                <button class="download-btn" (click)="downloadFile(file.downloadUrl)" [disabled]="!file.downloadUrl">
                   <i class="pi pi-download"></i>
                   <span class="btn-text">הורדה</span>
                 </button>
@@ -52,7 +58,7 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </div> 
     </div>
   </div>
 </div>

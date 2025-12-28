@@ -289,16 +289,28 @@ public class FormService : IFormService
         return forms.Where(f => !string.IsNullOrEmpty(f.FilePath)).Select(f =>
         {
             string fileName = Path.GetFileName(f.FilePath);
+
+            // --- לוגיקת הפיצול החדשה ---
+            var attachments = new List<string>();
+            if (!string.IsNullOrEmpty(f.AttachmentPaths))
+            {
+                attachments = f.AttachmentPaths.Split(',')
+                    .Select(path => $"{baseUrl}api/Form/Download?container=DiscountAttachments&fileName={Path.GetFileName(path)}")
+                    .ToList();
+            }
+
             return new ChildFormDto
             {
                 FormId = f.FormId,
                 FormType = f.FormType,
                 FileName = fileName,
                 DownloadUrl = $"{baseUrl}api/Form/Download?container={PermanentFormsFolder}&fileName={fileName}",
-                UploadDate = f.SubmittedDate ?? DateTime.MinValue
+                UploadDate = f.SubmittedDate ?? DateTime.MinValue,
+                AttachmentUrls = attachments // שליחת הרשימה המפורקת
             };
         }).ToList();
     }
+
 
     // ---------------------------------------------------------
     // 📧 פונקציית שליחת מייל

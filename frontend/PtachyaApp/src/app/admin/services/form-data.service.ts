@@ -22,6 +22,7 @@ export interface ChildFormDto {
   fileName: string;
   downloadUrl: string; // הלינק המלא להורדה
   uploadDate: string;
+attachmentUrls: string[];
 }
 
 @Injectable({

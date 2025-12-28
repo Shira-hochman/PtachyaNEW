@@ -33,6 +33,8 @@ namespace Dto
 
         public int? PaymentId { get; set; }
 
+        public string KindergartenName { get; set; }
+
 
     }
 
