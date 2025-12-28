@@ -74,4 +74,5 @@ export class ChildAuthService {
     localStorage.removeItem(this.childKey);
     // יש לנתב את המשתמש לדף הכניסה
   }
+  
 }

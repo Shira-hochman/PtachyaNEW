@@ -1,192 +1,253 @@
-/* הגדרות גלובליות לאפליקציה (שעוברות דרך admin-layout) */
-:root {
-    --color-primary: #007bff; /* כחול בסיסי (משמש פחות ב-Dashboard) */
-    --color-accent: #28a745; /* ירוק-כחלחל (כמו באתר) */
-    --color-text: #333;
-    --color-bg-light: #f8f9fa;
-    --color-shadow: rgba(0, 0, 0, 0.08);
+/* ייבוא פונט Heebo */
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap');
+
+/* --- בסיס הקומפוננטה --- */
+.dashboard-container {
+    padding: 5.5rem 3rem 1.5rem 3rem;
+    margin-right: 260px; /* ← רוחב הסיידבר */
+    direction: rtl;
+    background: #f1f5f9;
+    min-height: 100vh;
+    font-family: 'Heebo', sans-serif;
+    box-sizing: border-box;
+    transition: margin-right 0.3s ease;
 }
 
-.dashboard-wrapper {
-    padding: 20px;
-    direction: rtl; /* כיוון קריאה מימין לשמאל */
-    font-family: 'Arial', sans-serif;
+/* כותרת */
+.main-title {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
 }
 
-/* ------------------ כותרת ------------------ */
-.dashboard-header h1 {
-    font-size: 2rem;
-    color: var(--color-text); /* צבע טקסט ראשי */
-    margin-bottom: 5px;
+.sub-title {
+    font-size: 1.15rem;
+    color: #64748b;
+    font-weight: 400;
+    margin-top: 0.5px;
 }
 
-.dashboard-header p {
-    color: #6c757d;
-    margin-bottom: 30px;
-}
-
-/* ------------------ רשת סטטיסטיקה ------------------ */
-.dashboard-grid {
+/* Stats Grid */
+.stats-grid {
     display: grid;
-    /* מגיב: 2 עמודות לרוחב קטן, 4 לרוחב גדול */
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
-    gap: 25px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    margin: 1.5rem 0;
 }
 
-.stat-card {
-    background-color: white;
-    padding: 25px 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px var(--color-shadow);
-    transition: transform 0.3s ease-out;
-    border-right: 5px solid transparent; /* קו הפרדה ויזואלי */
-    display: grid;
-    grid-template-columns: 1fr;
+.depth-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 2.5rem;
+    min-height: 260px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+.depth-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-.card-icon {
-    color: var(--color-accent);
-    margin-bottom: 15px;
-    font-size: 1.5rem;
-}
-
-.card-details {
+.card-inner {
+    height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
-.card-label {
-    font-size: 0.9rem;
-    color: #6c757d;
-    font-weight: 600;
+.icon-bg {
+    position: absolute;
+    left: -20px;
+    top: -20px;
+    font-size: 8rem;
+    opacity: 0.03;
+    transform: rotate(-15deg);
+    pointer-events: none;
 }
 
-.card-value {
-    font-size: 2.2rem;
-    font-weight: bold;
-    color: var(--color-text); 
-    margin-top: 5px;
-}
-
-/* ⭐️⭐️⭐️ הוספת עיצוב הכרטיסיות הרגילות ⭐️⭐️⭐️ */
-
-/* כרטיסיית ילדים רשומים - כחול */
-.stat-card.total-children {
-    border-right-color: #007bff; /* כחול */
-}
-.stat-card.total-children .card-icon,
-.stat-card.total-children .card-value {
-    color: #007bff; /* צביעת האייקון והערך בכחול */
-}
-
-/* כרטיסיית גנים פעילים - ירוק */
-.stat-card.active-gardens {
-    border-right-color: var(--color-accent); /* ירוק-כחלחל */
-}
-.stat-card.active-gardens .card-icon,
-.stat-card.active-gardens .card-value {
-    color: var(--color-accent); /* צביעת האייקון והערך בירוק */
-}
-
-
-/* התראות (Alerts) */
-.alert.pending-forms {
-    border-right-color: #ffc107; /* צהוב/כתום אזהרה */
-}
-.alert.pending-forms .card-value {
-    color: #ffc107;
-}
-
-.alert.unpaid-payments {
-    border-right-color: #dc3545; /* אדום דחוף */
-}
-.alert.unpaid-payments .card-value {
-    color: #dc3545;
-}
-
-/* כפתורי לינק מהיר בתוך כרטיסיות */
-.action-link {
-    background: none;
-    border: none;
-    color: var(--color-accent); 
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 15px;
-    padding: 0;
-    text-align: right;
-    display: block;
-    width: 100%;
-    transition: color 0.2s;
-    font-size: 0.9rem;
-}
-
-.action-link:hover {
-    color: #007bff;
-}
-
-/* ------------------ פעולות מהירות ------------------ */
-.action-section h2 {
-    font-size: 1.5rem;
-    color: var(--color-text);
-    margin-bottom: 15px;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 10px;
-}
-
-.quick-actions-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.action-button {
-    flex: 1 1 250px; /* גמיש, אבל לא יקטן מ-250px */
-    padding: 25px;
-    border-radius: 10px;
-    font-size: 1.1rem;
+.label {
+    font-size: 1.05rem;
     font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
+    color: #475569;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.value {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1;
+}
+
+.card-trend {
+    margin-top: 2rem;
+    font-size: 0.9rem;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.card-trend.up { color: #10b981; }
+
+.stat-blue { border-right: 8px solid #3b82f6; }
+.stat-green { border-right: 8px solid #10b981; }
+.stat-orange { border-right: 8px solid #f59e0b; }
+.stat-red { border-right: 8px solid #ef4444; }
+
+/* Quick Actions */
+.section-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.action-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.tile-item {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tile-icon {
+    width: 65px;
+    height: 65px;
+    border-radius: 16px;
+    display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.action-icon {
-    display: block;
     font-size: 1.8rem;
-    margin-bottom: 10px;
+    flex-shrink: 0;
 }
 
-/* כפתור ראשי - ניהול ילדים */
-.primary-btn {
-    background-color: var(--color-accent); 
-    color: white;
-    border: 2px solid var(--color-accent);
-    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+.blue-tile .tile-icon { background: #eff6ff; color: #3b82f6; }
+.green-tile .tile-icon { background: #ecfdf5; color: #10b981; }
+.purple-tile .tile-icon { background: #faf5ff; color: #a855f7; }
+
+.tile-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-grow: 1;
+    gap: 4px;
+    text-align: right;
 }
 
-.primary-btn:hover {
-    background-color: #218838;
+.tile-text strong {
+    font-size: 1.2rem;
+    color: #0f172a;
+    line-height: 1.2;
+    display: block;
 }
 
-/* כפתורים משניים */
-.secondary-btn {
-    background-color: white;
-    color: var(--color-accent); 
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.tile-text span {
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.4;
+    display: block;
 }
 
-.secondary-btn:hover {
-    background-color: #e2e6ea;
-    color: #0056b3;
+.arrow-link {
+    color: #cbd5e1;
+    transition: transform 0.3s ease;
+}
+
+.tile-item:hover .arrow-link {
+    transform: translateX(-10px);
+    color: #3b82f6;
+}
+
+/* ======================================================
+   --- חוקי רספונסיביות לדשבורד + סיידבר ---
+   ====================================================== */
+
+/* דסקטופ בינוני וטאבלטים גדולים (עד 1024px) */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        padding: 1.5rem 1.5rem;
+        margin-right: 260px; /* סיידבר מלא */
+    }
+
+    .stats-grid {
+        gap: 1.5rem;
+    }
+}
+
+/* טאבלטים (עד 992px) – סיידבר מצומצם */
+@media (max-width: 992px) {
+    .dashboard-container {
+        margin-right: 80px; /* סיידבר מצומצם */
+        padding: 1.5rem 1.5rem;
+    }
+}
+
+/* מובייל (עד 768px) – בלי סיידבר בצד */
+@media (max-width: 768px) {
+    .dashboard-container {
+        margin-right: 0; /* הדשבורד תופס רוחב מלא */
+        padding: 1.25rem 1.25rem;
+    }
+
+    .main-title {
+        font-size: 1.8rem;
+    }
+
+    .sub-title {
+        font-size: 1rem;
+    }
+
+    .value {
+        font-size: 2.5rem;
+    }
+
+    .depth-card,
+    .tile-item {
+        padding: 1.5rem;
+        min-height: 200px;
+    }
+
+    .action-tiles {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* טלפונים צרים מאוד (עד 480px) */
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 1rem 1rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tile-text strong {
+        font-size: 1rem;
+    }
+
+    .tile-text span {
+        font-size: 0.85rem;
+    }
 }

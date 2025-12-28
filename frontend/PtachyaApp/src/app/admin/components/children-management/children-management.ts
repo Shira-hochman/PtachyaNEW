@@ -1,83 +1,101 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; 
-import { HttpClientModule } from '@angular/common/http'; 
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { ChildDataService } from '../../services/child-data.service'; 
+import { RouterModule } from '@angular/router';
 
-// ⭐️ ייבוא המודל החדש שיצרנו (ודאי שהנתיב תואם למבנה התיקיות שלך)
+import { ChildDataService } from '../../services/child-data.service';
 import { ChildFilesModalComponent } from '../ChildFilesModalComponent/child-files-modal.component';
+import { Child } from '../../../../models/child';
 
-// הגדרת המבנה
-export interface ChildUi {
-  childId: number;
-  firstName: string;
-  lastName: string;
-  idNumber: string; // שדה חובה למודל הקבצים
-  birthDate: Date;
-  kindergartenId: string;
-  email: string;
-  formLink: string;
-  paymentId?: number;
-}
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { CardModule } from 'primeng/card';
+import { MessageModule } from 'primeng/message';
+import { BadgeModule } from 'primeng/badge';
+import { ToolbarModule } from 'primeng/toolbar';
+import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
-  selector: 'app-children-management', 
-  standalone: true, 
-  // ⭐️ הוספנו את ChildFilesModalComponent לרשימת ה-imports
-  imports: [CommonModule, HttpClientModule, FormsModule, RouterLink, ChildFilesModalComponent],
-  templateUrl: './children-management.html', 
-  styleUrl: './children-management.css'
+  selector: 'app-children-management',
+  standalone: true,
+  imports: [
+    CommonModule,
+    HttpClientModule,
+    FormsModule,
+    RouterModule,
+    ChildFilesModalComponent,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    TagModule,
+    CardModule,
+    MessageModule,
+    BadgeModule,
+    ToolbarModule,
+    SelectModule,
+    TooltipModule
+  ],
+  templateUrl: './children-management.html',
+  styleUrls: ['./children-management.css']
 })
 export class ChildrenManagementComponent implements OnInit {
-  
-  children: ChildUi[] | null = null; 
+  children: Child[] = [];
   isLoading: boolean = false;
   errorMessage: string | null = null;
-  
-  // פילטרים
+
   searchTerm: string = '';
   selectedKindergartenId: number | null = null;
-  kindergartens: any[] = [{ id: 1, name: 'גן אלון' }, { id: 2, name: 'גן ברוש' }]; 
+  kindergartens: any[] = [
+    { id: 1, name: 'גן אלון' },
+    { id: 2, name: 'גן ברוש' }
+  ];
 
-  // משתנים לפייג'ינג
   currentPage: number = 1;
   pageSize: number = 10;
   totalItems: number = 0;
   totalPages: number = 0;
 
-  // ⭐️ משתנים חדשים לניהול המודל (Pop-up)
-  selectedChildForDocs: ChildUi | null = null; // הילד שנבחר להצגת מסמכים
-  isDocsModalOpen: boolean = false;            // האם המודל פתוח?
+  selectedChildForDocs: Child | null = null;
+  isDocsModalOpen: boolean = false;
 
   constructor(private childDataService: ChildDataService) { }
 
   ngOnInit() {
-    this.loadChildren(); 
+    this.loadChildren();
   }
 
+  // פונקציית טעינה אחת ויחידה שתומכת בכל הפרמטרים
   loadChildren(): void {
     this.isLoading = true;
     this.errorMessage = null;
-    
-    this.childDataService.getChildrenPaged(this.currentPage, this.pageSize).subscribe({
+
+    this.childDataService.getChildrenPaged(
+      this.currentPage, 
+      this.pageSize, 
+      this.searchTerm, 
+      this.selectedKindergartenId
+    ).subscribe({
       next: (res: any) => {
-        this.children = res.items; 
-        
-        this.totalItems = res.totalCount; 
-        this.totalPages = Math.ceil(this.totalItems / this.pageSize); 
+        this.children = res.items;
+        this.totalItems = res.totalCount;
+        this.totalPages = Math.ceil(this.totalItems / this.pageSize);
         this.isLoading = false;
-        
-        if (!this.children || this.children.length === 0) {
-             this.errorMessage = 'לא נמצאו נתונים.';
-        }
       },
       error: (err: any) => {
         console.error('Error loading children:', err);
-        this.errorMessage = 'שגיאה בטעינת הנתונים.';
+        this.errorMessage = 'שגיאה בטעינת הנתונים מהשרת.';
         this.isLoading = false;
       }
     });
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1; // תמיד חוזרים לעמוד הראשון בחיפוש חדש
+    this.loadChildren();
   }
 
   nextPage() {
@@ -96,16 +114,13 @@ export class ChildrenManagementComponent implements OnInit {
 
   editChild(childId: number): void {
     console.log('Edit child:', childId);
-    // לוגיקת פתיחת מודל עריכה... (אם תרצי להוסיף בעתיד)
   }
 
-  // ⭐️ פונקציה לפתיחת מודל המסמכים
-  openDocsModal(child: ChildUi): void {
+  openDocsModal(child: Child): void {
     this.selectedChildForDocs = child;
     this.isDocsModalOpen = true;
   }
 
-  // ⭐️ פונקציה לסגירת מודל המסמכים
   closeDocsModal(): void {
     this.isDocsModalOpen = false;
     this.selectedChildForDocs = null;

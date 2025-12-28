@@ -52,25 +52,46 @@ namespace Ptachya.DAL.Repositories
         // Task<PagedResult<ChildDto>> GetPagedAsync(int page, int pageSize);
 
         // מימוש ב-ChildRepository:
-        public async Task<PagedResult<ChildDto>> GetPagedAsync(int page, int pageSize)
+        public async Task<PagedResult<ChildDto>> GetPagedAsync(
+     int page,
+     int pageSize,
+     string? searchTerm,
+     int? kindergartenId
+ )
         {
-            var query = _context.Children.Include(c => c.Forms); // טעינת טפסים (נרחיב בהמשך)
+            IQueryable<Child> query = _context.Children;
+
+            // 🔍 חיפוש חופשי
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(c =>
+                    c.FirstName.Contains(searchTerm) ||
+                    c.lastName.Contains(searchTerm) ||
+                    c.IdNumber.Contains(searchTerm) ||
+                    c.Email.Contains(searchTerm)
+                );
+            }
+
+            // 🏫 סינון לפי גן
+            if (kindergartenId.HasValue)
+            {
+                query = query.Where(c => c.KindergartenId == kindergartenId.Value);
+            }
 
             var total = await query.CountAsync();
 
             var entities = await query
-                .OrderBy(c => c.ChildId) // חייב מיון בשביל דפדוף
+                .OrderBy(c => c.ChildId)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            var dtos = entities.Select(ChildConverter.ToChildDto).ToList();
-
             return new PagedResult<ChildDto>
             {
-                Items = dtos,
+                Items = entities.Select(ChildConverter.ToChildDto).ToList(),
                 TotalCount = total
             };
         }
+
     }
 }

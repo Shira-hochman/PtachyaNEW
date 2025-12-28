@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 
 // וודאי שהנתיב הזה נכון בהתאם למבנה התיקיות שלך
-import { DiscountService } from '../services/discount.service'; 
+import { DiscountService } from '../../services/discount.service'; 
 
 @Component({
   selector: 'app-direct-payment',
