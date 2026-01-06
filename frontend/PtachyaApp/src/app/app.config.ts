@@ -2,9 +2,10 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes'; 
-import { provideHttpClient, withInterceptors } from '@angular/common/http'; // ✅ חדש
-import { authInterceptor } from './auth-interceptor'; // ✅ חדש
-// ⚠️ אין צורך לייבא כאן את FormsModule, הוא מיובא ברכיב ה-Login עצמו
+import { provideHttpClient, withInterceptors } from '@angular/common/http'; 
+import { authInterceptor } from './auth-interceptor'; 
+// 👇 1. הייבוא שחסר לך
+import { provideAnimations } from '@angular/platform-browser/animations'; 
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -12,7 +13,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes), 
     provideHttpClient(
       withInterceptors([authInterceptor])
-    ) // ⬅️ חובה לטובת תקשורת רשת
+    ),
+    // 👇 2. הפונקציה שמפעילה את האנימציות (קריטי ל-PrimeNG)
+    provideAnimations() 
   ]
 };
-

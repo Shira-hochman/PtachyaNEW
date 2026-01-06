@@ -1,3 +1,5 @@
+<p-confirmDialog [style]="{width: '450px'}" rtl="true"></p-confirmDialog>
+
 <div class="management-container">
     <p-toolbar styleClass="custom-toolbar">
         <div class="p-toolbar-group-start">
@@ -20,7 +22,6 @@
                     <i class="pi pi-search"></i>
                     <input type="text" pInputText [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()"
                         placeholder="חיפוש לפי שם, ת.ז. או אימייל..." class="w-full search-input-styled" />
-
                 </span>
             </div>
 
@@ -29,7 +30,6 @@
                     (ngModelChange)="onFilterChange()" optionLabel="name" optionValue="id" placeholder="סינון לפי גן"
                     [showClear]="true" styleClass="modern-dropdown">
                 </p-select>
-
             </div>
         </div>
 
@@ -57,13 +57,33 @@
                     <td>
                         <span class="kindergarten-tag">{{ child.kindergartenName }}</span>
                     </td>
+                    
                     <td>
-                        <p-tag [severity]="child.paymentId ? 'success' : 'warn'"
-                            [value]="child.paymentId ? 'מוסדר' : 'ממתין לטיפול'" styleClass="status-tag">
-                        </p-tag>
+                        <div class="status-wrapper">
+                            <p-tag *ngIf="child.paymentId" 
+                                   severity="success" 
+                                   value="אושר" 
+                                   styleClass="status-tag">
+                            </p-tag>
+
+                            <p-tag *ngIf="!child.paymentId" 
+                                   severity="warn" 
+                                   value="ממתין לאישור" 
+                                   styleClass="status-tag">
+                            </p-tag>
+
+                            <button *ngIf="!child.paymentId" 
+                                    pButton 
+                                    type="button" 
+                                    icon="pi pi-check" 
+                                    class="p-button-rounded p-button-text p-button-success action-icon-sm"
+                                    (click)="approveChildPayment(child, $event)"
+                                    pTooltip="לחץ לאישור בקשה">
+                            </button>
+                        </div>
                     </td>
+
                     <td class="text-center">
-                        <!-- כפתור תמיד פעיל -->
                         <button pButton icon="pi pi-file-pdf" class="p-button-rounded p-button-text p-button-secondary"
                             pTooltip="צפייה בטפסים" (click)="openDocsModal(child)">
                         </button>
@@ -98,10 +118,70 @@
         </div>
     </div>
 
-    <!-- קומפוננטת טפסים -->
     <app-child-files-modal *ngIf="isDocsModalOpen && selectedChildForDocs"
         [childIdNumber]="selectedChildForDocs.idNumber"
         [childName]="selectedChildForDocs.firstName + ' ' + selectedChildForDocs.lastName"
         [showAttachmentsOnly]="isAttachmentsMode" (close)="closeDocsModal()">
     </app-child-files-modal>
 </div>
+
+<p-dialog header="עריכת פרטי ילד" [(visible)]="isEditModalOpen" [modal]="true" 
+    [style]="{width: '600px'}" styleClass="edit-child-dialog" 
+    [rtl]="true" [draggable]="false" [resizable]="false">
+    
+    <div class="edit-form-container" *ngIf="childToEdit">
+        
+        <div class="form-row two-col">
+            <div class="field-group">
+                <label for="firstName">שם פרטי</label>
+                <input pInputText id="firstName" [(ngModel)]="childToEdit.firstName" class="custom-input" />
+            </div>
+            <div class="field-group">
+                <label for="lastName">שם משפחה</label>
+                <input pInputText id="lastName" [(ngModel)]="childToEdit.lastName" class="custom-input" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="field-group">
+                <label for="idNumber">תעודת זהות</label>
+                <input pInputText id="idNumber" [(ngModel)]="childToEdit.idNumber" class="custom-input" />
+            </div>
+        </div>
+
+        <div class="form-row two-col">
+            <div class="field-group">
+                <label for="phone">טלפון</label>
+                <div class="input-with-icon">
+                    <i class="pi pi-phone"></i>
+                    <input pInputText id="phone" [(ngModel)]="childToEdit.phone" class="custom-input" />
+                </div>
+            </div>
+            <div class="field-group">
+                <label for="email">אימייל</label>
+                <div class="input-with-icon">
+                    <i class="pi pi-envelope"></i>
+                    <input pInputText id="email" [(ngModel)]="childToEdit.email" class="custom-input" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="field-group">
+                <label for="kindergarten">שיוך גן</label>
+                 <p-select [options]="kindergartens" [(ngModel)]="childToEdit.kindergartenId" 
+                    optionLabel="name" optionValue="id" placeholder="בחר גן" 
+                    appendTo="body" styleClass="w-full custom-dropdown">
+                </p-select>
+            </div>
+        </div>
+
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="dialog-footer">
+            <button pButton label="ביטול" class="p-button-text cancel-btn" (click)="cancelEdit()"></button>
+            <button pButton label="שמור שינויים" icon="pi pi-check" class="save-btn" (click)="saveChildChanges()"></button>
+        </div>
+    </ng-template>
+</p-dialog>

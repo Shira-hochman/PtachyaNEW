@@ -9,8 +9,9 @@ namespace Dal.Repositories.Interfaces
     {
         Task<List<UserDto>> GetAllAsync();
         Task AddAsync(User entity);
-        Task<User?> GetByIDAsync(string PasswordHash);
+        Task<User?> GetByIDAsync(int id);
         Task UpdateAsync(User user);
         Task<User?> GetByUsernameAsync(string username);
+        Task DeleteAsync(int id);
     }
 }

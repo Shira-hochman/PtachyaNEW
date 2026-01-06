@@ -2,13 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// 🚨 מבנה ChildDto מעודכן עם כל השדות שציינת
 export interface ChildDto {
   childId: number; 
-  kindergartenId: number; // שיניתי ל-number כי זה ID
+  kindergartenId: number;
   kindergartenName: string;
   idNumber: string;
-  birthDate: Date; // או string, תלוי איך ה-C# שולח
+  birthDate: Date;
   firstName: string;
   lastName: string;
   schoolYear: string;
@@ -17,6 +16,7 @@ export interface ChildDto {
   email: string;
   paymentId: number;
 }
+
 export interface PagedChildResult {
   items: ChildDto[];
   totalCount: number;
@@ -26,43 +26,46 @@ export interface PagedChildResult {
   providedIn: 'root'
 })
 export class ChildDataService {
-  // הנתיב: ודא שהוא מצביע לקונטרולר הנכון ב-C# (לרוב /api/Child)
+  // כתובת בסיס לילדים
   private apiUrl = 'https://localhost:7222/api/Child'; 
+  
+  // ✅ כתובת בסיס לגנים (בהתאם לקונטרולר ששלחת)
+  private kindergartenUrl = 'https://localhost:7222/api/Kindergarten';
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * מחזיר את רשימת כל הילדים.
-   * נתיב: GET /api/Child
-   */
   getAllChildren(): Observable<ChildDto[]> {
-    // מצפה לרשימה של ChildDto בפורמט JSON
     return this.http.get<ChildDto[]>(this.apiUrl);
   }
-  // עדכן את הממשק או הוסף חדש
 
-
-// בתוך המחלקה:
-getChildrenPaged(
-  page: number,
-  pageSize: number,
-  searchTerm?: string,
-  kindergartenId?: number | null
-) {
-  const params: any = {
-    page,
-    pageSize
-  };
-
-  if (searchTerm) {
-    params.searchTerm = searchTerm;
+  // ✅ הפונקציה הזו כעת פונה לקונטרולר הקיים שלך!
+  getAllKindergartens(): Observable<any[]> {
+    return this.http.get<any[]>(this.kindergartenUrl);
   }
 
-  if (kindergartenId !== null && kindergartenId !== undefined) {
-    params.kindergartenId = kindergartenId;
+  getChildrenPaged(
+    page: number,
+    pageSize: number,
+    searchTerm?: string,
+    kindergartenId?: number | null
+  ) {
+    const params: any = {
+      page,
+      pageSize
+    };
+
+    if (searchTerm) {
+      params.searchTerm = searchTerm;
+    }
+
+    if (kindergartenId !== null && kindergartenId !== undefined) {
+      params.kindergartenId = kindergartenId;
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/paged`, { params });
   }
 
-  return this.http.get<any>(`${this.apiUrl}/paged`, { params });
-}
-
+  updateChild(child: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${child.childId}`, child);
+  }
 }

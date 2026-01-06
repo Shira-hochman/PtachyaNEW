@@ -9,6 +9,7 @@ namespace Bo.Interfaces
         Task<List<ChildDto>> GetChildrenAsync();
         Task AddChildAsync(ChildDto dto);
         Task RemoveChildAsync(ChildDto dto);
+        Task UpdateChildAsync(ChildDto dto);
         Task<string> VerifyChildIdentityAsync(string idNumber, DateTime birthDate);
         Task<ChildDto?> GetChildDetailsByIdAndBirthDateAsync(string idNumber, DateTime birthDate);
         Task<PagedResult<ChildDto>> GetChildrenPagedAsync(

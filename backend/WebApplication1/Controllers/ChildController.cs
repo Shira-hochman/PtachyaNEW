@@ -64,6 +64,32 @@ namespace Ptachya.API.Controllers
                 Child = childDetails // נתוני הילד המלאים
             });
         }
+
+        // בתוך ChildController.cs
+
+        [HttpPut("{id}")]
+        // [Authorize(Roles = "Admin")] // את יכולה להוריד את ההערה אם יש לך ניהול הרשאות
+        public async Task<IActionResult> Update(int id, [FromBody] ChildDto dto)
+        {
+            if (id != dto.ChildId)
+            {
+                return BadRequest("מזהה הילד אינו תואם לנתונים שנשלחו.");
+            }
+
+            try
+            {
+                await _service.UpdateChildAsync(dto);
+                return Ok(new { message = "פרטי הילד עודכנו בהצלחה" });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("הילד לא נמצא במערכת.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged(
     [FromQuery] int page = 1,
@@ -84,4 +110,6 @@ namespace Ptachya.API.Controllers
 
 
     }
+
+
 }

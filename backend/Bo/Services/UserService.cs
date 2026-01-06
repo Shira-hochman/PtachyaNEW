@@ -25,6 +25,11 @@ namespace Bo.Services
             return await _repo.GetAllAsync();
         }
 
+        public async Task DeleteUserAsync(int id)
+        {
+            await _repo.DeleteAsync(id);
+        }
+
         public async Task AddUserAsync(UserDto dto)
         {
             var entity = UserConverter.ToUserEntity(dto);

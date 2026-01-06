@@ -12,6 +12,7 @@ namespace Bo.Interfaces
          Task AddUserAsync(UserDto dto);
          Task<List<UserDto>> GetUserAsync();
         Task<object> ValidateUserWithFeedbackAsync(string username, string password);
+        Task DeleteUserAsync(int id);
 
     }
 }

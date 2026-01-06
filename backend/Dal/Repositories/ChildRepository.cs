@@ -34,6 +34,12 @@ namespace Ptachya.DAL.Repositories
             await _context.SaveChangesAsync();
         }
 
+        // בתוך ChildRepository.cs
+        public async Task<Child?> GetByIdAsync(int id)
+        {
+            return await _context.Children.FindAsync(id);
+        }
+
         public async Task<Child?> GetByIdNumberAsync(string idNumber)
         {
             return await _context.Set<Child>().FirstOrDefaultAsync(c => c.IdNumber == idNumber);

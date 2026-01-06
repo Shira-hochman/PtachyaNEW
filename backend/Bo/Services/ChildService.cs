@@ -5,6 +5,7 @@ using Dal.Models;
 using Dal.Repositories.Interfaces;
 using Dal_Repository.ModelsConverters; // הנחה: מחלקה זו ממירה מ-Child ל-ChildDto
 using Dto;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -72,6 +73,33 @@ namespace Bo.Services
             return childEntity.FirstName;
         }
 
+
+        // בתוך ChildService.cs
+
+        public async Task UpdateChildAsync(ChildDto dto)
+        {
+            // 1. שליפת הילד הקיים מה-DB לפי ה-ID
+            var existingChild = await _repo.GetByIdAsync(dto.ChildId);
+
+            if (existingChild == null)
+            {
+                throw new KeyNotFoundException($"Child with ID {dto.ChildId} not found.");
+            }
+
+            // 2. עדכון השדות (Mapping)
+            existingChild.FirstName = dto.FirstName;
+            existingChild.lastName = dto.LastName; // שים לב ל-case (lastName ב-DB?)
+            existingChild.IdNumber = dto.IdNumber;
+            existingChild.BirthDate = dto.BirthDate;
+            existingChild.KindergartenId = dto.KindergartenId;
+            existingChild.Phone = dto.Phone;
+            existingChild.Email = dto.Email;
+            existingChild.SchoolYear = dto.SchoolYear;
+
+            // 3. שמירה
+            await _repo.UpdateAsync(existingChild);
+        }
+
         // ⭐️⭐️⭐️ מתודה חדשה: מאמתת ומחזירה את אובייקט ה-DTO המלא ⭐️⭐️⭐️
         public async Task<ChildDto?> GetChildDetailsByIdAndBirthDateAsync(string idNumber, DateTime birthDate)
         {
@@ -108,4 +136,5 @@ namespace Bo.Services
         }
 
     }
+
 }

@@ -1,0 +1,107 @@
+<p-toast></p-toast>
+
+<p-confirmDialog [rtl]="true" [style]="{width: '400px'}"></p-confirmDialog>
+
+<div class="management-container">
+
+    <p-toolbar styleClass="custom-toolbar shadow-2">
+        <div class="p-toolbar-group-start">
+            <div class="header-titles">
+                <h1 class="main-title">ניהול צוות ומנהלים</h1>
+                <nav class="breadcrumb-simple">מערכת פתחיה > הגדרות > מנהלים</nav>
+            </div>
+        </div>
+        <div class="p-toolbar-group-end">
+            <button pButton pRipple label="הוספת מנהל חדש" icon="pi pi-user-plus"
+                class="p-button-primary p-button-raised action-btn-main" (click)="openAddModal()">
+            </button>
+        </div>
+    </p-toolbar>
+
+    <div class="content-card shadow-1">
+        <p-table [value]="admins" [rows]="10" styleClass="p-datatable-gridlines custom-table hover-table">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 80px;" class="text-center">ID</th>
+                    <th>שם משתמש (לכניסה)</th>
+                    <th>תפקיד</th>
+                    <th class="text-center">סטטוס</th>
+                    <th style="width: 100px;" class="text-center">פעולות</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-admin>
+                <tr class="table-row">
+                    <td class="text-center"><span class="id-badge">{{ admin.userId }}</span></td>
+                    <td class="font-bold text-gray-800">{{ admin.username }}</td>
+                    <td><span class="kindergarten-tag">מנהל</span></td>
+                    <td class="text-center">
+                        <i class="pi pi-check-circle text-green-500" style="font-size: 1.2rem"></i>
+                    </td>
+
+                    <td class="text-center">
+                        <button pButton pRipple icon="pi pi-trash"
+                            class="p-button-rounded p-button-text p-button-danger" pTooltip="מחק מנהל"
+                            tooltipPosition="top" (click)="deleteAdmin(admin)">
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<p-dialog [(visible)]="isAddModalOpen" [modal]="true" [style]="{width: '400px', borderRadius: '12px'}"
+    [draggable]="false" [resizable]="false" [rtl]="true" styleClass="modern-dialog" showHeader="false">
+
+    <div class="custom-header">
+        <div class="title-section">
+            <span class="header-title">הוספת מנהל מערכת</span>
+        </div>
+        <button class="close-icon-btn" (click)="isAddModalOpen = false">
+            <i class="pi pi-times"></i>
+        </button>
+    </div>
+
+    <div class="dialog-content">
+        <p class="description-text">הזיני את פרטי המנהל החדש. למנהל זה תהיה גישה מלאה להגדרות המערכת.</p>
+
+        <div class="form-container">
+
+            <div class="field-wrapper">
+                <div class="input-wrapper">
+                    <i class="pi pi-user custom-icon"></i>
+                    <input pInputText id="username" [(ngModel)]="newAdmin.username" class="custom-input"
+                        placeholder="שם משתמש" autocomplete="off" name="newUsernameByPtachya" />
+                </div>
+            </div>
+
+            <div class="field-wrapper">
+                <div class="input-wrapper">
+                    <i class="pi pi-lock custom-icon"></i>
+
+                    <p-password [(ngModel)]="newAdmin.password" [toggleMask]="true" [feedback]="false"
+                        placeholder="סיסמה" styleClass="w-full" inputStyleClass="custom-input password-input-fix"
+                        autocomplete="new-password" name="newPasswordByPtachya">
+                    </p-password>
+                </div>
+                <div class="info-text">
+                    <i class="pi pi-info-circle"></i>
+                    <span>המנהל יוכל לשנות את הסיסמה בהתחברות הראשונה.</span>
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </div>
+    <div class="custom-footer">
+        <button class="btn-cancel" (click)="isAddModalOpen = false">ביטול</button>
+        <button class="btn-save" (click)="saveNewAdmin()">
+            <span>שמור וצור מנהל</span>
+            <i class="pi pi-check"></i>
+        </button>
+    </div>
+
+</p-dialog>

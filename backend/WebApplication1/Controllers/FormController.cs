@@ -1,4 +1,4 @@
-﻿using Bo.Interfaces;
+using Bo.Interfaces;
 using Dal.Models;
 using Dto;
 using Microsoft.AspNetCore.Authorization;
@@ -124,8 +124,20 @@ public class FormController : ControllerBase
     [HttpGet("Download")]
     public async Task<IActionResult> DownloadFile([FromQuery] string container, [FromQuery] string fileName)
     {
+        // 🛡️ Security Fix: Path Traversal Prevention
+        
+        // 1. Sanitize the filename (remove .. and slashes)
+        fileName = Path.GetFileName(fileName); 
+        
+        // 2. Validate the container folder (Allow only specific folders)
+        var allowedContainers = new[] { "DiscountAttachments" }; // Add other folders if needed
+        if (!allowedContainers.Contains(container))
+        {
+            return BadRequest("Invalid container specified.");
+        }
+
         var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        var fullPath = Path.Combine(baseDirectory, container, Path.GetFileName(fileName));
+        var fullPath = Path.Combine(baseDirectory, container, fileName);
 
         if (!System.IO.File.Exists(fullPath)) return NotFound("הקובץ לא נמצא.");
 

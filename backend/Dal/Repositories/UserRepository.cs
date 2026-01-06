@@ -30,9 +30,9 @@ namespace Dal.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<User?> GetByIDAsync(string PasswordHash)
+        public async Task<User?> GetByIDAsync(int id)
         {
-            return await _context.Set<User>().FirstOrDefaultAsync(k => k.PasswordHash == PasswordHash);
+            return await _context.Users.FindAsync(id);
         }
 
         public async Task UpdateAsync(User user)
@@ -47,7 +47,15 @@ namespace Dal.Repositories
                 .FirstOrDefaultAsync(u => u.Username == username);
         }
 
-
+        public async Task DeleteAsync(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+        }
 
     }
 }

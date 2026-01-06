@@ -428,6 +428,7 @@ populateForm(child: Child): void {
       next: (response: Blob) => {
         this.downloadPdf(response, rawData.studentDetails.studentId);
         this.discountService.calculateAndSetPrice(rawData);
+        alert('הטופס נשלח בהצלחה! העתק נשלח למייל שלכם.');
         this.submissionMessage.set('✅ הטופס נשלח בהצלחה והעתק נשלח למייל שלך.'); // עדכון הודעה למשתמש
         
         setTimeout(() => {

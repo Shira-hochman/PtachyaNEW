@@ -303,6 +303,7 @@ public class FormService : IFormService
             {
                 FormId = f.FormId,
                 FormType = f.FormType,
+                Status = f.Status,
                 FileName = fileName,
                 DownloadUrl = $"{baseUrl}api/Form/Download?container={PermanentFormsFolder}&fileName={fileName}",
                 UploadDate = f.SubmittedDate ?? DateTime.MinValue,

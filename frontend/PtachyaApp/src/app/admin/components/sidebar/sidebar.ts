@@ -18,6 +18,7 @@ export class SidebarComponent {
     { label: 'ניהול גנים', icon: 'pi pi-building', link: '/admin/kindergartens/manage' },
     { label: 'ניהול טפסים', icon: 'pi pi-file-edit', link: '/admin/forms' },
     { label: 'ניהול תשלומים', icon: 'pi pi-credit-card', link: '/admin/payments' },
-    { label: 'עדכון נתונים', icon: 'pi pi-cloud-upload', link: '/admin/update-data' }
+    { label: 'עדכון נתונים', icon: 'pi pi-cloud-upload', link: '/admin/update-data' },
+    { label: 'ניהול מנהלים', icon: 'pi pi-id-card', link: '/admin/admins' }
   ];
 }
