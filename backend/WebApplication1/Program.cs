@@ -73,6 +73,10 @@ builder.Services.AddScoped<IKindergartenService, KindergartenService>();
 builder.Services.AddScoped<IFormService, FormService>();
 builder.Services.AddScoped<Bo.Interfaces.IImportService, Bo.Services.ImportService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddHttpClient(); // חשוב מאוד לעבודה עם HttpClient
+builder.Services.AddScoped<IPaymentService, KesherPaymentService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+
 
 // 🛑 הוספת ITokenService (פתרון שגיאת DI)
 builder.Services.AddScoped<Bo.Interfaces.ITokenService, Bo.Services.TokenService>();
@@ -80,7 +84,20 @@ builder.Services.AddScoped<Bo.Interfaces.ITokenService, Bo.Services.TokenService
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200") // הכתובת של ה-Angular
+                  .AllowAnyHeader()                   // מאשר את כל ה-Headers (כולל Authorization)
+                  .AllowAnyMethod();                  // מאשר POST, GET וכו'
+        });
+});
+
 var app = builder.Build();
+
+app.UseCors("AllowAngular");
 
 // 2. הפעלת Middleware של CORS (UseCors)
 app.UseCors(MyCorsPolicy);

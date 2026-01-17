@@ -13,6 +13,7 @@ import {
 
 // וודאי שהנתיב הזה נכון בהתאם למבנה התיקיות שלך
 import { DiscountService } from '../../services/discount.service'; 
+import { PaymentService } from '../../services/payment.service'; 
 
 @Component({
   selector: 'app-direct-payment',
@@ -39,7 +40,8 @@ export class DirectPayment implements OnInit, OnDestroy {
     private router: Router, 
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private discountService: DiscountService
+    private discountService: DiscountService,
+    private paymentService: PaymentService
   ) {
     // בניית הטופס עם בדיקות מחמירות
     this.paymentForm = this.fb.group({
@@ -146,29 +148,70 @@ export class DirectPayment implements OnInit, OnDestroy {
 
   // --- Actions ---
 
-  processPayment(): void {
-    if (this.paymentForm.valid) {
-      // כאן תתבצע הסליקה האמיתית מול השרת
-      const paymentData = {
-        creditCardToken: 'TOKEN_FROM_PROVIDER', // לעולם לא שולחים פרטי כרטיס גולמיים לשרת שלנו
-        amount: this.currentPrice, // הסכום המחושב
-        payerId: this.paymentForm.get('ownerId')?.value
-      };
+// processPayment(): void {
+//   if (this.paymentForm.valid) {
+//     const paymentPayload = {
+//       ...this.paymentForm.value,
+//       amount: this.currentPrice
+//     };
 
-      console.log('Sending payment to server:', paymentData);
-      
-      alert(`תשלום על סך ₪${this.currentPrice.toFixed(2)} בוצע בהצלחה!`);
-      
-      // איפוס המחיר והחזרה למסך הראשי
-      this.discountService.resetPrice();
-      this.router.navigate(['/child/main']);
-    } else {
-      this.paymentForm.markAllAsTouched();
-      alert('נא לתקן את השגיאות בטופס');
+//     // הגדרת סוגים (any או ממשק ייעודי) כדי למנוע את שגיאת TS7006
+//     this.paymentService.submitToBackend(paymentPayload).subscribe({
+//       next: (response: any) => { 
+//         alert(`תשלום על סך ₪${this.currentPrice.toFixed(2)} בוצע בהצלחה!`);
+//         this.discountService.resetPrice();
+//         this.router.navigate(['/child/main']);
+//       },
+//       error: (err: any) => {
+//         console.error('Payment error:', err);
+//         alert('חלה שגיאה בביצוע התשלום. נא נסו שוב.');
+//       }
+//     });
+//   } else {
+//     this.paymentForm.markAllAsTouched();
+//   }
+// }
+processPayment(): void {
+  if (this.paymentForm.valid) {
+    // חילוץ ה-ID מה-Token (בהנחה שהוא שמור ב-localStorage)
+    const token = localStorage.getItem('token'); 
+    let childId = 1; // ברירת מחדל למקרה חירום, שאי שזה ID שקיים ב-DB שלך!
+
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // לפי ה-Header ששלחת, השדה ב-Token נקרא "nameid"
+      childId = +payload.nameid; 
     }
-  }
 
- goBack(): void {
+    const paymentPayload = {
+      ChildId: childId, // ה-ID האמיתי של הילד
+      Amount: 1.00,
+      CardNumber: this.paymentForm.value.cardNumber.replace(/\s/g, ''),
+      Expiry: this.paymentForm.value.expiry.replace('/', ''),
+      Cvv: this.paymentForm.value.cvv,
+      HolderId: this.paymentForm.value.ownerId,
+      HolderName: this.paymentForm.value.cardName
+    };
+
+   
+
+    this.paymentService.submitToBackend(paymentPayload).subscribe({
+      next: (response: any) => { 
+        alert(`בדיקת מערכת: תשלום על סך ₪1.00 בוצע בהצלחה!`);
+        this.discountService.resetPrice();
+        this.router.navigate(['/child/main']);
+      },
+      error: (err: any) => {
+        // הדפסת השגיאה המפורטת מהשרת כדי להבין מה נכשל ב-Validation
+        console.error('Detailed Server Error:', err.error);
+        alert('חלה שגיאה בביצוע התשלום. בדקי את הנתונים וסנכרון ה-DTO.');
+      }
+    });
+  } else {
+    this.paymentForm.markAllAsTouched();
+  }
+}
+goBack(): void {
     if (this.originSource === 'options') {
       // אם הגענו ממסך האפשרויות - נחזור לשם
       this.router.navigate(['/child/payment-options']);
