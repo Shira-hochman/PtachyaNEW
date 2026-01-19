@@ -1,4 +1,5 @@
-﻿using Bo.Services;
+﻿using Bo.Interfaces; // היכן שהממשק נמצא עכשיו
+using Bo.Services;
 using Dal.Models;
 using Dto;
 using Microsoft.AspNetCore.Mvc;

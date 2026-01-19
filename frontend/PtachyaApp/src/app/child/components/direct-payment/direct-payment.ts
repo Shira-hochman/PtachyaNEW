@@ -173,28 +173,36 @@ export class DirectPayment implements OnInit, OnDestroy {
 // }
 processPayment(): void {
   if (this.paymentForm.valid) {
-    // חילוץ ה-ID מה-Token (בהנחה שהוא שמור ב-localStorage)
+    // 1. חילוץ ה-ID מה-Token (נשאר ללא שינוי)
     const token = localStorage.getItem('token'); 
-    let childId = 1; // ברירת מחדל למקרה חירום, שאי שזה ID שקיים ב-DB שלך!
+    let childId = 1; 
 
     if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      // לפי ה-Header ששלחת, השדה ב-Token נקרא "nameid"
-      childId = +payload.nameid; 
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        childId = +payload.nameid; 
+      } catch (e) {
+        console.error('Error parsing token', e);
+      }
     }
 
+    // 2. טיפול בפורמט התאריך עבור "קשר" (הפיכה מ-MM/YY ל-YYMM)
+    const expiryValue = this.paymentForm.value.expiry; // למשל "01/26"
+    const expiryParts = expiryValue.split('/');
+    const formattedExpiry = expiryParts[1] + expiryParts[0]; // יהפוך ל-"2601"
+
+    // 3. בניית האובייקט שמתאים ל-DTO ב-C# ולמדריך של "קשר"
     const paymentPayload = {
-      ChildId: childId, // ה-ID האמיתי של הילד
-      Amount: 1.00,
+      ChildId: childId,
+      Amount: 1.00, // 💡 כאן תשני ל-this.currentPrice כשתרצי לעבור לסכום מלא
       CardNumber: this.paymentForm.value.cardNumber.replace(/\s/g, ''),
-      Expiry: this.paymentForm.value.expiry.replace('/', ''),
+      Expiry: formattedExpiry, // נשלח כ-YYMM לפי המדריך
       Cvv: this.paymentForm.value.cvv,
       HolderId: this.paymentForm.value.ownerId,
       HolderName: this.paymentForm.value.cardName
     };
 
-   
-
+    // 4. שליחה לשרת
     this.paymentService.submitToBackend(paymentPayload).subscribe({
       next: (response: any) => { 
         alert(`בדיקת מערכת: תשלום על סך ₪1.00 בוצע בהצלחה!`);
@@ -202,15 +210,17 @@ processPayment(): void {
         this.router.navigate(['/child/main']);
       },
       error: (err: any) => {
-        // הדפסת השגיאה המפורטת מהשרת כדי להבין מה נכשל ב-Validation
-        console.error('Detailed Server Error:', err.error);
-        alert('חלה שגיאה בביצוע התשלום. בדקי את הנתונים וסנכרון ה-DTO.');
+        console.error('Detailed Server Error:', err);
+        // הצגת השגיאה מהשרת כדי להבין אם הבעיה היא ב-Schema
+        const serverMessage = err.error?.message || 'ודאי שה-Backend רץ ושפרטי ה-WS תקינים.';
+        alert('חלה שגיאה בביצוע התשלום: ' + serverMessage);
       }
     });
   } else {
     this.paymentForm.markAllAsTouched();
   }
 }
+
 goBack(): void {
     if (this.originSource === 'options') {
       // אם הגענו ממסך האפשרויות - נחזור לשם
