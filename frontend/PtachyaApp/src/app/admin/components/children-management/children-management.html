@@ -57,28 +57,19 @@
                     <td>
                         <span class="kindergarten-tag">{{ child.kindergartenName }}</span>
                     </td>
-                    
+                    //------------------------------
                     <td>
                         <div class="status-wrapper">
-                            <p-tag *ngIf="child.paymentId" 
-                                   severity="success" 
-                                   value="אושר" 
-                                   styleClass="status-tag">
+                            <p-tag *ngIf="child.paymentId" severity="success" value="אושר" styleClass="status-tag">
                             </p-tag>
 
-                            <p-tag *ngIf="!child.paymentId" 
-                                   severity="warn" 
-                                   value="ממתין לאישור" 
-                                   styleClass="status-tag">
+                            <p-tag *ngIf="!child.paymentId" severity="warn" value="ממתין לאישור"
+                                styleClass="status-tag">
                             </p-tag>
 
-                            <button *ngIf="!child.paymentId" 
-                                    pButton 
-                                    type="button" 
-                                    icon="pi pi-check" 
-                                    class="p-button-rounded p-button-text p-button-success action-icon-sm"
-                                    (click)="approveChildPayment(child, $event)"
-                                    pTooltip="לחץ לאישור בקשה">
+                            <button *ngIf="!child.paymentId" pButton type="button" icon="pi pi-check"
+                                class="p-button-rounded p-button-text p-button-success action-icon-sm"
+                                (click)="approveChildPayment(child, $event)" pTooltip="לחץ לאישור בקשה">
                             </button>
                         </div>
                     </td>
@@ -125,12 +116,11 @@
     </app-child-files-modal>
 </div>
 
-<p-dialog header="עריכת פרטי ילד" [(visible)]="isEditModalOpen" [modal]="true" 
-    [style]="{width: '600px'}" styleClass="edit-child-dialog" 
-    [rtl]="true" [draggable]="false" [resizable]="false">
-    
+<p-dialog header="עריכת פרטי ילד" [(visible)]="isEditModalOpen" [modal]="true" [style]="{width: '600px'}"
+    styleClass="edit-child-dialog" [rtl]="true" [draggable]="false" [resizable]="false">
+
     <div class="edit-form-container" *ngIf="childToEdit">
-        
+
         <div class="form-row two-col">
             <div class="field-group">
                 <label for="firstName">שם פרטי</label>
@@ -165,13 +155,12 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="form-row">
             <div class="field-group">
                 <label for="kindergarten">שיוך גן</label>
-                 <p-select [options]="kindergartens" [(ngModel)]="childToEdit.kindergartenId" 
-                    optionLabel="name" optionValue="id" placeholder="בחר גן" 
-                    appendTo="body" styleClass="w-full custom-dropdown">
+                <p-select [options]="kindergartens" [(ngModel)]="childToEdit.kindergartenId" optionLabel="name"
+                    optionValue="id" placeholder="בחר גן" appendTo="body" styleClass="w-full custom-dropdown">
                 </p-select>
             </div>
         </div>
@@ -181,7 +170,8 @@
     <ng-template pTemplate="footer">
         <div class="dialog-footer">
             <button pButton label="ביטול" class="p-button-text cancel-btn" (click)="cancelEdit()"></button>
-            <button pButton label="שמור שינויים" icon="pi pi-check" class="save-btn" (click)="saveChildChanges()"></button>
+            <button pButton label="שמור שינויים" icon="pi pi-check" class="save-btn"
+                (click)="saveChildChanges()"></button>
         </div>
     </ng-template>
 </p-dialog>
