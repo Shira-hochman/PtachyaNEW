@@ -42,7 +42,9 @@ namespace Ptachya.DAL.Repositories
 
         public async Task<Child?> GetByIdNumberAsync(string idNumber)
         {
-            return await _context.Set<Child>().FirstOrDefaultAsync(c => c.IdNumber == idNumber);
+            return await _context.Children
+                .Include(c => c.Kindergarten) // ⭐️ חשוב: טוען את נתוני הגן יחד עם הילד
+                .FirstOrDefaultAsync(c => c.IdNumber == idNumber);
         }
         public async Task UpdateAsync(Child child)
         {

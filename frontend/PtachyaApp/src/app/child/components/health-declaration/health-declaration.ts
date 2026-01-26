@@ -6,6 +6,7 @@ import { ChildAuthService } from '../../services/child-auth.service';
 import { FormService } from '../../services/form.service'; 
 import { Child } from '../../../../models/child'; 
 import { finalize } from 'rxjs/operators'; // נדרש לכיבוי ה-Loading בצורה בטוחה
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-health-declaration',
@@ -35,7 +36,8 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
     private authService: ChildAuthService, 
     private router: Router,
     private formService: FormService, 
-    private datePipe: DatePipe 
+    private datePipe: DatePipe,
+    private cdr: ChangeDetectorRef
   ) {}
 
   get f() {
@@ -129,57 +131,71 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
     };
   }
 
-  initForm(): void {
-    this.healthDeclarationForm = this.fb.group({
-        childDetails: this.fb.group({
-            childFirstName: ['', Validators.required],
-            childLastName: ['', Validators.required],
-            childId: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
-            childDob: ['', Validators.required],
-            childAddress: ['', Validators.required],
-        }),
-        
-        formDate: [this.datePipe.transform(new Date(), 'yyyy-MM-dd'), Validators.required], 
-        programProvider: ['', Validators.required],
-        programFramework: ['', Validators.required],
+// 1. בתוך initForm - הגדרת ברירת המחדל
+initForm(): void {
+  this.healthDeclarationForm = this.fb.group({
+    childDetails: this.fb.group({
+      childFirstName: ['', Validators.required],
+      childLastName: ['', Validators.required],
+      childId: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
+      childDob: ['', Validators.required],
+      childAddress: ['', Validators.required],
+    }),
+    formDate: [this.datePipe.transform(new Date(), 'yyyy-MM-dd'), Validators.required], 
+    programProvider: ['פתחיה', Validators.required],
+    programFramework: ['גן תקשורתי', Validators.required],
 
-        facilityDetails: this.fb.group({
-            facilityName: ['', Validators.required],
-            facilityOwnership: ['', Validators.required],
-            facilityManagerName: ['', Validators.required],
-            facilityAddress: ['', Validators.required],
-            facilityPhone: ['', [Validators.required, Validators.pattern('^[0-9]{9,10}$')]],
-        }),
-        
-        monthlySelfParticipation: ['', [Validators.required, Validators.pattern('^[0-9]+(\.[0-9]{1,2})?$')]], 
-        noOtherProgramDeclaration: [false, Validators.requiredTrue], 
-        
-        parent1: this.fb.group({
-            name: ['', Validators.required], 
-            phone: ['', [Validators.required, Validators.pattern('^[0-9]{9,10}$')]], 
-            signature: ['', Validators.required], 
-        }),
-        parent2: this.fb.group({
-            name: [''], 
-            phone: [''],
-            signature: [''], 
-        }),
-    });
-  }
+    facilityDetails: this.fb.group({
+      facilityName: ['', Validators.required],
+      // סמל מוסד נמחק מכאן
+      facilityOwnership: ['בעלות עמותה פרטית', Validators.required], // ברירת מחדל
+      facilityManagerName: ['', Validators.required],
+      facilityAddress: ['', Validators.required],
+      facilityPhone: ['', [Validators.required, Validators.pattern('^[0-9]{9,10}$')]],
+    }),
+    
+    monthlySelfParticipation: ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]], 
+    noOtherProgramDeclaration: [false, Validators.requiredTrue], 
+    
+    parent1: this.fb.group({
+      name: ['', Validators.required], 
+      phone: ['', [Validators.required, Validators.pattern('^[0-9]{9,10}$')]], 
+      signature: ['', Validators.required], 
+    }),
+    parent2: this.fb.group({
+      name: [''], 
+      phone: [''],
+      signature: [''], 
+    }),
+  });
+}
 
-  populateForm(child: Child): void {
-    this.healthDeclarationForm.patchValue({
-      childDetails: {
-        childFirstName: child.firstName,
-        childLastName: child.lastName,
-        childId: child.idNumber,
-        childDob: child.birthDate.substring(0, 10),
-      },
-      parent1: {
-        phone: child.phone, 
-      },
-    });
-  }
+// 2. בתוך populateForm - המילוי האוטומטי
+populateForm(child: any): void {
+  console.log('נתוני הילד שהתקבלו:', child); // בדיקה בלוג לראות אם יש שם address
+
+  this.healthDeclarationForm.patchValue({
+    childDetails: {
+      childFirstName: child.firstName,
+      childLastName: child.lastName,
+      childId: child.idNumber,
+      childDob: child.birthDate ? child.birthDate.substring(0, 10) : '',
+    },
+    parent1: {
+      phone: child.phone, 
+    }
+  });
+
+  // עדכון קבוצת הגן בצורה מרוכזת
+  this.healthDeclarationForm.get('facilityDetails')?.patchValue({
+    facilityName: child.kindergartenName,
+    // חשוב: וודאי שהשם בשרת הוא kindergartenAddress
+    facilityAddress: child.kindergartenAddress || child.address, 
+    facilityOwnership: 'בעלות עמותה פרטית'
+  });
+
+  this.cdr.detectChanges();
+}
 
   // ⭐️ המתודה המעודכנת עם ניהול מצב הטעינה
   onSubmit(): void {

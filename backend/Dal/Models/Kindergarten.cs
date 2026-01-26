@@ -13,6 +13,8 @@ public partial class Kindergarten
 
     public string Address { get; set; } = null!;
 
+   
+
 
 
     public virtual ICollection<Child> Children { get; set; } = new List<Child>();

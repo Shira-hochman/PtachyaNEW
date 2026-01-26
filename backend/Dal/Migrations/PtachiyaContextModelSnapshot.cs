@@ -77,7 +77,7 @@ namespace Dal.Migrations
                     b.HasIndex(new[] { "IdNumber" }, "UQ__Children__62DF80332B6EC341")
                         .IsUnique();
 
-                    b.ToTable("Children");
+                    b.ToTable("Children", (string)null);
                 });
 
             modelBuilder.Entity("Dal.Models.Customer", b =>
@@ -148,7 +148,7 @@ namespace Dal.Migrations
 
                     b.HasIndex("ChildId");
 
-                    b.ToTable("Forms");
+                    b.ToTable("Forms", (string)null);
                 });
 
             modelBuilder.Entity("Dal.Models.Kindergarten", b =>
@@ -179,7 +179,7 @@ namespace Dal.Migrations
                     b.HasIndex(new[] { "Code" }, "UQ__Kinderga__A25C5AA7B71BED89")
                         .IsUnique();
 
-                    b.ToTable("Kindergartens");
+                    b.ToTable("Kindergartens", (string)null);
                 });
 
             modelBuilder.Entity("Dal.Models.Order", b =>
@@ -232,7 +232,7 @@ namespace Dal.Migrations
                     b.HasKey("PaymentId")
                         .HasName("PK__Payments__9B556A389869C495");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("Dal.Models.User", b =>
@@ -259,7 +259,7 @@ namespace Dal.Migrations
                     b.HasIndex(new[] { "Username" }, "UQ__Users__536C85E4E7221715")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Dal.Models.Child", b =>
