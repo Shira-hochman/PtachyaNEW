@@ -62,9 +62,8 @@ export class FormDataService {
   }
 
   // ⭐️⭐️⭐️ פונקציה חדשה: הורדה מאובטחת באמצעות HttpClient ⭐️⭐️⭐️
-  downloadFileByUrl(url: string): Observable<Blob> {
-    // responseType: 'blob' חיוני לקבלת קובץ בינארי
-    // ה-Interceptor יוסיף את הטוקן באופן אוטומטי לבקשה זו.
-    return this.http.get(url, { responseType: 'blob' });
-  }
+ downloadFile(url: string) {
+  return this.http.get(url, { responseType: 'blob' });
+}
+
 }

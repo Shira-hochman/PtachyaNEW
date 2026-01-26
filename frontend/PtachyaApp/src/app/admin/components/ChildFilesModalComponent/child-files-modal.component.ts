@@ -83,22 +83,21 @@ export class ChildFilesModalComponent implements OnInit {
     return types[type] || type;
   }
 
-  downloadFile(url: string) {
-    if (!url) return;
-    this.formDataService.downloadFileByUrl(url).subscribe({
-      next: (blob: Blob) => {
-        const fileUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = fileUrl;
-        const fileNameMatch = url.match(/fileName=([^&]+)/i);
-        link.download = fileNameMatch ? decodeURIComponent(fileNameMatch[1]) : 'document.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(fileUrl);
-      }
-    });
-  }
+downloadFile(url: string) {
+  if (!url) return;
+
+  this.formDataService.downloadFile(url).subscribe(blob => {
+    const a = document.createElement('a');
+    const objectUrl = URL.createObjectURL(blob);
+    a.href = objectUrl;
+    a.download = '';
+    a.click();
+    URL.revokeObjectURL(objectUrl);
+  });
+}
+
+
+
 
   closeModal() {
     this.isVisible = false;

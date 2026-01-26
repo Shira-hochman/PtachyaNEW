@@ -9,40 +9,77 @@
             </div>
         </div>
         <div class="p-toolbar-group-end">
-            <button pButton pRipple label="הוספת ילד למערכת" icon="pi pi-plus-circle"
-                class="p-button-primary p-button-sm action-btn-main" [routerLink]="['/admin/children/add']">
+            <button pButton pRipple label="הוספת ילד למערכת"
+                    icon="pi pi-plus-circle"
+                    class="p-button-primary p-button-sm action-btn-main"
+                    [routerLink]="['/admin/children/add']">
             </button>
         </div>
     </p-toolbar>
 
     <div class="content-card">
+        
+        <div class="year-filter-bar">
+            <div class="year-label">
+                <i class="pi pi-calendar-plus"></i>
+                <span>בחר שנה עברית:</span>
+            </div>
+            <div class="year-buttons">
+                <button *ngFor="let year of yearOptions" 
+                        type="button"
+                        class="year-btn"
+                        [class.active]="selectedYear === year"
+                        (click)="selectYear(year)">
+                    {{ year }}
+                </button>
+            </div>
+            <div class="current-view-info">
+                שנה מוצגת: <strong>{{ selectedYear }}</strong>
+            </div>
+        </div>
+
         <div class="search-filter-bar">
             <div class="search-wrapper">
                 <span class="p-input-icon-left w-full">
                     <i class="pi pi-search"></i>
-                    <input type="text" pInputText [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()"
-                        placeholder="חיפוש לפי שם, ת.ז. או אימייל..." class="w-full search-input-styled" />
+                    <input type="text"
+                           pInputText
+                           [(ngModel)]="searchTerm"
+                           (ngModelChange)="onFilterChange()"
+                           placeholder="חיפוש לפי שם, ת.ז. או אימייל..."
+                           class="w-full search-input-styled" />
                 </span>
             </div>
 
             <div class="filters-wrapper">
-                <p-select [options]="kindergartens" [(ngModel)]="selectedKindergartenId"
-                    (ngModelChange)="onFilterChange()" optionLabel="name" optionValue="id" placeholder="סינון לפי גן"
-                    [showClear]="true" styleClass="modern-dropdown">
+                <p-select
+                    [options]="kindergartens"
+                    [(ngModel)]="selectedKindergartenId"
+                    (ngModelChange)="onFilterChange()"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="סינון לפי גן"
+                    [showClear]="true"
+                    styleClass="modern-dropdown">
                 </p-select>
             </div>
         </div>
 
-        <p-table [value]="children" [rows]="10" styleClass="p-datatable-sm p-datatable-gridlines custom-table">
+        <p-table [value]="children"
+                 [rows]="10"
+                 [loading]="isLoading"
+                 styleClass="p-datatable-sm p-datatable-gridlines custom-table">
 
             <ng-template pTemplate="header">
                 <tr>
-                    <th pSortableColumn="childId"> <p-sortIcon field="childId"></p-sortIcon></th>
+                    <th pSortableColumn="childId" style="width: 80px;">
+                        # <p-sortIcon field="childId"></p-sortIcon>
+                    </th>
                     <th>שם מלא</th>
                     <th>תעודת זהות</th>
                     <th>תאריך לידה</th>
                     <th>שיוך גן</th>
-                    <th>סטטוס תשלום</th>
+                    <th class="text-center">סטטוס תשלום</th>
                     <th class="text-center">טפסים</th>
                     <th class="text-center">פעולות</th>
                 </tr>
@@ -50,49 +87,75 @@
 
             <ng-template pTemplate="body" let-child>
                 <tr class="table-row">
-                    <td><span class="id-badge">{{ child.childId }}</span></td>
-                    <td class="text-semibold">{{ child.firstName }} {{ child.lastName }}</td>
-                    <td>{{ child.idNumber }}</td>
-                    <td class="text-secondary">{{ child.birthDate | date:'dd/MM/yyyy' }}</td>
                     <td>
-                        <span class="kindergarten-tag">{{ child.kindergartenName }}</span>
+                        <span class="id-badge">{{ child.childId }}</span>
                     </td>
-                    //------------------------------
+                    <td class="text-semibold">
+                        {{ child.firstName }} {{ child.lastName }}
+                    </td>
+                    <td>{{ child.idNumber }}</td>
+                    <td class="text-secondary">
+                        {{ child.birthDate | date:'dd/MM/yyyy' }}
+                    </td>
                     <td>
-                        <div class="status-wrapper">
-                            <p-tag *ngIf="child.paymentId" severity="success" value="אושר" styleClass="status-tag">
+                        <span class="kindergarten-tag">
+                            {{ child.kindergartenName }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="status-cell">
+                            <p-tag *ngIf="child.hasApprovedDiscount"
+                                   severity="success"
+                                   value="אושר"
+                                   styleClass="status-tag">
                             </p-tag>
-
-                            <p-tag *ngIf="!child.paymentId" severity="warn" value="ממתין לאישור"
-                                styleClass="status-tag">
+                            <p-tag *ngIf="!child.hasApprovedDiscount"
+                                   severity="warn"
+                                   value="ממתין לאישור"
+                                   styleClass="status-tag">
                             </p-tag>
-
-                            <button *ngIf="!child.paymentId" pButton type="button" icon="pi pi-check"
-                                class="p-button-rounded p-button-text p-button-success action-icon-sm"
-                                (click)="approveChildPayment(child, $event)" pTooltip="לחץ לאישור בקשה">
+                            <button *ngIf="!child.hasApprovedDiscount"
+                                    pButton
+                                    type="button"
+                                    icon="pi pi-check"
+                                    class="p-button-rounded p-button-text p-button-success action-icon-sm"
+                                    (click)="approveChildPayment(child, $event)"
+                                    pTooltip="לחץ לאישור בקשה">
                             </button>
                         </div>
                     </td>
-
                     <td class="text-center">
-                        <button pButton icon="pi pi-file-pdf" class="p-button-rounded p-button-text p-button-secondary"
-                            pTooltip="צפייה בטפסים" (click)="openDocsModal(child)">
+                        <button pButton
+                                icon="pi pi-file-pdf"
+                                class="p-button-rounded p-button-text p-button-secondary"
+                                pTooltip="צפייה בטפסים"
+                                (click)="openDocsModal(child)">
                         </button>
                     </td>
                     <td class="text-center">
                         <div class="action-buttons">
-                            <button pButton icon="pi pi-pencil"
-                                class="p-button-rounded p-button-text p-button-info action-icon"
-                                (click)="editChild(child.childId)" pTooltip="עריכה">
+                            <button pButton
+                                    icon="pi pi-pencil"
+                                    class="p-button-rounded p-button-text p-button-info action-icon"
+                                    (click)="editChild(child.childId)"
+                                    pTooltip="עריכה">
                             </button>
-
-                            <button pButton icon="pi pi-images"
-                                class="p-button-rounded p-button-text p-button-warning action-icon"
-                                (click)="openAttachmentsModal(child)" pTooltip="מסמכים נוספים (נספחים)">
+                            <button pButton
+                                    icon="pi pi-images"
+                                    class="p-button-rounded p-button-text p-button-warning action-icon"
+                                    (click)="openAttachmentsModal(child)"
+                                    pTooltip="מסמכים נוספים">
                             </button>
                         </div>
                     </td>
+                </tr>
+            </ng-template>
 
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="8" class="text-center p-4">
+                        לא נמצאו ילדים רשומים לשנת <strong>{{selectedYear}}</strong>
+                    </td>
                 </tr>
             </ng-template>
         </p-table>
@@ -100,78 +163,30 @@
         <div class="pagination-footer">
             <span class="total-count">סה"כ רשומות: {{ totalItems }}</span>
             <div class="nav-btns">
-                <button pButton icon="pi pi-angle-right" class="p-button-text" (click)="prevPage()"
-                    [disabled]="currentPage === 1"></button>
-                <span class="current-page">עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-                <button pButton icon="pi pi-angle-left" class="p-button-text" (click)="nextPage()"
-                    [disabled]="currentPage === totalPages"></button>
+                <button pButton
+                        icon="pi pi-angle-right"
+                        class="p-button-text"
+                        (click)="prevPage()"
+                        [disabled]="currentPage === 1">
+                </button>
+                <span class="current-page">
+                    עמוד {{ currentPage }} מתוך {{ totalPages }}
+                </span>
+                <button pButton
+                        icon="pi pi-angle-left"
+                        class="p-button-text"
+                        (click)="nextPage()"
+                        [disabled]="currentPage === totalPages">
+                </button>
             </div>
         </div>
     </div>
 
-    <app-child-files-modal *ngIf="isDocsModalOpen && selectedChildForDocs"
+    <app-child-files-modal
+        *ngIf="isDocsModalOpen && selectedChildForDocs"
         [childIdNumber]="selectedChildForDocs.idNumber"
         [childName]="selectedChildForDocs.firstName + ' ' + selectedChildForDocs.lastName"
-        [showAttachmentsOnly]="isAttachmentsMode" (close)="closeDocsModal()">
+        [showAttachmentsOnly]="isAttachmentsMode"
+        (close)="closeDocsModal()">
     </app-child-files-modal>
 </div>
-
-<p-dialog header="עריכת פרטי ילד" [(visible)]="isEditModalOpen" [modal]="true" [style]="{width: '600px'}"
-    styleClass="edit-child-dialog" [rtl]="true" [draggable]="false" [resizable]="false">
-
-    <div class="edit-form-container" *ngIf="childToEdit">
-
-        <div class="form-row two-col">
-            <div class="field-group">
-                <label for="firstName">שם פרטי</label>
-                <input pInputText id="firstName" [(ngModel)]="childToEdit.firstName" class="custom-input" />
-            </div>
-            <div class="field-group">
-                <label for="lastName">שם משפחה</label>
-                <input pInputText id="lastName" [(ngModel)]="childToEdit.lastName" class="custom-input" />
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="field-group">
-                <label for="idNumber">תעודת זהות</label>
-                <input pInputText id="idNumber" [(ngModel)]="childToEdit.idNumber" class="custom-input" />
-            </div>
-        </div>
-
-        <div class="form-row two-col">
-            <div class="field-group">
-                <label for="phone">טלפון</label>
-                <div class="input-with-icon">
-                    <i class="pi pi-phone"></i>
-                    <input pInputText id="phone" [(ngModel)]="childToEdit.phone" class="custom-input" />
-                </div>
-            </div>
-            <div class="field-group">
-                <label for="email">אימייל</label>
-                <div class="input-with-icon">
-                    <i class="pi pi-envelope"></i>
-                    <input pInputText id="email" [(ngModel)]="childToEdit.email" class="custom-input" />
-                </div>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="field-group">
-                <label for="kindergarten">שיוך גן</label>
-                <p-select [options]="kindergartens" [(ngModel)]="childToEdit.kindergartenId" optionLabel="name"
-                    optionValue="id" placeholder="בחר גן" appendTo="body" styleClass="w-full custom-dropdown">
-                </p-select>
-            </div>
-        </div>
-
-    </div>
-
-    <ng-template pTemplate="footer">
-        <div class="dialog-footer">
-            <button pButton label="ביטול" class="p-button-text cancel-btn" (click)="cancelEdit()"></button>
-            <button pButton label="שמור שינויים" icon="pi pi-check" class="save-btn"
-                (click)="saveChildChanges()"></button>
-        </div>
-    </ng-template>
-</p-dialog>

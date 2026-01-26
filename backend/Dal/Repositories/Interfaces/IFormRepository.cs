@@ -12,6 +12,7 @@ public interface IFormRepository
     Task<int?> GetChildPkByIdNumberAsync(string idNumber);
     // ⭐️ הוספות חדשות לתמיכה בדשבורד וניהול טפסים
     Task ApproveFormAsync(int formId);
+    Task UpdateFormAsync(Form form);
     Task<List<Form>> GetPendingFormsAsync();
     Task<DashboardStatsDto> GetDashboardStatsAsync();
     Task    <List<Form>> GetApprovedFormsAsync();

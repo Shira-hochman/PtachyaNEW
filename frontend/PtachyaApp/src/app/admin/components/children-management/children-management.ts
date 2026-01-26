@@ -24,7 +24,7 @@ import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
-import { DialogModule } from 'primeng/dialog'; 
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-children-management',
@@ -59,7 +59,7 @@ export class ChildrenManagementComponent implements OnInit {
   isAttachmentsMode: boolean = false;
   searchTerm: string = '';
   selectedKindergartenId: number | null = null;
-  
+
   // המערך יתמלא מהשרת
   kindergartens: any[] = [];
 
@@ -74,6 +74,9 @@ export class ChildrenManagementComponent implements OnInit {
   isEditModalOpen: boolean = false;
   childToEdit: Child = {} as Child;
 
+  currentHebrewYear: string = '';
+selectedYear: string = '';
+yearOptions: string[] = [];
   constructor(
     private childDataService: ChildDataService,
     private formService: FormDataService,
@@ -81,8 +84,9 @@ export class ChildrenManagementComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.loadKindergartens(); // טעינת הגנים מהקונטרולר הקיים
-    this.loadChildren();
+ this.calculateHebrewYears(); // חישוב השנים להצגה
+  this.loadKindergartens();
+  this.loadChildren();
   }
 
   loadKindergartens(): void {
@@ -96,60 +100,92 @@ export class ChildrenManagementComponent implements OnInit {
     });
   }
 
-  loadChildren(): void {
-    this.isLoading = true;
-    this.errorMessage = null;
+  calculateHebrewYears() {
+  // לוגיקה פשוטה לקביעת השנה הנוכחית לפי תאריך לועזי
+  // (ניתן לשכלל עם ספריה, אבל לצורך התצוגה נחשב לפי ספטמבר/ראש השנה)
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  
+  // חישוב בסיסי: אם עברנו את ספטמבר, אנחנו כבר בשנה העברית הבאה
+  let baseYear = year + 3760;
+  if (month >= 9) baseYear++; 
+  
+  // פונקציה להמרת מספר לשנה עברית (למשל 5786 -> תשפ"ו)
+  const toHebrew = (y: number) => {
+    const years: { [key: number]: string } = {
+      5784: 'תשפ"ד', 5785: 'תשפ"ה', 5786: 'תשפ"ו', 5787: 'תשפ"ז', 5788: 'תשפ"ח'
+    };
+    return years[y] || y.toString();
+  };
 
-    this.childDataService.getChildrenPaged(
-      this.currentPage, 
-      this.pageSize, 
-      this.searchTerm, 
-      this.selectedKindergartenId
-    ).subscribe({
-      next: (res: any) => {
-        this.children = res.items;
-        this.totalItems = res.totalCount;
-        this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-        this.isLoading = false;
-      },
-      error: (err: any) => {
-        console.error('Error loading children:', err);
-        this.errorMessage = 'שגיאה בטעינת הנתונים מהשרת.';
-        this.isLoading = false;
-      }
-    });
-  }
+  this.currentHebrewYear = toHebrew(baseYear);
+  this.selectedYear = this.currentHebrewYear; // ברירת מחדל
+  
+  // יצירת 3 השנים לכפתורים
+  this.yearOptions = [
+    toHebrew(baseYear),     // נוכחית
+    toHebrew(baseYear - 1), // שנה אחורה
+    toHebrew(baseYear - 2)  // שנתיים אחורה
+  ];
+}
 
+// עדכון פונקציית הטעינה
+loadChildren(): void {
+  this.isLoading = true;
+  this.childDataService.getChildrenPaged(
+    this.currentPage,
+    this.pageSize,
+    this.searchTerm,
+    this.selectedKindergartenId,
+    this.selectedYear // <-- שליחת השנה המסוננת
+  ).subscribe({
+    next: (res: any) => {
+      this.children = res.items;
+      this.totalItems = res.totalCount;
+      this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+      this.isLoading = false;
+    },
+    error: () => this.isLoading = false
+  });
+}
+
+selectYear(year: string) {
+  this.selectedYear = year;
+  this.currentPage = 1;
+  this.loadChildren();
+}
   approveChildPayment(child: Child, event: Event): void {
     event.stopPropagation();
 
     this.confirmationService.confirm({
-        message: `האם לאשר את הסדר התשלום עבור ${child.firstName} ${child.lastName}? פעולה זו תאשר את בקשת ההנחה הממתינה.`,
-        header: 'אישור תשלום',
-        icon: 'pi pi-check-circle',
-        acceptLabel: 'אשר תשלום',
-        rejectLabel: 'ביטול',
-        accept: () => {
-            this.formService.getFormsByIdNumber(child.idNumber).subscribe({
-                next: (forms) => {
-                    const pendingForm = forms.find(f => f.status === 'Pending' && f.formType === 'DISCOUNT_REQUEST');
+      message: `האם לאשר את הסדר התשלום עבור ${child.firstName} ${child.lastName}? פעולה זו תאשר את בקשת ההנחה הממתינה.`,
+      header: 'אישור תשלום',
+      icon: 'pi pi-check-circle',
+      acceptLabel: 'אשר תשלום',
+      rejectLabel: 'ביטול',
+      accept: () => {
+        this.formService.getFormsByIdNumber(child.idNumber).subscribe({
+          next: (forms) => {
+            const pendingForm = forms.find(f => f.status === 'Pending' && f.formType === 'DISCOUNT_REQUEST');
 
-                    if (pendingForm) {
-                        this.formService.approveForm(pendingForm.formId).subscribe({
-                            next: () => {
-                                child.paymentId = 1; 
-                                this.children = [...this.children];
-                                alert('הטופס אושר והסטטוס עודכן בהצלחה!');
-                            },
-                            error: () => alert('שגיאה באישור הטופס')
-                        });
-                    } else {
-                        alert('לא נמצא טופס בקשת הנחה שממתין לאישור עבור ילד זה.');
-                    }
+            if (pendingForm) {
+              this.formService.approveForm(pendingForm.formId).subscribe({
+                next: () => {
+
+                  this.loadChildren();
+                  alert('הטופס אושר בהצלחה!');
+
                 },
-                error: (err) => console.error(err)
-            });
-        }
+                error: () => alert('שגיאה באישור הטופס')
+              });
+            } else {
+              alert('לא נמצא טופס בקשת הנחה שממתין לאישור עבור ילד זה.');
+            }
+          },
+          error: (err) => console.error(err)
+        });
+      }
     });
   }
 
@@ -192,31 +228,31 @@ export class ChildrenManagementComponent implements OnInit {
 
   editChild(childId: number): void {
     const originalChild = this.children.find(c => c.childId === childId);
-    
+
     if (originalChild) {
-      this.childToEdit = { ...originalChild }; 
+      this.childToEdit = { ...originalChild };
       this.isEditModalOpen = true;
     }
   }
 
   saveChildChanges(): void {
-    this.isLoading = true; 
+    this.isLoading = true;
 
     // שימוש ב-as any לעקיפת חוסר התאמות קטנות בטיפוסים
     this.childDataService.updateChild(this.childToEdit as any).subscribe({
       next: () => {
         const index = this.children.findIndex(c => c.childId === this.childToEdit.childId);
         if (index !== -1) {
-          this.children[index] = { ...this.childToEdit }; 
-          
+          this.children[index] = { ...this.childToEdit };
+
           const selectedGarden = this.kindergartens.find(k => k.id === this.childToEdit.kindergartenId);
           if (selectedGarden) {
-             (this.children[index] as any).kindergartenName = selectedGarden.name;
+            (this.children[index] as any).kindergartenName = selectedGarden.name;
           }
 
-          this.children = [...this.children]; 
+          this.children = [...this.children];
         }
-        
+
         this.isEditModalOpen = false;
         this.isLoading = false;
         alert('פרטי הילד עודכנו בהצלחה!');
@@ -230,6 +266,6 @@ export class ChildrenManagementComponent implements OnInit {
   }
 
   cancelEdit(): void {
-      this.isEditModalOpen = false;
+    this.isEditModalOpen = false;
   }
 }

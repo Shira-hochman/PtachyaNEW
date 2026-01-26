@@ -20,7 +20,8 @@ namespace Dal.Repositories.Interfaces
     int page,
     int pageSize,
     string? searchTerm,
-    int? kindergartenId
+    int? kindergartenId,
+    string? schoolYear
 );
 
     }

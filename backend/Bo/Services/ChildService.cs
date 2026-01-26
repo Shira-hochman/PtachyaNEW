@@ -129,10 +129,11 @@ namespace Bo.Services
     int page,
     int pageSize,
     string? searchTerm,
-    int? kindergartenId
+    int? kindergartenId,
+            string? schoolYear
 )
         {
-            return await _repo.GetPagedAsync(page, pageSize, searchTerm, kindergartenId);
+            return await _repo.GetPagedAsync(page, pageSize, searchTerm, kindergartenId, schoolYear);
         }
 
     }

@@ -14,6 +14,7 @@ export interface Child {
     forms?: Form[]; 
     kindergarten?: Kindergarten; 
     payment?: Payment | null;
+    hasApprovedDiscount: boolean;
 }
 
 

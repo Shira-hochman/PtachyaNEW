@@ -265,17 +265,36 @@ public class FormService : IFormService
         string fileName = $"{formType.ToLower()}_{childId}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
         string finalPath = await _fileStorageService.SaveBytesAsync(pdfBytes, fileName, PermanentFormsFolder);
 
-        var newFormEntry = new Form
-        {
-            ChildId = childId,
-            FormType = formType,
-            FilePath = finalPath,
-            SubmittedDate = DateTime.Now,
-            ContentType = "application/pdf",
-            AttachmentPaths = attachmentPaths
-        };
+        // בדיקה האם כבר קיים טופס מסוג זה לילד הזה
+        var existingForm = await _formRepository.GetFormsByChildIdAsync(childId);
+        var formToUpdate = existingForm.FirstOrDefault(f => f.FormType == formType);
 
-        await _formRepository.AddAsync(newFormEntry);
+        if (formToUpdate != null)
+        {
+            // עדכון טופס קיים
+            formToUpdate.FilePath = finalPath;
+            formToUpdate.SubmittedDate = DateTime.Now;
+            formToUpdate.AttachmentPaths = attachmentPaths;
+            formToUpdate.Status = "Pending"; // איפוס סטטוס לבדיקה מחדש אם הוגש שוב
+
+            // כאן תצטרכי להוסיף מתודת Update ב-Repository אם אין כזו
+            await _formRepository.UpdateFormAsync(formToUpdate);
+        }
+        else
+        {
+            // יצירת טופס חדש (הקוד הקיים שלך)
+            var newFormEntry = new Form
+            {
+                ChildId = childId,
+                FormType = formType,
+                FilePath = finalPath,
+                SubmittedDate = DateTime.Now,
+                ContentType = "application/pdf",
+                AttachmentPaths = attachmentPaths,
+                Status = "Pending"
+            };
+            await _formRepository.AddAsync(newFormEntry);
+        }
     }
 
     public async Task<List<ChildFormDto>> GetFormsByIdNumberAsync(string idNumber)

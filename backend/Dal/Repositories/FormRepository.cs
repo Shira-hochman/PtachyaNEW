@@ -31,61 +31,52 @@ public class FormRepository : IFormRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task UpdateFormAsync(Form form)
+    {
+        _context.Forms.Update(form);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task ApproveFormAsync(int formId)
     {
-        // 1. שליפת הטופס
         var form = await _context.Forms.FindAsync(formId);
+        if (form == null) return;
 
-        if (form != null)
+        form.Status = "Approved";
+
+        if (form.FormType == "DISCOUNT_REQUEST")
         {
-            // 2. עדכון סטטוס הטופס
-            form.Status = "Approved";
+            var existingPayment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.ChildId == form.ChildId);
 
-            // 3. ⭐️ לוגיקה חדשה: אם זה טופס הנחה, ניצור תשלום "מוסדר" לילד ⭐️
-            if (form.FormType == "DISCOUNT_REQUEST")
+            if (existingPayment == null)
             {
-                // בדיקה אם כבר קיים תשלום כדי לא ליצור כפילויות
-                var existingPayment = await _context.Payments
-                    .FirstOrDefaultAsync(p => p.ChildId == form.ChildId);
-
-                if (existingPayment == null)
+                var newPayment = new Payment
                 {
-                    // יצירת תשלום חדש
-                    var newPayment = new Payment
-                    {
-                        ChildId = form.ChildId,
-                        Amount = 0, // או הסכום אחרי הנחה, אם יש לך אותו
-                        Status = "Paid", // סטטוס מוסדר
-                        PaymentDate = DateTime.Now
-                    };
+                    ChildId = form.ChildId,
+                    Amount = 0,
+                    Status = "Paid",
+                    PaymentDate = DateTime.Now
+                };
+                _context.Payments.Add(newPayment);
+                await _context.SaveChangesAsync(); // שמירה כדי לקבל ID לתשלום
 
-                    _context.Payments.Add(newPayment);
-                    await _context.SaveChangesAsync(); // שמירה כדי לקבל PaymentId
-
-                    // עדכון הילד עם ה-PaymentId החדש (כדי שיופיע ירוק בטבלה)
-                    var child = await _context.Children.FindAsync(form.ChildId);
-                    if (child != null)
-                    {
-                        child.PaymentId = newPayment.PaymentId; // מניח שיש שדה כזה ב-Child לפי ה-DTO
-                    }
-                }
-                else
+                // עדכון ישיר של הילד
+                var child = await _context.Children.FindAsync(form.ChildId);
+                if (child != null)
                 {
-                    // אם כבר קיים תשלום, רק נעדכן אותו למשולם
-                    existingPayment.Status = "Paid";
-                    existingPayment.PaymentDate = DateTime.Now;
-
-                    var child = await _context.Children.FindAsync(form.ChildId);
-                    if (child != null && child.PaymentId == null)
-                    {
-                        child.PaymentId = existingPayment.PaymentId;
-                    }
+                    child.PaymentId = newPayment.PaymentId;
+                    _context.Children.Update(child); // וידוא עדכון
                 }
             }
-
-            // 4. שמירת כל השינויים (טופס + תשלום + ילד)
-            await _context.SaveChangesAsync();
+            else
+            {
+                existingPayment.Status = "Paid";
+                var child = await _context.Children.FindAsync(form.ChildId);
+                if (child != null) child.PaymentId = existingPayment.PaymentId;
+            }
         }
+        await _context.SaveChangesAsync(); // שמירה סופית של כל השינויים
     }
 
     public async Task<List<Form>> GetPendingFormsAsync()

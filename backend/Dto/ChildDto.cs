@@ -35,6 +35,7 @@ namespace Dto
 
         public string KindergartenName { get; set; }
 
+        public bool HasApprovedDiscount { get; set; }
 
     }
 

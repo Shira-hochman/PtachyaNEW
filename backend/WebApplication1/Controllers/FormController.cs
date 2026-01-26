@@ -124,28 +124,36 @@ public class FormController : ControllerBase
     [HttpGet("Download")]
     public async Task<IActionResult> DownloadFile([FromQuery] string container, [FromQuery] string fileName)
     {
-        // 🛡️ Security Fix: Path Traversal Prevention
-        
-        // 1. Sanitize the filename (remove .. and slashes)
-        fileName = Path.GetFileName(fileName); 
-        
-        // 2. Validate the container folder (Allow only specific folders)
-        var allowedContainers = new[] { "DiscountAttachments" }; // Add other folders if needed
+        // 🛡️ Security Fix
+        fileName = Path.GetFileName(fileName);
+
+        var allowedContainers = new[]
+        {
+        "DiscountAttachments",
+        "PermanentForms"
+    };
+
         if (!allowedContainers.Contains(container))
         {
             return BadRequest("Invalid container specified.");
         }
 
-        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        var fullPath = Path.Combine(baseDirectory, container, fileName);
+        // ⭐️ חזרה ל־bin (איפה שהקבצים באמת נמצאים)
+        var root = AppDomain.CurrentDomain.BaseDirectory;
+        var fullPath = Path.Combine(root, container, fileName);
+        Console.WriteLine(fullPath);
 
-        if (!System.IO.File.Exists(fullPath)) return NotFound("הקובץ לא נמצא.");
+        if (!System.IO.File.Exists(fullPath))
+            return NotFound("הקובץ לא נמצא.");
 
         var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
-        string contentType = fileName.EndsWith(".pdf") ? "application/pdf" : "application/octet-stream";
+        string contentType = fileName.EndsWith(".pdf")
+            ? "application/pdf"
+            : "application/octet-stream";
 
         return File(fileBytes, contentType, fileName);
     }
+
 
     // פונקציות עזר פנימיות
     private async Task<string> CombineAndSaveFiles(List<IFormFile> files)

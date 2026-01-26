@@ -92,19 +92,13 @@ namespace Ptachya.API.Controllers
         }
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged(
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 10,
-    [FromQuery] string? searchTerm = null,
-    [FromQuery] int? kindergartenId = null
-)
+       [FromQuery] int page = 1,
+       [FromQuery] int pageSize = 10,
+       [FromQuery] string? searchTerm = null,
+       [FromQuery] int? kindergartenId = null,
+       [FromQuery] string? schoolYear = null) // <-- הוספת פרמטר
         {
-            var result = await _service.GetChildrenPagedAsync(
-                page,
-                pageSize,
-                searchTerm,
-                kindergartenId
-            );
-
+            var result = await _service.GetChildrenPagedAsync(page, pageSize, searchTerm, kindergartenId, schoolYear);
             return Ok(result);
         }
 
