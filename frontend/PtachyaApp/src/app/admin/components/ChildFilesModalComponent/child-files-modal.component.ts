@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
@@ -31,8 +32,14 @@ export class ChildFilesModalComponent implements OnInit {
   isLoading: boolean = false;
   errorMessage: string | null = null;
   isVisible: boolean = true; 
+  // preview state
+  previewVisible: boolean = false;
+  previewSrc: SafeResourceUrl | null = null; // sanitized URL for iframe/img
+  previewObjectUrl: string | null = null; // raw object URL for openInNewTab / revoke
+  previewFileName: string | null = null;
+  previewMime: string | null = null;
 
-  constructor(private formDataService: FormDataService) {}
+  constructor(private formDataService: FormDataService, private sanitizer: DomSanitizer) {}
 
   ngOnInit(): void {
     if (this.childIdNumber) {
@@ -96,10 +103,42 @@ downloadFile(url: string) {
   });
 }
 
+  viewFile(url: string, fileName?: string) {
+    if (!url) return;
+    this.formDataService.downloadFile(url).subscribe(blob => {
+      const objectUrl = URL.createObjectURL(blob);
+      this.previewObjectUrl = objectUrl;
+      this.previewSrc = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+      this.previewFileName = fileName || 'Preview';
+      this.previewMime = blob.type || null;
+      this.previewVisible = true;
+    }, err => {
+      this.errorMessage = 'שגיאה בטעינת הקובץ לתצוגה.';
+    });
+  }
+
+  openInNewTab() {
+    if (!this.previewObjectUrl) return;
+    window.open(this.previewObjectUrl, '_blank');
+  }
+
+  closePreview() {
+    this.previewVisible = false;
+    if (this.previewObjectUrl) {
+      try { URL.revokeObjectURL(this.previewObjectUrl); } catch {}
+      this.previewObjectUrl = null;
+    }
+    this.previewSrc = null;
+    this.previewFileName = null;
+    this.previewMime = null;
+  }
+
 
 
 
   closeModal() {
+    // ensure preview objectURLs are cleaned
+    this.closePreview();
     this.isVisible = false;
     setTimeout(() => {
       this.close.emit();

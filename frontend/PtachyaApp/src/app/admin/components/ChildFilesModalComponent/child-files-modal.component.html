@@ -50,15 +50,45 @@
               </td>
               <td class="date-cell">{{ file.uploadDate | date:'dd/MM/yyyy' }}</td>
               <td class="text-center">
-                <button class="download-btn" (click)="downloadFile(file.downloadUrl)" [disabled]="!file.downloadUrl">
-                  <i class="pi pi-download"></i>
-                  <span class="btn-text">הורדה</span>
-                </button>
+                <div class="action-buttons">
+                  <button class="download-btn" (click)="downloadFile(file.downloadUrl)" [disabled]="!file.downloadUrl">
+                    <i class="pi pi-download"></i>
+                    <span class="btn-text">הורדה</span>
+                  </button>
+                  <button class="download-btn" (click)="viewFile(file.downloadUrl, file.fileName)" [disabled]="!file.downloadUrl">
+                    <i class="pi pi-eye"></i>
+                    <span class="btn-text">צפייה</span>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div> 
+    </div>
+    
+    <!-- Preview Overlay -->
+    <div *ngIf="previewVisible" class="preview-backdrop" (click)="closePreview()">
+      <div class="preview-content" (click)="$event.stopPropagation()">
+        <div class="preview-header">
+          <h4>{{ previewFileName }}</h4>
+          <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn" (click)="closePreview()"></button>
+        </div>
+        <div class="preview-body">
+          <ng-container *ngIf="previewMime?.includes('pdf')">
+            <iframe [src]="previewSrc" frameborder="0" class="preview-frame"></iframe>
+          </ng-container>
+          <ng-container *ngIf="previewMime?.startsWith('image')">
+            <img [src]="previewSrc" class="preview-image" />
+          </ng-container>
+          <ng-container *ngIf="!previewMime || (!previewMime.includes('pdf') && !previewMime.startsWith('image'))">
+            <div class="preview-fallback">
+              <p>לא ניתן להציג סוג קובץ זה בתצוגה מקדימה.</p>
+              <button class="download-btn" (click)="openInNewTab()">פתח בכרטיסייה חדשה</button>
+            </div>
+          </ng-container>
+        </div>
+      </div>
     </div>
   </div>
 </div>
