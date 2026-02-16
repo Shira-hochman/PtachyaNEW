@@ -91,3 +91,11 @@ UPDATE Children
 SET Email = 'michalstern9949@gmail.com' -- שימי כאן את המייל האישי שלך לבדיקה
 WHERE IdNumber = '857952477'; -- שימי כאן את תעודת הזהות של הילד שאיתו את בודקת
 select*from Children
+
+DELETE FROM Forms;
+-- איפוס המונה של ה-ID (אופציונלי)
+DBCC CHECKIDENT ('Forms', RESEED, 0);
+
+DELETE FROM Payments;
+-- איפוס המונה של ה-ID (אופציונלי)
+DBCC CHECKIDENT ('Payments', RESEED, 0);

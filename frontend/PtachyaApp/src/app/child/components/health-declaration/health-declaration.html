@@ -7,11 +7,16 @@
 }
 
 <div class="declaration-container">
+  <div class="back-navigation">
+    <button type="button" class="back-button" (click)="goBack()">
+      <i class="fas fa-arrow-right"></i> חזרה לבחירת טופס
+    </button>
+  </div>
   <header class="form-header">
     <h1 class="title">
-      <i class="fas fa-file-alt"></i> הצהרה על קבלת "טיפול בריאותי מקדם" (טב"ם)
+     הצהרה על קבלת "טיפול בריאותי מקדם" (טב"ם)
     </h1>
-    <p class="subtitle">השלמת הטופס נדרשת לשם שילוב הילד/ה בתכנית.</p>
+    <p class="subtitle">השלמת הטופס נדרשת לשם שילוב הילד/ה בתכנית</p>
   </header>
 
   <form [formGroup]="healthDeclarationForm" (ngSubmit)="onSubmit()" dir="rtl" class="form-layout">
@@ -22,7 +27,7 @@
         <input id="formDate" type="date" formControlName="formDate" readonly class="read-only-input control-large">
       </div>
     </div>
-
+<br>
     <fieldset formGroupName="childDetails" class="form-fieldset">
       <legend class="fieldset-legend">
         <i class="fas fa-child"></i> פרטי הילד/ה
@@ -78,46 +83,46 @@
     </fieldset>
 
     <fieldset formGroupName="facilityDetails" class="form-fieldset">
-  <legend class="fieldset-legend">
-    <i class="fas fa-school"></i> פרטי המסגרת (גן/מרכז הטיפול)
-  </legend>
+      <legend class="fieldset-legend">
+        <i class="fas fa-school"></i> פרטי המסגרת (גן/מרכז הטיפול)
+      </legend>
 
-  <div class="form-grid">
-    <div class="form-group full-width">
-      <label for="facilityName">שם המסגרת (גן) *</label>
-      <input id="facilityName" type="text" formControlName="facilityName" class="control-large" readonly>
-    </div>
-    </div>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="facilityName">שם המסגרת (גן) *</label>
+          <input id="facilityName" type="text" formControlName="facilityName" class="control-large" readonly>
+        </div>
+      </div>
 
-  <div class="form-group full-width radio-group-container">
-    <label>בעלות *</label>
-    <div class="radio-group control-large">
-      <label>
-        <input type="radio" formControlName="facilityOwnership" value="רשות מקומית"> רשות מקומית
-      </label>
-      <label>
-        <input type="radio" formControlName="facilityOwnership" value="בעלות עמותה פרטית"> בעלות עמותה פרטית
-      </label>
-    </div>
-  </div>
+      <div class="form-group full-width radio-group-container">
+        <label>בעלות *</label>
+        <div class="radio-group control-large">
+          <label>
+            <input type="radio" formControlName="facilityOwnership" value="רשות מקומית"> רשות מקומית
+          </label>
+          <label>
+            <input type="radio" formControlName="facilityOwnership" value="בעלות עמותה פרטית"> בעלות עמותה פרטית
+          </label>
+        </div>
+      </div>
 
-  <div class="form-grid">
-    <div class="form-group">
-      <label for="facilityManagerName">שם הגננת *</label>
-      <input id="facilityManagerName" type="text" formControlName="facilityManagerName" class="control-large">
-    </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="facilityManagerName">שם הגננת *</label>
+          <input id="facilityManagerName" type="text" formControlName="facilityManagerName" class="control-large">
+        </div>
 
-    <div class="form-group">
-      <label for="facilityPhone">מס' הטלפון של הגן *</label>
-      <input id="facilityPhone" type="tel" formControlName="facilityPhone" class="control-large">
-    </div>
+        <div class="form-group">
+          <label for="facilityPhone">מס' הטלפון של הגן *</label>
+          <input id="facilityPhone" type="tel" formControlName="facilityPhone" class="control-large">
+        </div>
 
-    <div class="form-group full-width">
-      <label for="facilityAddress">כתובת המסגרת *</label>
-      <input id="facilityAddress" type="text" formControlName="facilityAddress" class="control-large" readonly>
-    </div>
-  </div>
-</fieldset>
+        <div class="form-group full-width">
+          <label for="facilityAddress">כתובת המסגרת *</label>
+          <input id="facilityAddress" type="text" formControlName="facilityAddress" class="control-large" readonly>
+        </div>
+      </div>
+    </fieldset>
 
     <fieldset class="form-fieldset">
       <legend class="fieldset-legend">
@@ -129,7 +134,7 @@
         <input id="monthlySelfParticipation" type="number" formControlName="monthlySelfParticipation"
           class="control-large">
       </div>
-
+      <br>
       <div class="form-group full-width checkbox-group declaration-checkbox">
         <label>
           <input type="checkbox" formControlName="noOtherProgramDeclaration" class="large-checkbox">
@@ -167,8 +172,7 @@
             <button type="button" class="clear-button" (click)="clearSignature(1)">
               <i class="fas fa-eraser"></i> נקה חתימה
             </button>
-            <div class="signature-date">תאריך: {{ healthDeclarationForm.get('formDate')?.value | date:'dd/MM/yyyy' }}
-            </div>
+
           </div>
           <input type="hidden" formControlName="signature">
         </div>

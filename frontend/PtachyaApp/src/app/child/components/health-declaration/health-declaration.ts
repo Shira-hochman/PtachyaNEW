@@ -54,7 +54,10 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
       this.router.navigate(['/login']); 
     }
   }
-
+goBack(): void {
+    // וודא שהנתיב כאן תואם למה שהגדרת ב-Routes עבור PaymentOptions
+    this.router.navigate(['/child/main']); 
+  }
   ngAfterViewInit(): void {
     if (this.canvas1 && this.canvas1.nativeElement) {
       this.ctx1 = this.canvas1.nativeElement.getContext('2d')!;
@@ -112,24 +115,22 @@ export class HealthDeclarationComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private getCanvasPosition(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): { x: number, y: number } {
+private getCanvasPosition(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): { x: number, y: number } {
     const rect = canvas.getBoundingClientRect();
-    let clientX: number;
-    let clientY: number;
-
-    if (event instanceof TouchEvent) {
-      clientX = event.touches[0].clientX;
-      clientY = event.touches[0].clientY;
-    } else {
-      clientX = (event as MouseEvent).clientX;
-      clientY = (event as MouseEvent).clientY;
-    }
     
+    // קבלת הקואורדינטות לפי סוג האירוע (עכבר או מגע)
+    const clientX = event instanceof TouchEvent ? event.touches[0].clientX : (event as MouseEvent).clientX;
+    const clientY = event instanceof TouchEvent ? event.touches[0].clientY : (event as MouseEvent).clientY;
+
+    // חישוב יחסי הגודל (במקרה שה-CSS מותח את הקנבס)
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
     return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
     };
-  }
+}
 
 // 1. בתוך initForm - הגדרת ברירת המחדל
 initForm(): void {

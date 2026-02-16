@@ -7,11 +7,16 @@
 }
 
 <div class="declaration-container">
+    <div class="back-navigation">
+    <button type="button" class="back-button" (click)="goBack()">
+      <i class="fas fa-arrow-right"></i> חזרה לבחירת טופס
+    </button>
+  </div>
   <header class="form-header">
     <h1 class="title">
-      <i class="fas fa-percent"></i> בקשה לקבלת הנחה - הצהרת הורה
+     בקשה לקבלת הנחה - הצהרת הורה
     </h1>
-    <p class="subtitle">שנה"ל תשפ"ו | נא למלא את הטופס בכתב ברור ובמלואו.</p>
+    <p class="subtitle"> נא למלא את הטופס במלואו</p>
   </header>
 
   <form [formGroup]="discountRequestForm" (ngSubmit)="onSubmit()" dir="rtl" class="form-layout">
@@ -108,7 +113,8 @@
   <div class="form-group children-count-header">
     <label for="childrenCount">מספר הילדים עד גיל 18 אשר בחזקתי:</label>
     <input id="childrenCount" type="number" formControlName="childrenCount" 
-           class="control-small" 
+           class="control-small" min="0" 
+       max="15"
            (change)="updateChildrenInCustodyArray(discountRequestForm.get('childrenCount')?.value)">
   </div>
 

@@ -76,7 +76,10 @@ filesToUpload: { [key: string]: File[] } = {
   get childrenInCustody(): FormArray {
     return this.discountRequestForm.get('childrenInCustody') as FormArray;
   }
-
+goBack(): void {
+    // וודא שהנתיב כאן תואם למה שהגדרת ב-Routes עבור PaymentOptions
+    this.router.navigate(['/child/main']); 
+  }
   // מחזיר האם שדה ספציפי אינו תקין ונשלח
   isInvalid(path: string): boolean {
     const control = this.discountRequestForm.get(path);
@@ -285,13 +288,18 @@ ngOnInit(): void {
   }
 
   // לוגיקת Canvas - ציור
-  draw(ctx: CanvasRenderingContext2D, event: MouseEvent | TouchEvent): void {
+draw(ctx: CanvasRenderingContext2D, event: MouseEvent | TouchEvent): void {
     if (!this.isDrawing) return;
+    
+    // מונע גלישה של הדף בזמן הציור (חשוב מאוד בנייד!)
+    if (event.cancelable) {
+        event.preventDefault();
+    }
+
     const pos = this.getCanvasPosition(ctx.canvas, event);
     ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
-    event.preventDefault();
-  }
+}
 
   // לוגיקת Canvas - הפסקת ציור ושמירה
   stopDrawing(): void {
@@ -318,30 +326,31 @@ ngOnInit(): void {
   }
 
  // לוגיקת Canvas - חישוב מיקום מתוקן
-  private getCanvasPosition(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): { x: number, y: number } {
+ private getCanvasPosition(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): { x: number, y: number } {
     const rect = canvas.getBoundingClientRect();
     
-    // זיהוי האם מדובר במגע (Touch) או בעכבר (Mouse)
+    // שליחת הקואורדינטות הנכונות לפי סוג האירוע
     let clientX: number;
     let clientY: number;
 
     if (event instanceof TouchEvent) {
-      clientX = event.touches[0].clientX;
-      clientY = event.touches[0].clientY;
+        clientX = event.touches[0].clientX;
+        clientY = event.touches[0].clientY;
     } else {
-      clientX = (event as MouseEvent).clientX;
-      clientY = (event as MouseEvent).clientY;
+        clientX = (event as MouseEvent).clientX;
+        clientY = (event as MouseEvent).clientY;
     }
 
-    // חישוב המיקום ביחס לקנבס כולל התאמה לרזולוציה (Scale)
+    // ⭐️ התיקון הקריטי: חישוב יחס הגודל (Scale) ⭐️
+    // זה פותר מצב שבו הקנבס נראה קטן/גדול יותר בגלל ה-CSS
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
     return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
     };
-  }
+}
 
   // מטפל בבחירת קובץ אמיתית
   // מטפל בבחירת קובץ אמיתית
