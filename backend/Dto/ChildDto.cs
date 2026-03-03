@@ -38,7 +38,8 @@ namespace Dto
         public bool HasApprovedDiscount { get; set; }
 
         public string KindergartenAddress { get; set; } = null!;
-        public string InstitutionCode { get; set; } = null!;
+
+        public string? InstitutionCode { get; set; } = null!;
 
     }
 
