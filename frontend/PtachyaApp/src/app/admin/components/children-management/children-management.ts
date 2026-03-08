@@ -236,34 +236,52 @@ selectYear(year: string) {
   }
 
   saveChildChanges(): void {
-    this.isLoading = true;
+  this.isLoading = true;
 
-    // שימוש ב-as any לעקיפת חוסר התאמות קטנות בטיפוסים
-    this.childDataService.updateChild(this.childToEdit as any).subscribe({
-      next: () => {
-        const index = this.children.findIndex(c => c.childId === this.childToEdit.childId);
-        if (index !== -1) {
-          this.children[index] = { ...this.childToEdit };
+  // יצירת עותק נקי של האובייקט כדי לא לשנות את התצוגה לפני שהשרת אישר
+  const payload = { ...this.childToEdit };
 
-          const selectedGarden = this.kindergartens.find(k => k.id === this.childToEdit.kindergartenId);
-          if (selectedGarden) {
-            (this.children[index] as any).kindergartenName = selectedGarden.name;
-          }
+  // 🔥 תיקון קריטי: המרת תאריך לפורמט שה-API של C# אוהב
+  if (payload.birthDate) {
+    payload.birthDate = new Date(payload.birthDate).toISOString();
+  }
 
-          this.children = [...this.children];
+  // שליחת האובייקט המלא
+  this.childDataService.updateChild(payload).subscribe({
+    next: (response) => {
+      // עדכון הרשימה המקומית רק לאחר הצלחה בשרת
+      const index = this.children.findIndex(c => c.childId === this.childToEdit.childId);
+      if (index !== -1) {
+        // מעדכנים את הילד ברשימה עם הנתונים החדשים
+        this.children[index] = { ...this.childToEdit };
+
+        // עדכון שם הגן לתצוגה בטבלה
+        const selectedGarden = this.kindergartens.find(k => k.id === this.childToEdit.kindergartenId);
+        if (selectedGarden) {
+          (this.children[index] as any).kindergartenName = selectedGarden.name;
         }
 
-        this.isEditModalOpen = false;
-        this.isLoading = false;
-        alert('פרטי הילד עודכנו בהצלחה!');
-      },
-      error: (err) => {
-        console.error(err);
-        this.isLoading = false;
+        // טריגר לעדכון ה-Change Detection של אנגולר
+        this.children = [...this.children];
+      }
+
+      this.isEditModalOpen = false;
+      this.isLoading = false;
+      alert('פרטי הילד עודכנו בהצלחה!');
+    },
+    error: (err) => {
+      this.isLoading = false;
+      console.error('Update failed. Server response:', err);
+      
+      // אם יש שגיאת 400, הפירוט בדרך כלל נמצא ב-err.error.errors
+      if (err.status === 400) {
+        alert('שגיאת נתונים: ודא שכל שדות החובה מלאים (ת.ז, שם, כתובת גן וכו\')');
+      } else {
         alert('שגיאה בעדכון הפרטים');
       }
-    });
-  }
+    }
+  });
+}
 
   cancelEdit(): void {
     this.isEditModalOpen = false;

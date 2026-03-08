@@ -190,3 +190,76 @@
         (close)="closeDocsModal()">
     </app-child-files-modal>
 </div>
+
+<p-dialog
+    header="עריכת פרטי ילד"
+    [(visible)]="isEditModalOpen"
+    [modal]="true"
+    [style]="{ width: '600px' }"
+    styleClass="edit-child-dialog"
+    [closable]="false"
+    rtl="true">
+
+    <div class="edit-form-container">
+
+        <div class="form-row two-col">
+            <div class="field-group">
+                <label>שם פרטי</label>
+                <input pInputText
+                       [(ngModel)]="childToEdit.firstName"
+                       class="custom-input" />
+            </div>
+
+            <div class="field-group">
+                <label>שם משפחה</label>
+                <input pInputText
+                       [(ngModel)]="childToEdit.lastName"
+                       class="custom-input" />
+            </div>
+        </div>
+
+        <div class="form-row two-col">
+            <div class="field-group">
+                <label>תעודת זהות</label>
+                <input pInputText
+                       [(ngModel)]="childToEdit.idNumber"
+                       class="custom-input" />
+            </div>
+
+            <div class="field-group">
+                <label>תאריך לידה</label>
+                <input type="date"
+                       [(ngModel)]="childToEdit.birthDate"
+                       class="custom-input" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="field-group">
+                <label>שיוך גן</label>
+                <p-select
+                    [options]="kindergartens"
+                    optionLabel="name"
+                    optionValue="id"
+                    [(ngModel)]="childToEdit.kindergartenId"
+                    styleClass="custom-dropdown">
+                </p-select>
+            </div>
+        </div>
+
+        <div class="dialog-footer">
+            <button pButton
+                    label="ביטול"
+                    class="cancel-btn"
+                    (click)="cancelEdit()">
+            </button>
+
+            <button pButton
+                    label="שמירה"
+                    class="save-btn"
+                    (click)="saveChildChanges()">
+            </button>
+        </div>
+
+    </div>
+</p-dialog>
