@@ -53,6 +53,8 @@ namespace Dal_Repository.ModelsConverters
             {
                 IdNumber = importDto.IdNumber,
                 BirthDate = importDto.BirthDate!.Value,
+                FirstName = importDto.FirstName,
+                lastName = importDto.LastName,
                 SchoolYear = importDto.SchoolYear,
                 KindergartenId = kindergartenId,
                 Phone = phone,

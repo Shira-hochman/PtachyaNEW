@@ -19,9 +19,6 @@ public partial class Child
 
     public string SchoolYear { get; set; } = null!;
 
-    
-   
-
     public string Phone { get; set; } = null!;
 
     public string Email { get; set; } = null!;

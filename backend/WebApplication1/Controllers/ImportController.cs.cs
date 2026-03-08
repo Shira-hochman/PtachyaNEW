@@ -145,6 +145,53 @@ public class ImportController : ControllerBase
     }
 
     // מתודת המיפוי הקיימת עבור ילדים (לא שונתה)
+
+    //private async Task<List<ParentChildImportDto>> MapExcelToDtoList(IFormFile file)
+    //{
+    //    var list = new List<ParentChildImportDto>();
+
+    //    using (var stream = new MemoryStream())
+    //    {
+    //        await file.CopyToAsync(stream);
+    //        using (var package = new ExcelPackage(stream))
+    //        {
+    //            var worksheet = package.Workbook.Worksheets[0];
+    //            var rowCount = worksheet.Dimension?.Rows ?? 0;
+
+    //            for (int row = 2; row <= rowCount; row++) // מדלג על כותרת
+    //            {
+
+    //                string childIdNumber = worksheet.Cells[row, 4].Text?.Trim();
+    //                string childBirthDateText = worksheet.Cells[row, 6].Text?.Trim();
+
+    //                // אם PaymentId הוא שדה חובה, נדלג על השורה אם ההמרה נכשלה
+    //                // או אם לא היה ערך כלל
+
+    //                if (string.IsNullOrWhiteSpace(childIdNumber) || string.IsNullOrWhiteSpace(childBirthDateText))
+    //                    continue;
+
+    //                DateTime childBirthDate;
+    //                if (!DateTime.TryParse(childBirthDateText, out childBirthDate))
+    //                    continue;
+
+    //                list.Add(new ParentChildImportDto
+    //                {
+    //                    KindergartenId = worksheet.Cells[row, 1].Text?.Trim(),
+    //                    Phone = worksheet.Cells[row, 2].Text?.Trim(),
+    //                    Email = worksheet.Cells[row, 3].Text?.Trim(),
+    //                    IdNumber = worksheet.Cells[row, 4].Text?.Trim(),
+    //                    FirstName = worksheet.Cells[row, 5].Text?.Trim(),
+    //                    BirthDate = childBirthDate,
+    //                    SchoolYear = worksheet.Cells[row, 7].Text?.Trim(),
+    //                    FormLink = worksheet.Cells[row, 8].Text?.Trim(),
+    //                    LastName = worksheet.Cells[row, 9].Text?.Trim(),
+    //                });
+    //            }
+    //        }
+    //    }
+
+    //    return list;
+    //}
     private async Task<List<ParentChildImportDto>> MapExcelToDtoList(IFormFile file)
     {
         var list = new List<ParentChildImportDto>();
@@ -152,38 +199,37 @@ public class ImportController : ControllerBase
         using (var stream = new MemoryStream())
         {
             await file.CopyToAsync(stream);
+
             using (var package = new ExcelPackage(stream))
             {
                 var worksheet = package.Workbook.Worksheets[0];
                 var rowCount = worksheet.Dimension?.Rows ?? 0;
 
-                for (int row = 2; row <= rowCount; row++) // מדלג על כותרת
+                for (int row = 2; row <= rowCount; row++)
                 {
+                    string kindergartenCode = worksheet.Cells[row, 1].Text?.Trim();
+                    string idNumber = worksheet.Cells[row, 2].Text?.Trim();
+                    string birthText = worksheet.Cells[row, 3].Text?.Trim();
 
-                    string childIdNumber = worksheet.Cells[row, 4].Text?.Trim();
-                    string childBirthDateText = worksheet.Cells[row, 6].Text?.Trim();
+                    DateTime? birthDate = null;
 
-                    // אם PaymentId הוא שדה חובה, נדלג על השורה אם ההמרה נכשלה
-                    // או אם לא היה ערך כלל
-                  
-                    if (string.IsNullOrWhiteSpace(childIdNumber) || string.IsNullOrWhiteSpace(childBirthDateText))
-                        continue;
-
-                    DateTime childBirthDate;
-                    if (!DateTime.TryParse(childBirthDateText, out childBirthDate))
-                        continue;
+                    if (!string.IsNullOrWhiteSpace(birthText) &&
+                        DateTime.TryParse(birthText, out DateTime parsed))
+                    {
+                        birthDate = parsed;
+                    }
 
                     list.Add(new ParentChildImportDto
                     {
-                        KindergartenId = worksheet.Cells[row, 1].Text?.Trim(),
-                        Phone = worksheet.Cells[row, 2].Text?.Trim(),
-                        Email = worksheet.Cells[row, 3].Text?.Trim(),
-                        IdNumber = worksheet.Cells[row, 4].Text?.Trim(),
-                        FirstName = worksheet.Cells[row, 5].Text?.Trim(),
-                        BirthDate = childBirthDate,
-                        SchoolYear = worksheet.Cells[row, 7].Text?.Trim(),
-                        FormLink = worksheet.Cells[row, 8].Text?.Trim(),
-                        LastName = worksheet.Cells[row, 9].Text?.Trim(),
+                        KindergartenId = kindergartenCode ?? "",
+                        IdNumber = idNumber ?? "",
+                        BirthDate = birthDate,
+                        FirstName = worksheet.Cells[row, 4].Text?.Trim() ?? "",
+                        LastName = worksheet.Cells[row, 5].Text?.Trim() ?? "",
+                        SchoolYear = worksheet.Cells[row, 6].Text?.Trim() ?? "",
+                        Phone = worksheet.Cells[row, 7].Text?.Trim() ?? "",
+                        Email = worksheet.Cells[row, 8].Text?.Trim() ?? "",
+                        FormLink = ""
                     });
                 }
             }

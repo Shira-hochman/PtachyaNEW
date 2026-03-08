@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dal.Migrations
 {
     [DbContext(typeof(PtachiyaContext))]
-    [Migration("20251118195654_AddUploadedDocumentPathsToChild")]
-    partial class AddUploadedDocumentPathsToChild
+    [Migration("20260308165455_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.5")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -36,9 +36,6 @@ namespace Dal.Migrations
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DiscountRequestLink")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -46,9 +43,6 @@ namespace Dal.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HealthDeclarationLink")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdNumber")
@@ -71,9 +65,6 @@ namespace Dal.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("UploadedDocumentPaths")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("lastName")
                         .IsRequired()
@@ -127,6 +118,10 @@ namespace Dal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FormId"));
 
+                    b.Property<string>("AttachmentPaths")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
                     b.Property<int>("ChildId")
                         .HasColumnType("int");
 
@@ -135,8 +130,18 @@ namespace Dal.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<byte[]>("FileContent")
-                        .HasColumnType("varbinary(max)");
+                    b.Property<string>("FilePath")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("FormType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("SubmittedDate")
                         .HasColumnType("datetime");
