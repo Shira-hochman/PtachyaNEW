@@ -2,12 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class FormService {
   // ⚠️ יש להחליף ב-URL האמיתי של ה-API (נניח שזה https://localhost:7222/api/Form)
-  private apiUrl = 'https://localhost:7222/api/Form';
+  private apiUrl = `${environment.apiBaseUrl}/api/Form`;
 
   private http = inject(HttpClient);
 

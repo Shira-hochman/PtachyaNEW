@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 // הגדרת interface זמני עבור האפשרויות הנדרשות
 interface TextResponseOptions {
     headers?: HttpHeaders | { [header: string]: string | string[]; };
@@ -18,7 +19,7 @@ interface TextResponseOptions {
   providedIn: 'root'
 })
 export class ExcelUpdateService {
-  private apiUrl = 'https://localhost:7222/api/Import'; 
+  private apiUrl = `${environment.apiBaseUrl}/api/Import`; 
 
   constructor(private http: HttpClient) {}
 

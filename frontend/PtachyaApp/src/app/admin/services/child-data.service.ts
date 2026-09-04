@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 export interface ChildDto {
   childId: number; 
   kindergartenId: number;
@@ -27,10 +28,10 @@ export interface PagedChildResult {
 })
 export class ChildDataService {
   // כתובת בסיס לילדים
-  private apiUrl = 'https://localhost:7222/api/Child'; 
+  private apiUrl = `${environment.apiBaseUrl}/api/Child`; 
   
   // ✅ כתובת בסיס לגנים (בהתאם לקונטרולר ששלחת)
-  private kindergartenUrl = 'https://localhost:7222/api/Kindergarten';
+  private kindergartenUrl = `${environment.apiBaseUrl}/api/Kindergarten`;
 
   constructor(private http: HttpClient) { }
 

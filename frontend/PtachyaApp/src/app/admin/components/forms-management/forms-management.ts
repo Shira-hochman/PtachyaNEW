@@ -11,6 +11,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 
+import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-forms-management',
   standalone: true,
@@ -71,6 +72,37 @@ export class FormsManagementComponent implements OnInit {
         this.approvedForms.unshift(approvedForm);
       },
       error: (err) => alert('שגיאה באישור הטופס. אנא נסה שנית.')
+    });
+  }
+
+  /**
+   * פותח את קובץ ה-PDF של הטופס.
+   * ה-filePath שמגיע מהשרת הוא נתיב לוגי בלבד (למשל "PermanentForms/xxx.pdf"),
+   * ולכן אי אפשר לפתוח אותו כקישור ישיר. ההורדה נעשית דרך HttpClient
+   * כדי שה-interceptor יצרף את טוקן ההרשאה, והקובץ נפתח כ-Blob.
+   */
+  openForm(form: FormDto) {
+    if (!form.filePath) {
+      alert('לא קיים קובץ עבור טופס זה.');
+      return;
+    }
+
+    const parts = form.filePath.split('/');
+    const fileName = parts.pop() as string;
+    const container = parts.pop() || 'PermanentForms';
+    const url = `${environment.apiBaseUrl}/api/Form/Download?container=${container}&fileName=${encodeURIComponent(fileName)}`;
+
+    this.formService.downloadFile(url).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, '_blank');
+        // שחרור הזיכרון לאחר שהדפדפן הספיק לטעון את הקובץ
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      },
+      error: (err) => {
+        console.error('Error downloading form file:', err);
+        alert('שגיאה בפתיחת הקובץ.');
+      }
     });
   }
 

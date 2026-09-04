@@ -10,6 +10,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { RippleModule } from 'primeng/ripple';
 import { TooltipModule } from 'primeng/tooltip';
 
+import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-dashboard',
   standalone: true, 
@@ -36,7 +37,7 @@ export class DashboardComponent implements OnInit {
   };
   
   isLoading: boolean = true;
-  private apiUrl = 'https://localhost:7222/api/Dashboard/stats';
+  private apiUrl = `${environment.apiBaseUrl}/api/Dashboard/stats`;
 
   constructor(private http: HttpClient) { }
 

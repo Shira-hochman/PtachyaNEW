@@ -5,11 +5,12 @@ import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router'; 
 import { LoginRequest, LoginResponse } from '../../../models/login'; 
 
+import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class LoginService {
-  private apiUrl = 'https://localhost:7222/api/User';
+  private apiUrl = `${environment.apiBaseUrl}/api/User`;
 
   constructor(private http: HttpClient, private router: Router) { } 
 
