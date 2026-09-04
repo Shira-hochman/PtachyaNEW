@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 // ⭐️ ממשקי DTO ⭐️
 export interface FormDto {
   formId: number;
@@ -35,7 +36,7 @@ export interface ChildFormDto {
 })
 export class FormDataService {
   // כתובת ה-API של הקונטרולר
-  private apiUrl = 'https://localhost:7222/api/Form';
+  private apiUrl = `${environment.apiBaseUrl}/api/Form`;
 
   constructor(private http: HttpClient) { }
 

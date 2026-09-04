@@ -2,6 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { Observable, tap } from 'rxjs'; // ⭐️ ייבוא tap לשמירת המצב
 import { Child } from '../../../models/child'; // ייבוא המודל
 
@@ -15,7 +16,7 @@ interface AuthResponse {
 })
 export class ChildAuthService {
 
-  private apiUrl = 'https://localhost:7222/api/Child';
+  private apiUrl = `${environment.apiBaseUrl}/api/Child`;
   private childKey = 'current_child_data'; // מפתח לשמירת פרטי הילד ב-LocalStorage
   private tokenKey = 'auth_token'; // מפתח לשמירת התוקן
 

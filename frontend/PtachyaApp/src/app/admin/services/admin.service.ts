@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 export interface AdminDto {
   userId: number;
   username: string;
@@ -18,7 +19,7 @@ export interface CreateAdminDto {
 export class AdminService {
   
   // הכתובת של הקונטרולר שלך
-  private apiUrl = 'https://localhost:7222/api/User'; 
+  private apiUrl = `${environment.apiBaseUrl}/api/User`; 
 
   constructor(private http: HttpClient) { }
 

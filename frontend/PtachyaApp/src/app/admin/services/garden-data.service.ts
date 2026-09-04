@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 // DTOs (מבוסס על מודל Kindergarten ב-C#)
 export interface KindergartenDto {
   kindergartenId: number;
@@ -22,7 +23,7 @@ export interface UpsertKindergartenDto {
 })
 export class GardenDataService {
   // ⚠️ יש לוודא שה-Base URL תואם לשרת שלך
-  private apiUrl = 'https://localhost:7222/api/Kindergarten'; 
+  private apiUrl = `${environment.apiBaseUrl}/api/Kindergarten`; 
 
   constructor(private http: HttpClient) { }
 

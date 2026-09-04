@@ -1,6 +1,4 @@
 /* ייבוא גופנים - Rubik ו-Heebo למראה מודרני וקריא */
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=Rubik:wght@300;400;500;600;700&display=swap');
-
 /* משתנים בסגנון PrimeNG Aura/Lara */
 :host {
     --primary-color: #3B82F6; /* כחול מודרני */

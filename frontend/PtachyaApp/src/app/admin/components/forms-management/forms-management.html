@@ -41,7 +41,7 @@
                             <p class="id-sub">ת.ז: {{ form.childIdNumber }}</p>
                         </div>
                         <div class="card-footer">
-                            <a [href]="form.filePath" target="_blank" pButton icon="pi pi-eye" label="צפייה" class="p-button-outlined p-button-sm"></a>
+                            <button pButton icon="pi pi-eye" label="צפייה" class="p-button-outlined p-button-sm" (click)="openForm(form)"></button>
                             <button pButton icon="pi pi-check" label="אישור" class="p-button-success p-button-sm" (click)="approveForm(form)"></button>
                         </div>
                     </div>
@@ -64,7 +64,7 @@
                             <span class="date-sub">בוצע ב: {{ form.submittedDate | date:'dd/MM/yyyy' }}</span>
                         </div>
                         <div class="card-footer">
-                            <a [href]="form.filePath" target="_blank" pButton icon="pi pi-file-pdf" label="פתח קובץ" class="p-button-secondary p-button-sm w-full"></a>
+                            <button pButton icon="pi pi-file-pdf" label="פתח קובץ" class="p-button-secondary p-button-sm w-full" (click)="openForm(form)"></button>
                         </div>
                     </div>
                 </div>
